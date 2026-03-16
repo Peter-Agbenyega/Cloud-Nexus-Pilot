@@ -403,45 +403,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   );
 }
 `,
-  ".github/workflows/ci.yml": `name: CI
-
-on:
-  push:
-    branches: ["main", "master"]
-  pull_request:
-
-jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - name: Install dependencies
-        run: npm install
-      - name: Lint
-        run: npm run lint
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Build
-        run: npm run build
-`,
-  ".github/workflows/deploy.yml": `name: Deploy Placeholder
-
-on:
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Placeholder
-        run: echo "Configure deployment steps for your hosting provider."
-`,
   "public/.gitkeep": ``,
 };
 

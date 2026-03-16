@@ -1,4 +1,4 @@
-name: CI
+name: Monorepo CI
 
 on:
   push:
@@ -8,6 +8,15 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - cloud-nexus-pilot
+          - devops-automation-agency
+          - cloud-security-digital-factory
+          - ai-automation-agency
+          - cloud-nexus-market
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,12 +24,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
       - name: Install dependencies
+        working-directory: ${{ matrix.project }}
         run: npm install
       - name: Lint
+        working-directory: ${{ matrix.project }}
         run: npm run lint
       - name: Typecheck
+        working-directory: ${{ matrix.project }}
         run: npm run typecheck
       - name: Build
+        working-directory: ${{ matrix.project }}
         run: npm run build

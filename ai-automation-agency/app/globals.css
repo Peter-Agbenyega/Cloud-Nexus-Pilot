@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 248 250 252;
+  --foreground: 15 23 42;
+  --surface: 255 255 255;
+  --surface-muted: 241 245 249;
+  --border: 203 213 225;
+  --primary: 14 116 144;
+  --secondary: 245 158 11;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: rgb(var(--foreground));
+  background:
+    radial-gradient(circle at top left, rgba(var(--secondary), 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(var(--primary), 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(248, 250, 252, 1) 0%, rgba(241, 245, 249, 1) 100%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.section-shell {
+  @apply mx-auto max-w-7xl px-6 lg:px-8;
+}
+
+.panel {
+  @apply rounded-3xl border border-slate-200/80 bg-white/85 shadow-soft backdrop-blur;
+}
+
+.pill {
+  @apply inline-flex items-center rounded-full border border-slate-300 bg-white/80 px-4 py-1 text-sm font-medium text-slate-600;
+}
+
+.grid-pattern {
+  background-size: 28px 28px;
+}

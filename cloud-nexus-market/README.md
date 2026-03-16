@@ -1,0 +1,35 @@
+# Cloud Nexus Market
+
+A commerce-first storefront for cloud assets, digital bundles, and future downloadable product fulfillment.
+
+## Stack
+
+- Next.js with App Router
+- TypeScript
+- Tailwind CSS
+- GitHub Actions placeholders for CI and deployment
+
+## Getting Started
+
+1. Install dependencies with `npm install`
+2. Copy `.env.example` to `.env.local`
+3. Start the dev server with `npm run dev`
+
+## Included Pages
+
+
+
+
+
+- Homepage
+- Categories page
+- Product listing page
+- Product detail page template
+- Digital downloads page
+- Contact page
+
+## Docs
+
+- `docs/PRD.md`
+- `docs/ROADMAP.md`
+- `docs/TASKS.md`

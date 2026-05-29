@@ -8,7 +8,7 @@
     "dev": "npm run build:deps && npm run build && node dist/server.js",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "npm run build:deps && tsc -p tsconfig.json --noEmit",
     "lint": "echo 'api: no lint configured'"
   },
   "dependencies": {

@@ -83,6 +83,7 @@ export type UseTranscriptionWorkflowResult = {
   status: TranscriptionStatus;
   transcript: string;
   latestSegment: string;
+  draftSegment: string;
   segments: TranscriptSegment[];
   selectedFileName: string;
   error: string;
@@ -125,10 +126,10 @@ const MIN_UPLOAD_CHUNK_BYTES = 1_024;
 const MIN_RAW_CHUNK_BYTES = 256;
 const MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD = 3;
 const PCM_CHUNK_FLUSH_INTERVAL_MS = 1_000;
-const PCM_MIN_FRAMES_PER_CHUNK = 8_000;
+const PCM_MIN_FRAMES_PER_CHUNK = 16_000;
 const MIN_LIVE_SEGMENT_WORDS = 8;
 const MAX_LIVE_SEGMENT_BUFFER_MS = 5_000;
-const MAX_IN_FLIGHT_LIVE_CHUNKS = 2;
+const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 export function useTranscriptionWorkflow(
@@ -139,6 +140,7 @@ export function useTranscriptionWorkflow(
   );
   const [transcript, setTranscript] = useState("");
   const [latestSegment, setLatestSegment] = useState("");
+  const [draftSegment, setDraftSegment] = useState("");
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [error, setError] = useState("");
@@ -182,6 +184,7 @@ export function useTranscriptionWorkflow(
   const segmentsRef = useRef<TranscriptSegment[]>(segments);
   const activeUploadsRef = useRef(activeUploads);
   const activeTranscriptIdRef = useRef<TranscriptId | null>(null);
+  const inFlightChunkCountRef = useRef(0);
   const activeByteSizeRef = useRef(0);
   const activeCaptureModeRef = useRef<TranscriptCaptureMode>("live-capture");
   const activeContentTypeRef = useRef("audio/webm");
@@ -428,13 +431,35 @@ export function useTranscriptionWorkflow(
         | "fallback-in-use",
       detail?: string
     ) => {
-      console.log("[transcription][seam]", {
-        event,
-        detail: detail ?? "",
-      });
+      if (shouldDebugLogs) {
+        console.log("[transcription][seam]", {
+          event,
+          detail: detail ?? "",
+        });
+      }
     },
     []
   );
+
+  const resetStreamingClient = useCallback((reason: string) => {
+    const activeClient = streamingClientRef.current;
+    streamingClientRef.current = null;
+    streamingConnectPromiseRef.current = null;
+    streamingFallbackReasonRef.current = reason;
+    setTransportStatus("streaming-session-failed");
+    setTransportFallbackReason(reason);
+    void activeClient?.stop().catch(() => undefined);
+  }, []);
+
+  const shouldResetStreamingClient = useCallback((message: string) => {
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes("transcript_stream_session_missing") ||
+      normalized.includes("streaming transcript event channel disconnected") ||
+      normalized.includes("streaming transcript event channel failed before connecting") ||
+      normalized.includes("streaming transcript event channel did not connect in time")
+    );
+  }, []);
 
   const ensureStreamingClient = useCallback(
     async (reason: "session-start" | "chunk-send"): Promise<StreamingTranscriptClient | null> => {
@@ -443,7 +468,9 @@ export function useTranscriptionWorkflow(
 
       const connectPromise = createStreamingTranscriptClient({
         onLog: (entry) => {
-          console.log("[transcription][streaming]", entry);
+          if (shouldDebugLogs) {
+            console.log("[transcription][streaming]", entry);
+          }
           if (entry.event === "sse-connect-open") {
             setTransportStatus("streaming-session-connected");
             setTransportFallbackReason("");
@@ -453,12 +480,24 @@ export function useTranscriptionWorkflow(
 
           if (entry.event === "sse-connect-error") {
             const detail = entry.detail || "Streaming transcript event channel disconnected.";
-            streamingFallbackReasonRef.current = detail;
-            setTransportStatus("streaming-session-failed");
-            setTransportFallbackReason(detail);
+            if (entry.sessionId && streamingClientRef.current?.sessionId === entry.sessionId) {
+              resetStreamingClient(detail);
+            } else {
+              streamingFallbackReasonRef.current = detail;
+              setTransportStatus("streaming-session-failed");
+              setTransportFallbackReason(detail);
+            }
             setFeedback("");
             return;
           }
+        },
+        onTranscript: (response) => {
+          if (!response?.text?.trim()) return;
+
+          startTransition(() => {
+            setDraftSegment(response.text.trim());
+            setStatus("receiving-transcript");
+          });
         },
       })
         .then((client) => {
@@ -489,7 +528,7 @@ export function useTranscriptionWorkflow(
       streamingConnectPromiseRef.current = connectPromise;
       return connectPromise;
     },
-    [logStreamingSeam]
+    [logStreamingSeam, resetStreamingClient]
   );
 
   const appendSegment = useCallback(
@@ -540,6 +579,7 @@ export function useTranscriptionWorkflow(
       pendingLiveSegmentRef.current = "";
       pendingLiveSegmentAgeRef.current = null;
       pendingLiveSegmentSpeakerRef.current = null;
+      setDraftSegment("");
 
       if (!bufferedText) return null;
       return appendSegment(chunkIndex, bufferedText, nextSource, bufferedSpeakerId);
@@ -632,18 +672,32 @@ export function useTranscriptionWorkflow(
     pendingLiveSegmentRef.current = "";
     pendingLiveSegmentAgeRef.current = null;
     pendingLiveSegmentSpeakerRef.current = null;
+    setDraftSegment("");
   }, [flushPendingLiveSegment]);
 
   const processAudioChunk = useCallback(
-    async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource) => {
+    async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource, overrideContentType?: string) => {
       if (audioBlob.size === 0) return;
 
-      setActiveUploads((current) => current + 1);
+      if (inFlightChunkCountRef.current >= MAX_IN_FLIGHT_LIVE_CHUNKS) {
+        console.warn("[transcription] live chunk skipped: too many uploads in flight", {
+          chunkIndex,
+          inFlightUploads: inFlightChunkCountRef.current,
+          maxInFlightUploads: MAX_IN_FLIGHT_LIVE_CHUNKS,
+          size: audioBlob.size,
+          source: nextSource,
+        });
+        setFeedback("Live transcription is still catching up. A chunk was skipped to keep the session stable.");
+        return;
+      }
+
+      inFlightChunkCountRef.current += 1;
+      setActiveUploads(inFlightChunkCountRef.current);
       setStatus("receiving-transcript");
 
       try {
         const contentType =
-          recorderRef.current?.mimeType || audioBlob.type || getPreferredMimeType() || "audio/webm";
+          overrideContentType || recorderRef.current?.mimeType || audioBlob.type || getPreferredMimeType() || "audio/webm";
         if (shouldDebugLogs) {
           console.log("[transcription] batch upload start", {
             chunkIndex,
@@ -665,18 +719,54 @@ export function useTranscriptionWorkflow(
           throw new Error(reason);
         }
 
-        const result = await streamingClient.sendChunk({
-          blob: audioBlob,
-          chunkIndex,
-          source: nextSource,
-          contentType,
-        });
+        let result: Awaited<ReturnType<StreamingTranscriptClient["sendChunk"]>> | null = null;
+
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            result = await streamingClient.sendChunk({
+              blob: audioBlob,
+              chunkIndex,
+              source: nextSource,
+              contentType,
+            });
+            break;
+          } catch (streamingError) {
+            const message =
+              streamingError instanceof Error
+                ? streamingError.message
+                : "Unable to process the latest audio chunk.";
+            const shouldRetry = attempt === 0 && shouldResetStreamingClient(message);
+
+            if (!shouldRetry) {
+              throw streamingError;
+            }
+
+            console.warn("[transcription] streaming session reset after chunk failure", {
+              chunkIndex,
+              message,
+            });
+            resetStreamingClient(message);
+            streamingClient = await ensureStreamingClient("chunk-send");
+
+            if (!streamingClient) {
+              const reason = streamingFallbackReasonRef.current || message;
+              setTransportStatus("streaming-session-failed");
+              setTransportFallbackReason(reason);
+              throw new Error(reason);
+            }
+          }
+        }
+
+        if (!result) {
+          throw new Error("Unable to process the latest audio chunk.");
+        }
+
         setTransportStatus("streaming-session-connected");
         setTransportFallbackReason("");
         activeByteSizeRef.current += audioBlob.size;
         activeContentTypeRef.current = result.contentType || contentType;
 
-        const cleanedChunkText = cleanTranscriptText(result.text);
+        const cleanedChunkText = cleanTranscriptText(result.text) || result.text.trim();
         if (!cleanedChunkText) {
           if (shouldDebugLogs) {
             console.log("[transcription] transcript accepted: no speech detected", {
@@ -722,14 +812,19 @@ export function useTranscriptionWorkflow(
           );
         }
 
+        startTransition(() => {
+          setDraftSegment(pendingLiveSegmentRef.current);
+        });
+
         const bufferedText = pendingLiveSegmentRef.current;
         const bufferedWordCount = bufferedText.split(/\s+/).filter(Boolean).length;
         const bufferedAgeMs =
           pendingLiveSegmentAgeRef.current == null ? 0 : now - pendingLiveSegmentAgeRef.current;
+        const endsWithSentence = /[.?!]["']?\s*$/.test(bufferedText);
         const shouldFlushBufferedSegment =
-          bufferedWordCount >= MIN_LIVE_SEGMENT_WORDS ||
-          (bufferedWordCount >= 4 && /[.?!]["']?$/.test(bufferedText)) ||
-          bufferedAgeMs >= MAX_LIVE_SEGMENT_BUFFER_MS;
+          endsWithSentence ||
+          bufferedAgeMs >= MAX_LIVE_SEGMENT_BUFFER_MS ||
+          (bufferedWordCount >= 20 && bufferedAgeMs >= 2_000);
 
         if (!shouldFlushBufferedSegment) {
           setStatus("receiving-transcript");
@@ -777,14 +872,16 @@ export function useTranscriptionWorkflow(
           uploadError instanceof Error
             ? uploadError.message
             : "Unable to process the latest audio chunk.";
-        if (streamingClientRef.current) {
-          console.warn("[transcription] live chunk failed; keeping session alive", {
+        const canContinueSession =
+          streamingClientRef.current !== null || streamingConnectPromiseRef.current !== null;
+        if (canContinueSession) {
+          console.warn("[transcription] live chunk failed; session remains active", {
             chunkIndex,
             message,
           });
           setError(message);
           setFeedback("The latest live audio chunk failed, but the session is still listening.");
-          logStreamingSeam("create-failed", `chunkIndex=${chunkIndex};error=${message}`);
+          setStatus(transcriptRef.current.trim() ? "receiving-transcript" : "listening");
           return;
         }
         setError(message);
@@ -802,8 +899,9 @@ export function useTranscriptionWorkflow(
           errorMessage: message,
         });
       } finally {
-        setActiveUploads((current) => {
-          const nextValue = Math.max(0, current - 1);
+        inFlightChunkCountRef.current = Math.max(0, inFlightChunkCountRef.current - 1);
+        setActiveUploads(() => {
+          const nextValue = inFlightChunkCountRef.current;
           if (
             nextValue === 0 &&
             recorderRef.current?.state === "recording" &&
@@ -821,6 +919,8 @@ export function useTranscriptionWorkflow(
       flushPendingLiveSegment,
       logStreamingSeam,
       persistCurrentTranscript,
+      resetStreamingClient,
+      shouldResetStreamingClient,
       triggerAiQuestionDetection,
     ]
   );
@@ -909,16 +1009,6 @@ export function useTranscriptionWorkflow(
                 setStatus("failed");
               },
               onChunk: (chunk) => {
-                if (activeUploadsRef.current >= MAX_IN_FLIGHT_LIVE_CHUNKS) {
-                  console.warn("[transcription] live chunk skipped: too many uploads in flight", {
-                    inFlightUploads: activeUploadsRef.current,
-                    maxInFlightUploads: MAX_IN_FLIGHT_LIVE_CHUNKS,
-                    size: chunk.blob.size,
-                    durationMs: chunk.durationMs,
-                    engine: "pcm-pipeline",
-                  });
-                  return;
-                }
                 const chunkIndex = chunkIndexRef.current;
                 chunkIndexRef.current += 1;
                 if (shouldDebugLogs) {
@@ -930,7 +1020,7 @@ export function useTranscriptionWorkflow(
                     engine: "pcm-pipeline",
                   });
                 }
-                void processAudioChunk(chunk.blob, chunkIndex, nextSource);
+                void processAudioChunk(chunk.blob, chunkIndex, nextSource, chunk.contentType);
               },
             });
 
@@ -959,24 +1049,30 @@ export function useTranscriptionWorkflow(
           if (!event.data || event.data.size === 0) return;
 
           const blob = event.data;
-          console.log("[transcription] media chunk captured", {
-            size: blob.size,
-            type: blob.type || recorder.mimeType || "audio/webm",
-          });
+          if (shouldDebugLogs) {
+            console.log("[transcription] media chunk captured", {
+              size: blob.size,
+              type: blob.type || recorder.mimeType || "audio/webm",
+            });
+          }
 
           if (blob.size < MIN_RAW_CHUNK_BYTES) {
-            console.log("[transcription] chunk skipped: tiny media chunk", {
-              size: blob.size,
-              minimum: MIN_RAW_CHUNK_BYTES,
-            });
+            if (shouldDebugLogs) {
+              console.log("[transcription] chunk skipped: tiny media chunk", {
+                size: blob.size,
+                minimum: MIN_RAW_CHUNK_BYTES,
+              });
+            }
             return;
           }
 
           if (!seedChunkRef.current) {
             seedChunkRef.current = blob;
-            console.log("[transcription] chunk buffered as seed segment", {
-              size: blob.size,
-            });
+            if (shouldDebugLogs) {
+              console.log("[transcription] chunk buffered as seed segment", {
+                size: blob.size,
+              });
+            }
             return;
           }
 
@@ -987,11 +1083,13 @@ export function useTranscriptionWorkflow(
           const hasEnoughParts =
             pendingChunkPartsRef.current.length >= MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD;
           if (!hasEnoughBytes && !hasEnoughParts) {
-            console.log("[transcription] chunk buffered: awaiting larger batch", {
-              pendingParts: pendingChunkPartsRef.current.length,
-              pendingBytes: pendingChunkBytesRef.current,
-              targetBytes: MIN_UPLOAD_CHUNK_BYTES,
-            });
+            if (shouldDebugLogs) {
+              console.log("[transcription] chunk buffered: awaiting larger batch", {
+                pendingParts: pendingChunkPartsRef.current.length,
+                pendingBytes: pendingChunkBytesRef.current,
+                targetBytes: MIN_UPLOAD_CHUNK_BYTES,
+              });
+            }
             return;
           }
 
@@ -1001,10 +1099,12 @@ export function useTranscriptionWorkflow(
             { type: uploadType }
           );
           if (uploadBlob.size < MIN_UPLOAD_CHUNK_BYTES) {
-            console.log("[transcription] chunk skipped: upload batch below threshold", {
-              size: uploadBlob.size,
-              minimum: MIN_UPLOAD_CHUNK_BYTES,
-            });
+            if (shouldDebugLogs) {
+              console.log("[transcription] chunk skipped: upload batch below threshold", {
+                size: uploadBlob.size,
+                minimum: MIN_UPLOAD_CHUNK_BYTES,
+              });
+            }
             pendingChunkPartsRef.current = [];
             pendingChunkBytesRef.current = 0;
             return;
@@ -1012,12 +1112,14 @@ export function useTranscriptionWorkflow(
 
           const chunkIndex = chunkIndexRef.current;
           chunkIndexRef.current += 1;
-          console.log("[transcription] batch upload queued", {
-            chunkIndex,
-            size: uploadBlob.size,
-            contentType: uploadType,
-            parts: pendingChunkPartsRef.current.length + 1,
-          });
+          if (shouldDebugLogs) {
+            console.log("[transcription] batch upload queued", {
+              chunkIndex,
+              size: uploadBlob.size,
+              contentType: uploadType,
+              parts: pendingChunkPartsRef.current.length + 1,
+            });
+          }
           pendingChunkPartsRef.current = [];
           pendingChunkBytesRef.current = 0;
           void processAudioChunk(uploadBlob, chunkIndex, nextSource);
@@ -1324,6 +1426,7 @@ export function useTranscriptionWorkflow(
     status,
     transcript,
     latestSegment,
+    draftSegment,
     segments,
     selectedFileName,
     error,

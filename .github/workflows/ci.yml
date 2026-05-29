@@ -12,11 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         project:
-          - cloud-nexus-pilot
-          - devops-automation-agency
-          - cloud-security-digital-factory
-          - ai-automation-agency
-          - cloud-nexus-market
+          - apps/cloud-nexus-pilot
+          - apps/devops-automation-agency
+          - apps/cloud-security-digital-factory
+          - apps/ai-automation-agency
+          - apps/cloud-nexus-market
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,15 +24,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install dependencies
-        working-directory: ${{ matrix.project }}
+      - name: Install workspace dependencies
         run: npm install
+      - name: Install dependencies
+        run: npm install --workspace ${{ matrix.project }}
       - name: Lint
-        working-directory: ${{ matrix.project }}
-        run: npm run lint
+        run: npm run lint --workspace ${{ matrix.project }}
       - name: Typecheck
-        working-directory: ${{ matrix.project }}
-        run: npm run typecheck
+        run: npm run typecheck --workspace ${{ matrix.project }}
       - name: Build
-        working-directory: ${{ matrix.project }}
-        run: npm run build
+        run: npm run build --workspace ${{ matrix.project }}

@@ -90,7 +90,8 @@ export async function createLiveAudioPipeline(
   let stopped = false;
 
   const flush = (reason: "timer" | "buffer-threshold" | "close") => {
-    if (stopped && reason !== "close") return;
+    const allowFlushAfterStop = reason === "close";
+    if (stopped && !allowFlushAfterStop) return;
     const requiredFrames =
       reason === "timer" ? minFramesForTimedFlush : reason === "close" ? 1 : minFramesPerChunk;
     if (shouldDebugLogs) {
@@ -185,6 +186,7 @@ export async function createLiveAudioPipeline(
     if (stopped) return;
     window.clearInterval(timer);
     try {
+      // Allow the terminal flush to drain any buffered PCM before shutdown fully blocks flushes.
       flush("close");
       stopped = true;
       processor.disconnect();

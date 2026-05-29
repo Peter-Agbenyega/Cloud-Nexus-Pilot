@@ -15,15 +15,71 @@ function toChunkIndex(value: string | null): number {
   return Number.isFinite(numeric) && numeric >= 0 ? Math.floor(numeric) : 0;
 }
 
+const ACCEPTED_CONTENT_TYPES = new Set([
+  "audio/wav",
+  "audio/webm",
+  "audio/ogg",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/mp4",
+  "video/webm",
+]);
+
+function toHttpStatus(code: string): number {
+  if (code === "transcript_stream_session_missing") return 404;
+  if (code === "transcript_backend_unavailable") return 503;
+  return 400;
+}
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await context.params;
-  const arrayBuffer = await request.arrayBuffer();
-  const chunkIndex = toChunkIndex(request.headers.get("X-Chunk-Index"));
+  const contentTypeHeader = request.headers.get("content-type")?.trim() || "";
+  const chunkIndexHeader = request.headers.get("X-Chunk-Index");
+  const chunkIndex = toChunkIndex(chunkIndexHeader);
   const source = toSafeTranscriptSource(request.headers.get("X-Transcript-Source"));
-  const contentType = request.headers.get("content-type")?.trim() || "audio/webm";
+
+  // Route-level validation — returns structured errors before hitting the session store.
+  const mimeType = contentTypeHeader.split(";")[0]?.trim().toLowerCase() || "";
+  if (!mimeType || !ACCEPTED_CONTENT_TYPES.has(mimeType)) {
+    console.warn("[transcription][stream-session] chunk-rejected: invalid_content_type", {
+      sessionId,
+      chunkIndex,
+      contentType: contentTypeHeader,
+    });
+    return NextResponse.json(
+      {
+        error: {
+          code: "invalid_content_type",
+          message: `Unsupported audio content-type: "${contentTypeHeader}". Expected one of: ${[...ACCEPTED_CONTENT_TYPES].join(", ")}.`,
+        },
+      },
+      { status: 415 }
+    );
+  }
+
+  const arrayBuffer = await request.arrayBuffer();
+
+  if (arrayBuffer.byteLength === 0) {
+    console.warn("[transcription][stream-session] chunk-rejected: empty_payload", {
+      sessionId,
+      chunkIndex,
+      contentType: contentTypeHeader,
+    });
+    return NextResponse.json(
+      {
+        error: {
+          code: "empty_payload",
+          message: "Audio chunk body is empty.",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const contentType = contentTypeHeader || "audio/webm";
   console.info("[transcription][stream-session] chunk-received", {
     sessionId,
     chunkIndex,
@@ -43,13 +99,15 @@ export async function POST(
   });
 
   if (!result.ok) {
+    const status = toHttpStatus(result.code);
     console.warn("[transcription][stream-session] chunk-failed", {
       sessionId,
       chunkIndex,
       code: result.code,
       message: result.message,
+      detail: result.detail,
+      status,
     });
-    const status = result.code === "transcript_stream_session_missing" ? 404 : 400;
     return NextResponse.json(
       {
         error: {

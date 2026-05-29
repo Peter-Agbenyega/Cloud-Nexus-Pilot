@@ -1,6 +1,6 @@
-# CloudNexus-Empire
+# CloudNexus-Pilot
 
-CloudNexus-Empire is a single monorepo containing five Next.js + TypeScript + Tailwind projects for startup, agency, and digital product experiments.
+CloudNexus-Pilot is a single GitHub monorepo for five independent Next.js + TypeScript + Tailwind apps, organized with `apps/`, `packages/`, and Turborepo orchestration.
 
 ## Projects
 
@@ -12,29 +12,36 @@ CloudNexus-Empire is a single monorepo containing five Next.js + TypeScript + Ta
 
 ## Monorepo Structure
 
+- `apps/`: independently deployable Next.js apps
+- `packages/`: prepared shared packages for UI, config, ESLint, and types
 - `docs/`: shared planning and execution docs for the full workspace
-- `.github/workflows/`: shared CI and deployment placeholders
+- `.github/workflows/`: monorepo CI and deploy placeholders
 - `tools/`: local automation and scaffolding helpers
-- `<project>/`: self-contained Next.js application with its own app, components, docs, and config
 
 ## Getting Started
 
 1. Review `docs/TASKS.md` for manual setup items.
 2. Copy `.env.example` to `.env.local` if you want shared root-level notes.
-3. Install dependencies per project:
-   - `npm install --prefix cloud-nexus-pilot`
-   - `npm install --prefix devops-automation-agency`
-   - `npm install --prefix cloud-security-digital-factory`
-   - `npm install --prefix ai-automation-agency`
-   - `npm install --prefix cloud-nexus-market`
-4. Run an app locally with `npm run dev --prefix <project-folder>`.
+3. Install workspace dependencies from the repo root with `npm install`.
+4. Run the priority app locally with `npm run dev:pilot`.
+5. Run any individual app directly with `npm run dev --workspace apps/<app-name>`.
 
 ## Quality Checks
 
-- `npm run lint --prefix <project-folder>`
-- `npm run typecheck --prefix <project-folder>`
-- `npm run build --prefix <project-folder>`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run build`
+- `npm run lint --workspace apps/cloud-nexus-pilot`
+- `npm run build --workspace apps/devops-automation-agency`
+
+## App Paths
+
+- `apps/cloud-nexus-pilot`
+- `apps/devops-automation-agency`
+- `apps/cloud-security-digital-factory`
+- `apps/ai-automation-agency`
+- `apps/cloud-nexus-market`
 
 ## GitHub Target
 
-This workspace is intended to live in a single GitHub repository named `CloudNexus-Empire`.
+This workspace is intended to live in a single GitHub repository named `CloudNexus-Pilot`.

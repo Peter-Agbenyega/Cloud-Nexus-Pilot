@@ -59,6 +59,7 @@ function toErrorMessage(error: unknown, fallback: string): string {
 
 export async function createStreamingTranscriptClient(options?: {
   onLog?: (entry: StreamingClientLog) => void;
+  onTranscript?: (response: TranscriptionResponse) => void;
   connectTimeoutMs?: number;
   chunkTimeoutMs?: number;
 }): Promise<StreamingTranscriptClient> {
@@ -115,6 +116,7 @@ export async function createStreamingTranscriptClient(options?: {
       });
     }
     pending.resolve(response);
+    options?.onTranscript?.(response);
   };
 
   const rejectPendingChunk = (
@@ -272,63 +274,95 @@ export async function createStreamingTranscriptClient(options?: {
         });
       });
 
-      let response: Response;
-      try {
-        response = await fetch(`/api/transcribe/stream/session/${sessionId}/chunk`, {
-          method: "POST",
-          headers: {
-            "Content-Type": params.contentType,
-            "X-Chunk-Index": String(params.chunkIndex),
-            "X-Transcript-Source": params.source,
-          },
-          body: params.blob,
-        });
-      } catch (error) {
-        const message = toErrorMessage(
-          error,
-          "Unable to send audio chunk to streaming transcription session."
-        );
-        rejectPendingChunk(params.chunkIndex, new Error(message), "chunk-reject");
-        throw new Error(message);
-      }
+      void fetch(`/api/transcribe/stream/session/${sessionId}/chunk`, {
+        method: "POST",
+        headers: {
+          "Content-Type": params.contentType,
+          "X-Chunk-Index": String(params.chunkIndex),
+          "X-Transcript-Source": params.source,
+        },
+        body: params.blob,
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const fallback = "Unable to send audio chunk to streaming transcription session.";
+            try {
+              const body = (await response.json()) as {
+                error?: { code?: string; message?: string; detail?: string };
+              };
+              const errorCode = body.error?.code || "unknown_error";
+              const errorMessage = body.error?.message || fallback;
+              const errorDetail = body.error?.detail || "";
+              options?.onLog?.({
+                event: "chunk-ingest-failed",
+                sessionId,
+                chunkIndex: params.chunkIndex,
+                status: response.status,
+                detail: [errorCode, errorMessage, errorDetail].filter(Boolean).join(": "),
+              });
+              console.error("[transcription][streaming] chunk-ingest-failed", {
+                sessionId,
+                chunkIndex: params.chunkIndex,
+                status: response.status,
+                errorCode,
+                errorMessage,
+                errorDetail,
+                bytes: params.blob.size,
+                contentType: params.contentType,
+              });
+              rejectPendingChunk(
+                params.chunkIndex,
+                new Error([errorCode, errorMessage, errorDetail].filter(Boolean).join(": ")),
+                "chunk-reject"
+              );
+            } catch (error) {
+              const msg = toErrorMessage(error, fallback);
+              options?.onLog?.({
+                event: "chunk-ingest-failed",
+                sessionId,
+                chunkIndex: params.chunkIndex,
+                status: response.status,
+                detail: msg,
+              });
+              console.error("[transcription][streaming] chunk-ingest-failed (body-parse-error)", {
+                sessionId,
+                chunkIndex: params.chunkIndex,
+                status: response.status,
+                parseError: msg,
+                bytes: params.blob.size,
+                contentType: params.contentType,
+              });
+              rejectPendingChunk(
+                params.chunkIndex,
+                new Error(msg),
+                "chunk-reject"
+              );
+            }
+            return;
+          }
 
-      if (!response.ok) {
-        clearPendingChunk(params.chunkIndex);
-        options?.onLog?.({
-          event: "chunk-ingest-failed",
-          sessionId,
-          chunkIndex: params.chunkIndex,
-          status: response.status,
-          detail: "Chunk ingest route returned a non-OK response.",
-        });
-        const fallback = "Unable to send audio chunk to streaming transcription session.";
-        try {
-          const body = (await response.json()) as {
-            error?: { code?: string; message?: string; detail?: string };
-          };
-          throw new Error(
-            [body.error?.code, body.error?.message || fallback, body.error?.detail || ""]
-              .filter(Boolean)
-              .join(": ")
+          options?.onLog?.({
+            event: "chunk-ingest-success",
+            sessionId,
+            chunkIndex: params.chunkIndex,
+            status: response.status,
+          });
+          if (shouldDebugLogs) {
+            console.log("[transcription][streaming] chunk-send-success", {
+              sessionId,
+              chunkIndex: params.chunkIndex,
+              status: response.status,
+            });
+          }
+        })
+        .catch((error) => {
+          const message = toErrorMessage(
+            error,
+            "Unable to send audio chunk to streaming transcription session."
           );
-        } catch (error) {
-          throw new Error(toErrorMessage(error, fallback));
-        }
-      }
-
-      options?.onLog?.({
-        event: "chunk-ingest-success",
-        sessionId,
-        chunkIndex: params.chunkIndex,
-        status: response.status,
-      });
-      if (shouldDebugLogs) {
-        console.log("[transcription][streaming] chunk-send-success", {
-          sessionId,
-          chunkIndex: params.chunkIndex,
-          status: response.status,
+          rejectPendingChunk(params.chunkIndex, new Error(message), "chunk-reject");
         });
-      }
+
       return pending;
     },
     async stop() {

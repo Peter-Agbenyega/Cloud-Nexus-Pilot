@@ -1,4 +1,4 @@
-const FALLBACK_API_BASE_URL = "http://127.0.0.1:8010";
+const DEV_FALLBACK_API_BASE_URL = "http://127.0.0.1:8010";
 
 function getConfiguredApiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "";
@@ -20,29 +20,26 @@ function isLocalHost(host: string): boolean {
 
 export function getApiBaseUrl(): string {
   const configuredApiBaseUrl = getConfiguredApiBaseUrl();
-  const browserOrigin = getBrowserOrigin();
   const browserHost = getBrowserHost();
   const isLocalBrowserOrigin = isLocalHost(browserHost);
+  const isDev = process.env.NODE_ENV === "development";
 
-  if (!configuredApiBaseUrl) return FALLBACK_API_BASE_URL;
-
-  if (process.env.NODE_ENV !== "development" && isLocalBrowserOrigin && browserOrigin) {
-    return browserOrigin;
-  }
-
-  if (process.env.NODE_ENV !== "development" || typeof window === "undefined") {
+  if (configuredApiBaseUrl) {
     return configuredApiBaseUrl;
   }
 
-  if (!isLocalBrowserOrigin) return configuredApiBaseUrl;
-
-  try {
-    const apiUrl = new URL(configuredApiBaseUrl);
-    const isLocalApi = isLocalHost(apiUrl.hostname);
-    return isLocalApi ? configuredApiBaseUrl : FALLBACK_API_BASE_URL;
-  } catch {
-    return FALLBACK_API_BASE_URL;
+  if (isDev || isLocalBrowserOrigin) {
+    return DEV_FALLBACK_API_BASE_URL;
   }
+
+  if (typeof window !== "undefined") {
+    console.error(
+      "[api-base-url] NEXT_PUBLIC_API_BASE_URL is not set. API calls will fail in production. " +
+      "Set this env var in your Vercel project settings."
+    );
+  }
+
+  return "";
 }
 
 export function getApiBaseUrlDiagnostics() {
@@ -51,7 +48,7 @@ export function getApiBaseUrlDiagnostics() {
   const browserHost = getBrowserHost();
 
   return {
-    fallbackApiBaseUrl: FALLBACK_API_BASE_URL,
+    fallbackApiBaseUrl: DEV_FALLBACK_API_BASE_URL,
     configuredApiBaseUrl,
     browserOrigin,
     browserHost,

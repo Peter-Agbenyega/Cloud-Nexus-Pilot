@@ -15,17 +15,20 @@ const commonPackages = {
     typecheck: "tsc --noEmit",
   },
   dependencies: {
-    next: "15.2.4",
+    next: "15.2.6",
     react: "19.0.0",
     "react-dom": "19.0.0",
   },
   devDependencies: {
+    "@next/eslint-plugin-next": "15.2.6",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     autoprefixer: "^10.4.21",
     eslint: "^9.22.0",
-    "eslint-config-next": "15.2.4",
+    "eslint-config-next": "15.2.6",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     postcss: "^8.5.3",
     tailwindcss: "^3.4.17",
     typescript: "^5.8.2",
@@ -64,12 +67,14 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 `,
-  "postcss.config.mjs": `export default {
+  "postcss.config.mjs": `const config = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
   },
 };
+
+export default config;
 `,
   "tailwind.config.ts": `import type { Config } from "tailwindcss";
 
@@ -124,9 +129,27 @@ export default config;
   "exclude": ["node_modules"]
 }
 `,
-  "eslint.config.mjs": `import nextVitals from "eslint-config-next/core-web-vitals";
+  "eslint.config.mjs": `import { defineConfig, globalIgnores } from "eslint/config";
+import { FlatCompat } from "@eslint/eslintrc";
+import nextVitals from "eslint-config-next/core-web-vitals.js";
 
-export default [...nextVitals];
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
+
+const nextVitalsConfig = Array.isArray(nextVitals)
+  ? nextVitals
+  : compat.config(nextVitals);
+
+export default defineConfig([
+  ...nextVitalsConfig,
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
 `,
   "app/globals.css": `@tailwind base;
 @tailwind components;
@@ -1461,7 +1484,7 @@ function pascal(value) {
 }
 
 for (const project of projects) {
-  const projectRoot = path.join(root, project.slug);
+  const projectRoot = path.join(root, "apps", project.slug);
   const siteConfig = {
     name: project.name,
     brandMark: project.brandMark,

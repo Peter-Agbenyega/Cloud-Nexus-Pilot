@@ -1,10 +1,16 @@
+import "./ws-patch";
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
+import WebSocket from "ws";
+const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type DeepgramListenResponse = {
+  type?: string;
   metadata?: {
     duration?: number;
   };
+  is_final?: boolean;
+  speech_final?: boolean;
   results?: {
     channels?: Array<{
       alternatives?: Array<{
@@ -15,6 +21,11 @@ type DeepgramListenResponse = {
       }>;
     }>;
   };
+};
+
+type DeepgramStreamingResultMeta = {
+  isFinal: boolean;
+  speechFinal: boolean;
 };
 
 export class DeepgramTranscriptionError extends Error {
@@ -71,6 +82,27 @@ function applyDeepgramAudioHints(url: URL, contentType: string) {
   }
 }
 
+function applyDeepgramStreamingOptions(url: URL, contentType: string) {
+  url.searchParams.set("model", "nova-2");
+  url.searchParams.set("language", "en-US");
+  url.searchParams.set("interim_results", "true");
+  url.searchParams.set("punctuate", "true");
+  url.searchParams.set("smart_format", "true");
+  url.searchParams.set("endpointing", "300");
+  url.searchParams.set("vad_events", "true");
+  url.searchParams.set("diarize", "true");
+
+  const mimeType = extractMimeType(contentType);
+  if (mimeType === "audio/wav") {
+    url.searchParams.set("encoding", "linear16");
+    url.searchParams.set("sample_rate", "16000");
+    url.searchParams.set("channels", "1");
+    return;
+  }
+
+  applyDeepgramAudioHints(url, contentType);
+}
+
 function getTranscriptFromDeepgram(payload: DeepgramListenResponse): string {
   const transcript =
     payload.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim() ?? "";
@@ -113,11 +145,214 @@ function getDurationMs(payload: DeepgramListenResponse): number | null {
   return Math.round(seconds * 1000);
 }
 
+function buildTranscriptionResponse(params: {
+  payload: DeepgramListenResponse;
+  chunkIndex: number;
+  source: TranscriptSource;
+  deepgramContentType: string;
+}): TranscriptionResponse {
+  return {
+    text: getTranscriptFromDeepgram(params.payload),
+    chunkIndex: params.chunkIndex,
+    source: params.source,
+    contentType: params.deepgramContentType,
+    durationMs: getDurationMs(params.payload),
+    speakerId: getSpeakerIdFromDeepgram(params.payload),
+  };
+}
+
+function stripWaveHeader(arrayBuffer: ArrayBuffer): Buffer {
+  const bytes = new Uint8Array(arrayBuffer);
+  const hasWaveHeader =
+    bytes.length >= 44 &&
+    String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.slice(8, 12)) === "WAVE";
+
+  return Buffer.from(hasWaveHeader ? bytes.slice(44) : bytes);
+}
+
+async function transcribeWithDeepgramStreaming(
+  params: {
+    arrayBuffer: ArrayBuffer;
+    requestContentType: string;
+    chunkIndexHeader: string | null;
+    sourceHeader: string | null;
+    onStreamingResult?: (
+      response: TranscriptionResponse,
+      meta: DeepgramStreamingResultMeta
+    ) => void;
+  },
+  deepgramApiKey: string
+): Promise<TranscriptionResponse> {
+  const requestContentType = params.requestContentType?.trim() || "audio/webm";
+  const deepgramContentType = toDeepgramContentType(requestContentType);
+  const chunkIndex = toChunkIndex(params.chunkIndexHeader);
+  const source = toSafeTranscriptSource(params.sourceHeader);
+  const deepgramUrl = new URL("wss://api.deepgram.com/v1/listen");
+  applyDeepgramStreamingOptions(deepgramUrl, deepgramContentType);
+
+  const audioPayload =
+    extractMimeType(deepgramContentType) === "audio/wav"
+      ? stripWaveHeader(params.arrayBuffer)
+      : Buffer.from(new Uint8Array(params.arrayBuffer));
+
+  if (shouldDebugLogs) {
+    console.info("[transcription][deepgram] streaming-request", {
+      bytes: audioPayload.byteLength,
+      requestContentType,
+      deepgramContentType,
+      source,
+      chunkIndex,
+      url: deepgramUrl.toString(),
+    });
+  }
+
+  return await new Promise<TranscriptionResponse>((resolve, reject) => {
+    const socket = new WebSocket(deepgramUrl, {
+      headers: {
+        Authorization: `Token ${deepgramApiKey}`,
+      },
+    });
+
+    const timeoutId = setTimeout(() => {
+      socket.close();
+      reject(
+        new DeepgramTranscriptionError({
+          status: 504,
+          code: "transcript_processing_failed",
+          message: "Deepgram streaming transcription timed out.",
+          detail: `Timed out waiting for a streaming transcript for chunk ${chunkIndex}.`,
+        })
+      );
+    }, 15_000);
+
+    let settled = false;
+    let latestResponse: TranscriptionResponse | null = null;
+    let finalResponse: TranscriptionResponse | null = null;
+
+    const finish = (response: TranscriptionResponse) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      if (
+        socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING
+      ) {
+        socket.close();
+      }
+      resolve(response);
+    };
+
+    const fail = (error: DeepgramTranscriptionError) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      if (
+        socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING
+      ) {
+        socket.close();
+      }
+      reject(error);
+    };
+
+    socket.on("open", () => {
+      socket.send(audioPayload, { binary: true });
+      socket.send(JSON.stringify({ type: "Finalize" }));
+    });
+
+    socket.on("message", (raw) => {
+      let payload: DeepgramListenResponse;
+      try {
+        payload = JSON.parse(raw.toString()) as DeepgramListenResponse;
+      } catch {
+        return;
+      }
+
+      const transcriptResponse = buildTranscriptionResponse({
+        payload,
+        chunkIndex,
+        source,
+        deepgramContentType,
+      });
+      const hasText = Boolean(transcriptResponse.text.trim());
+      const meta = {
+        isFinal: payload.is_final === true,
+        speechFinal: payload.speech_final === true,
+      };
+
+      if (shouldDebugLogs) {
+        console.info("[transcription][deepgram] streaming-message", {
+          chunkIndex,
+          type: payload.type ?? "Results",
+          isFinal: meta.isFinal,
+          speechFinal: meta.speechFinal,
+          hasText,
+          textLength: transcriptResponse.text.length,
+        });
+      }
+
+      if (hasText) {
+        latestResponse = transcriptResponse;
+        params.onStreamingResult?.(transcriptResponse, meta);
+      }
+
+      if (meta.isFinal && hasText) {
+        finalResponse = transcriptResponse;
+      }
+
+      if (meta.isFinal || meta.speechFinal) {
+        finish(
+          finalResponse ??
+            latestResponse ?? {
+              text: "",
+              chunkIndex,
+              source,
+              contentType: deepgramContentType,
+              durationMs: transcriptResponse.durationMs ?? null,
+              speakerId: transcriptResponse.speakerId ?? null,
+            }
+        );
+      }
+    });
+
+    socket.on("error", (error) => {
+      fail(
+        new DeepgramTranscriptionError({
+          status: 502,
+          code: "transcript_processing_failed",
+          message: "Deepgram streaming connection failed.",
+          detail: error instanceof Error ? error.message : "Unknown WebSocket error.",
+        })
+      );
+    });
+
+    socket.on("close", () => {
+      if (settled) return;
+      finish(
+        finalResponse ??
+          latestResponse ?? {
+            text: "",
+            chunkIndex,
+            source,
+            contentType: deepgramContentType,
+            durationMs: null,
+            speakerId: null,
+          }
+      );
+    });
+  });
+}
+
 export async function transcribeWithDeepgram(params: {
   arrayBuffer: ArrayBuffer;
   requestContentType: string;
   chunkIndexHeader: string | null;
   sourceHeader: string | null;
+  onStreamingResult?: (
+    response: TranscriptionResponse,
+    meta: DeepgramStreamingResultMeta
+  ) => void;
 }): Promise<TranscriptionResponse> {
   const deepgramApiKey = getDeepgramApiKey();
   if (!deepgramApiKey) {
@@ -138,6 +373,10 @@ export async function transcribeWithDeepgram(params: {
     });
   }
 
+  if (params.onStreamingResult) {
+    return transcribeWithDeepgramStreaming(params, deepgramApiKey);
+  }
+
   const requestContentType = params.requestContentType?.trim() || "audio/webm";
   const deepgramContentType = toDeepgramContentType(requestContentType);
   const chunkIndex = toChunkIndex(params.chunkIndexHeader);
@@ -150,14 +389,16 @@ export async function transcribeWithDeepgram(params: {
   deepgramUrl.searchParams.set("smart_format", "true");
   deepgramUrl.searchParams.set("diarize", "true");
   applyDeepgramAudioHints(deepgramUrl, deepgramContentType);
-  console.info("[transcription][deepgram] request", {
-    bytes: params.arrayBuffer.byteLength,
-    requestContentType,
-    deepgramContentType,
-    source,
-    chunkIndex,
-    url: deepgramUrl.toString(),
-  });
+  if (shouldDebugLogs) {
+    console.info("[transcription][deepgram] request", {
+      bytes: params.arrayBuffer.byteLength,
+      requestContentType,
+      deepgramContentType,
+      source,
+      chunkIndex,
+      url: deepgramUrl.toString(),
+    });
+  }
 
   const deepgramResponse = await fetch(deepgramUrl, {
     method: "POST",
@@ -205,23 +446,21 @@ export async function transcribeWithDeepgram(params: {
   }
 
   const payload = (await deepgramResponse.json()) as DeepgramListenResponse;
-  const transcriptText = getTranscriptFromDeepgram(payload);
-  const durationMs = getDurationMs(payload);
-  const speakerId = getSpeakerIdFromDeepgram(payload);
-  console.info("[transcription][deepgram] response", {
-    chunkIndex,
-    status: deepgramResponse.status,
-    transcriptLength: transcriptText.length,
-    hasText: Boolean(transcriptText.trim()),
-    durationMs: durationMs ?? null,
-    speakerId,
-  });
-  return {
-    text: transcriptText,
+  const response = buildTranscriptionResponse({
+    payload,
     chunkIndex,
     source,
-    contentType: deepgramContentType,
-    durationMs,
-    speakerId,
-  };
+    deepgramContentType,
+  });
+  if (shouldDebugLogs) {
+    console.info("[transcription][deepgram] response", {
+      chunkIndex,
+      status: deepgramResponse.status,
+      transcriptLength: response.text.length,
+      hasText: Boolean(response.text.trim()),
+      durationMs: response.durationMs ?? null,
+      speakerId: response.speakerId ?? null,
+    });
+  }
+  return response;
 }

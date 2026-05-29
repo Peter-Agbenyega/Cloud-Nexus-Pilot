@@ -98,6 +98,44 @@ export const supabaseConfigDiagnostics = {
   authSigninEndpoint: supabaseSigninEndpoint,
 };
 
+export async function checkSupabaseConnectivity(): Promise<{
+  reachable: boolean;
+  status: number | null;
+  error: string;
+  latencyMs: number;
+}> {
+  if (!supabaseUrl) {
+    return { reachable: false, status: null, error: "Supabase URL not configured", latencyMs: 0 };
+  }
+
+  const start = Date.now();
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/health`, {
+      method: "GET",
+      signal: AbortSignal.timeout(8000),
+    });
+    const latencyMs = Date.now() - start;
+    return {
+      reachable: response.ok,
+      status: response.status,
+      error: response.ok ? "" : `HTTP ${response.status}`,
+      latencyMs,
+    };
+  } catch (err) {
+    const latencyMs = Date.now() - start;
+    const message = err instanceof Error ? err.message : "Unknown fetch error";
+    const isDns = /ENOTFOUND|ERR_NAME_NOT_RESOLVED|Failed to fetch/i.test(message);
+    return {
+      reachable: false,
+      status: null,
+      error: isDns
+        ? `DNS resolution failed for ${supabaseUrl}. The Supabase project may be paused, deleted, or the project ref is incorrect.`
+        : message,
+      latencyMs,
+    };
+  }
+}
+
 type SupabaseAuthErrorLike = {
   message?: string;
   status?: number;

@@ -1,0 +1,27 @@
+{
+  "name": "@cloudnexus/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'db: no lint configured'",
+    "migrate": "npm run build && node dist/migrate.js",
+    "seed": "npm run build && node dist/seed.js"
+  },
+  "dependencies": {
+    "@cloudnexus/shared": "0.1.0",
+    "better-sqlite3": "^12.2.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.13.10",
+    "@types/pg": "^8.15.5",
+    "typescript": "^5.8.2"
+  }
+}

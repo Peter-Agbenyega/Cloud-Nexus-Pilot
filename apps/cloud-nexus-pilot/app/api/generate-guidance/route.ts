@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_SONNET_MODEL?.trim() || "claude-3-5-sonnet-latest";
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "gpt-4.1-mini";
 const MAX_QUESTION_CHARS = 500;
 const MAX_CONTEXT_CHARS = 6_000;
 
@@ -21,50 +21,14 @@ function sanitizeText(value: unknown, maxChars: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxChars) : "";
 }
 
-function buildSystemPrompt(interviewMode: string) {
-  const normalizedMode = interviewMode.trim().toLowerCase();
-  const basePrompt = [
-    "You are Cloud Nexus Pilot, a live interview copilot.",
-    "Your job is to generate short, useful answer guidance for the candidate in real time.",
-    "Do not mention being an AI or that you saw a transcript.",
-    "Be concrete, fast to scan, and safe for in-call use.",
-    "Prefer bullets and short sections over long paragraphs.",
-    "Ground the guidance in the provided question and transcript context only.",
-  ];
-
-  if (normalizedMode === "technical") {
-    basePrompt.push(
-      "Optimize for technical interviews.",
-      "Return: 1) direct answer angle, 2) key technical points, 3) a concise example or tradeoff."
-    );
-  } else if (normalizedMode === "behavioral") {
-    basePrompt.push(
-      "Optimize for behavioral interviews.",
-      "Return: 1) the story angle, 2) STAR bullets, 3) the business/result emphasis."
-    );
-  } else if (normalizedMode === "system_design") {
-    basePrompt.push(
-      "Optimize for system design interviews.",
-      "Return: 1) framing, 2) architecture/components, 3) tradeoffs and scaling risks."
-    );
-  } else if (normalizedMode === "comparison") {
-    basePrompt.push(
-      "Optimize for comparison questions.",
-      "Return: 1) clear recommendation, 2) side-by-side tradeoffs, 3) when to choose each option."
-    );
-  } else if (normalizedMode === "follow_up") {
-    basePrompt.push(
-      "Optimize for follow-up questions.",
-      "Answer the exact follow-up directly, then reinforce the strongest supporting detail."
-    );
-  } else {
-    basePrompt.push(
-      "Optimize for general interview guidance.",
-      "Return: 1) answer angle, 2) supporting bullets, 3) concise closing line."
-    );
-  }
-
-  return basePrompt.join("\n");
+function buildSystemPrompt() {
+  return [
+    "You are an expert interview coach. Give short, sharp, confident answers first, then optional deeper explanation.",
+    "Start with a direct 1-2 sentence answer immediately.",
+    "Then continue with concise bullet points that deepen or support the answer.",
+    "Keep the answer practical and interview-ready.",
+    "Do not mention being an AI.",
+  ].join("\n");
 }
 
 function buildUserPrompt(input: {
@@ -75,7 +39,6 @@ function buildUserPrompt(input: {
 }) {
   return [
     `Interview mode: ${input.interviewMode || "general"}`,
-    input.promptRef ? `Prompt reference: ${input.promptRef}` : null,
     "",
     "Question:",
     input.question,
@@ -83,7 +46,9 @@ function buildUserPrompt(input: {
     "Transcript context:",
     input.transcriptContext || "No additional transcript context provided.",
     "",
-    "Produce live answer guidance that is immediately usable.",
+    "Answer immediately.",
+    "The first output must be a short answer in 1-2 sentences.",
+    "Then continue with bullet points only.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -111,30 +76,32 @@ export async function POST(request: Request) {
         return;
       }
 
-      const anthropicApiKey = process.env.ANTHROPIC_API_KEY?.trim() || "";
-      if (!anthropicApiKey) {
+      const openAiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
+      if (!openAiApiKey) {
         await streamFailure(
           controller,
-          "ANTHROPIC_API_KEY is not configured on the server, so live guidance is unavailable."
+          "OPENAI_API_KEY is not configured on the server, so live guidance is unavailable."
         );
         return;
       }
 
       try {
-        const anthropicResponse = await fetch(ANTHROPIC_API_URL, {
+        const openAiResponse = await fetch(OPENAI_API_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": anthropicApiKey,
-            "anthropic-version": "2023-06-01",
+            Authorization: `Bearer ${openAiApiKey}`,
           },
           body: JSON.stringify({
-            model: ANTHROPIC_MODEL,
-            max_tokens: 500,
-            temperature: 0.2,
+            model: OPENAI_MODEL,
+            max_completion_tokens: 500,
+            temperature: 0.3,
             stream: true,
-            system: buildSystemPrompt(interviewMode),
             messages: [
+              {
+                role: "system",
+                content: buildSystemPrompt(),
+              },
               {
                 role: "user",
                 content: buildUserPrompt({
@@ -150,7 +117,7 @@ export async function POST(request: Request) {
           signal: request.signal,
         });
 
-        if (!anthropicResponse.ok || !anthropicResponse.body) {
+        if (!openAiResponse.ok || !openAiResponse.body) {
           await streamFailure(
             controller,
             "The guidance model did not return a usable stream. Please try again."
@@ -158,7 +125,7 @@ export async function POST(request: Request) {
           return;
         }
 
-        const reader = anthropicResponse.body.getReader();
+        const reader = openAiResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
 
@@ -187,26 +154,20 @@ export async function POST(request: Request) {
               }
 
               const payload = JSON.parse(dataText) as {
-                type?: string;
-                delta?: { text?: string };
+                choices?: Array<{ delta?: { content?: string | null } }>;
                 error?: { message?: string };
               };
 
-              if (payload.type === "content_block_delta" && payload.delta?.text) {
-                controller.enqueue(toSseChunk({ type: "token", token: payload.delta.text }));
+              const token = payload.choices?.[0]?.delta?.content;
+              if (typeof token === "string" && token.length > 0) {
+                controller.enqueue(toSseChunk({ type: "chunk", content: token }));
               }
 
-              if (payload.type === "error") {
+              if (payload.error) {
                 await streamFailure(
                   controller,
                   payload.error?.message?.trim() || "The guidance model returned an error."
                 );
-                return;
-              }
-
-              if (payload.type === "message_stop") {
-                controller.enqueue(toSseChunk({ type: "done" }));
-                controller.close();
                 return;
               }
             }

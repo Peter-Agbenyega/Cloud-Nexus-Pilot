@@ -1,0 +1,22 @@
+{
+  "name": "cloud-nexus-empire",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run migrate:db && npm run seed:db && npm run dev --workspace apps/api",
+    "dev:pilot": "npm run dev --workspace apps/cloud-nexus-pilot",
+    "dev:api": "npm run dev --workspace apps/api",
+    "migrate:db": "npm run migrate --workspace packages/db",
+    "seed:db": "npm run seed --workspace packages/db",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "build": "turbo run build"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6"
+  }
+}

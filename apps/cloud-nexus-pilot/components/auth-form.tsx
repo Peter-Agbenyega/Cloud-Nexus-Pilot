@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  checkSupabaseConnectivity,
   getSupabaseAuthErrorMessage,
   supabase,
   supabaseConfigError,
@@ -78,7 +79,15 @@ export function AuthForm({ mode }: AuthFormProps) {
         });
 
         if (signInError) {
-          setError(getSupabaseAuthErrorMessage(signInError, "signin"));
+          const baseMessage = getSupabaseAuthErrorMessage(signInError, "signin");
+          if (/could not reach Supabase/i.test(baseMessage)) {
+            const connectivity = await checkSupabaseConnectivity();
+            if (!connectivity.reachable) {
+              setError(`${baseMessage}\n\nConnectivity check: ${connectivity.error}`);
+              return;
+            }
+          }
+          setError(baseMessage);
           return;
         }
 
@@ -99,7 +108,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
 
       if (signUpError) {
-        setError(getSupabaseAuthErrorMessage(signUpError, "signup"));
+        const baseMessage = getSupabaseAuthErrorMessage(signUpError, "signup");
+        if (/could not reach Supabase/i.test(baseMessage)) {
+          const connectivity = await checkSupabaseConnectivity();
+          if (!connectivity.reachable) {
+            setError(`${baseMessage}\n\nConnectivity check: ${connectivity.error}`);
+            return;
+          }
+        }
+        setError(baseMessage);
         return;
       }
 

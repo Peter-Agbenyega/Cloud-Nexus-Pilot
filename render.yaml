@@ -1,0 +1,34 @@
+# Phase 1 scaffold only. Worker services/cron wiring are intentionally deferred.
+services:
+  - type: web
+    name: cloudnexus-api
+    runtime: node
+    region: ohio
+    plan: starter
+    rootDir: .
+    buildCommand: npm ci && npm run build --workspace packages/shared && npm run build --workspace packages/db && npm run build --workspace apps/api
+    startCommand: npm run start --workspace apps/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: AUTH_MODE
+        value: supabase
+      - key: CORS_ORIGIN
+        value: https://cloudnexuspilot.com,https://www.cloudnexuspilot.com
+      - key: DB_PROVIDER
+        value: postgres
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: UPSTASH_REDIS_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

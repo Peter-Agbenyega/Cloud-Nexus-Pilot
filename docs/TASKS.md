@@ -1,4 +1,4 @@
-# CloudNexus-Empire Tasks
+# CloudNexus-Pilot Tasks
 
 ## Manual Input Needed
 
@@ -10,8 +10,9 @@
 
 ## Recommended Next Steps
 
-- Run `npm install --prefix <project-folder>` for each project.
-- Run lint, typecheck, and build in each project after installation.
+- Run `npm install` from the repository root to hydrate all workspaces.
+- Run root checks with `npm run lint`, `npm run typecheck`, and `npm run build`.
+- Run app-specific checks with `npm run <script> --workspace apps/<app-name>` when isolating one project.
 - Replace placeholder content with real brand copy, product details, and case studies.
 - Decide which projects need auth, payments, booking, storage, or CRM integrations first.
 

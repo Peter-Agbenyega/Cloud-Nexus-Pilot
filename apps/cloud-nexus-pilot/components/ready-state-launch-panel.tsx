@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTranscriptionWorkflow } from "@/features/transcription/use-transcription-workflow";
 import type { InterviewIntent } from "@/lib/contracts/interview";
@@ -180,6 +180,7 @@ export function ReadyStateLaunchPanel({
   const [captureState, setCaptureState] = useState<LaunchCaptureState>(INITIAL_CAPTURE_STATE);
   const activeStreamRef = useRef<MediaStream | null>(null);
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
+  const lastAutoGuidanceQuestionRef = useRef<string>("");
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({
     repositoryMode: "local-only",
@@ -310,6 +311,7 @@ export function ReadyStateLaunchPanel({
     cancelActiveGuidanceRequest();
     stopTranscriptionCapture();
     stopActiveStream();
+    lastAutoGuidanceQuestionRef.current = "";
     sessionExecutionIdRef.current = null;
     setGuidanceText("");
     setGuidanceStatus("idle");
@@ -322,11 +324,11 @@ export function ReadyStateLaunchPanel({
     setLaunchFlowStep("ready");
   }
 
-  async function handleGetGuidance() {
+  const handleGetGuidance = useCallback(async function handleGetGuidance() {
     const detectedQuestion =
       transcriptionWorkflow.aiDetectedQuestion.trim() ||
       transcriptionWorkflow.latestDetectedQuestion.trim();
-    if (!detectedQuestion) return;
+    if (detectedQuestion.length < 10) return;
 
     cancelActiveGuidanceRequest();
     const abortController = new AbortController();
@@ -407,7 +409,11 @@ export function ReadyStateLaunchPanel({
         guidanceAbortControllerRef.current = null;
       }
     }
-  }
+  }, [
+    transcriptionWorkflow.aiDetectedQuestion,
+    transcriptionWorkflow.latestDetectedQuestion,
+    transcriptionWorkflow.segments,
+  ]);
 
   const liveStatus = getLiveStatusLabel({
     status: transcriptionWorkflow.status,
@@ -416,7 +422,31 @@ export function ReadyStateLaunchPanel({
   const preferredDetectedQuestion =
     transcriptionWorkflow.aiDetectedQuestion || transcriptionWorkflow.latestDetectedQuestion;
   const transcriptSegments = transcriptionWorkflow.segments;
+  const draftSegment = transcriptionWorkflow.draftSegment;
   const latestSegmentId = transcriptSegments.at(-1)?.id ?? null;
+
+  useEffect(() => {
+    if (launchFlowStep !== "live") {
+      lastAutoGuidanceQuestionRef.current = "";
+    }
+  }, [launchFlowStep]);
+
+  useEffect(() => {
+    const detectedQuestion = preferredDetectedQuestion.trim();
+
+    if (
+      launchFlowStep !== "live" ||
+      !detectedQuestion ||
+      guidanceStatus === "loading" ||
+      detectedQuestion === lastAutoGuidanceQuestionRef.current
+    ) {
+      return;
+    }
+
+    lastAutoGuidanceQuestionRef.current = detectedQuestion;
+    void handleGetGuidance();
+  }, [guidanceStatus, handleGetGuidance, launchFlowStep, preferredDetectedQuestion]);
+
   const questionSegmentIds = useMemo(() => {
     const detectedQuestion = preferredDetectedQuestion.trim();
     if (!detectedQuestion) {
@@ -470,7 +500,7 @@ export function ReadyStateLaunchPanel({
           </div>
 
           <div className={`mt-6 ${LOCKED_SUBSURFACE} min-h-[360px] p-6`}>
-            {transcriptSegments.length > 0 ? (
+            {transcriptSegments.length > 0 || draftSegment ? (
               <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
                 {transcriptSegments.map((segment) => {
                   const speaker = getSpeakerDisplay(segment.speakerId);
@@ -514,6 +544,18 @@ export function ReadyStateLaunchPanel({
                     </article>
                   );
                 })}
+                {draftSegment ? (
+                  <article className="rounded-2xl border border-slate-600/50 bg-slate-800/40 px-4 py-4 opacity-70">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-600/50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300 ring-1 ring-inset ring-slate-500/40">
+                        Live
+                      </span>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-base italic leading-8 text-slate-400">
+                      {draftSegment}
+                    </p>
+                  </article>
+                ) : null}
               </div>
             ) : transcriptionWorkflow.status === "failed" ? (
               <p className="text-base text-rose-200">Transcription unavailable. Retrying...</p>

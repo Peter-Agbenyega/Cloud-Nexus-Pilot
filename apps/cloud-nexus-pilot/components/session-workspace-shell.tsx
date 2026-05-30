@@ -1107,7 +1107,7 @@ function createInitialLiveMeetingTranscriptRuntimeState(): LiveMeetingTranscript
   return {
     status: "idle",
     detail:
-      "No local transcript runtime is active yet. Start or restore a session stream to run browser-local transcript capture with Deepgram transcription.",
+      "No local transcript runtime is active yet. Start or restore a session stream to run browser-local transcript capture with OpenAI transcription.",
     events: [],
     chunks: [],
   };
@@ -1651,7 +1651,7 @@ function createWorkspaceSessionRuntimeStateFromTranscription(input: {
     return {
       status: "active",
       detail: isCaptureRunning
-        ? "The browser-local transcript runtime is actively capturing or processing audio in this workspace shell. Live transcription requests run through the secure Deepgram server route."
+        ? "The browser-local transcript runtime is actively capturing or processing audio in this workspace shell. Live transcription requests run through the secure OpenAI server route."
         : "Saved or staged browser-local transcript context is active in this workspace shell. No answer-generation runtime or hidden orchestration is running.",
       metadata: {
         streamId: input.activeTranscriptRecord?.id ?? "browser-local-transcript-runtime",
@@ -1723,7 +1723,7 @@ function createWorkspaceTranscriptRuntimeStateFromTranscription(input: {
     return {
       status: input.status === "stopped" ? "stopped" : "active",
       detail:
-        "The workspace transcript lane is backed directly by the shared browser-local transcription runtime with Deepgram transcription. Only saved or captured local transcript content is shown here.",
+        "The workspace transcript lane is backed directly by the shared browser-local transcription runtime with OpenAI transcription. Only saved or captured local transcript content is shown here.",
       events: eventTimestamp
         ? [
             {
@@ -7443,8 +7443,8 @@ export function SessionWorkspaceShell({
                   <p className="font-semibold">Browser-Local Transcript Runtime</p>
                   <p className="mt-2 leading-7">
                     {demoMode
-                      ? "Shared browser-local transcript runtime. Deepgram transcription runs through the secure server route, and answer generation is still not active."
-                      : "This replaces the placeholder transcript/runtime section in the workspace shell with the same transcription runtime used on the standalone transcript route. It now performs real Deepgram transcription only, with no answer-generation orchestration."}
+                      ? "Shared browser-local transcript runtime. OpenAI transcription runs through the secure server route, and answer generation is still not active."
+                      : "This replaces the placeholder transcript/runtime section in the workspace shell with the same transcription runtime used on the standalone transcript route. It now performs real OpenAI transcription only, with no answer-generation orchestration."}
                   </p>
                   <p className="mt-2 leading-7">
                     {workspaceTranscriptCaptureSessionPlaceholder.statusLabel}:{" "}
@@ -7512,7 +7512,7 @@ export function SessionWorkspaceShell({
                 <p className="font-semibold">Live Session Transcript Runtime</p>
                 <p className="mt-2 leading-7">
                   A confirmed live stream is connected to the same Block C transcription workflow used
-                  by the transcript workspace. Deepgram transcription only, no answer generation.
+                  by the transcript workspace. OpenAI transcription only, no answer generation.
                 </p>
                 <div className="mt-5">
                   <TranscriptionRuntimeSurface

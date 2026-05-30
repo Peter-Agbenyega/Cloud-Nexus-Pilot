@@ -1,5 +1,5 @@
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
-import { transcribeWithDeepgram } from "@/lib/transcription/deepgram-transcribe";
+import { transcribeWithOpenAi } from "@/lib/transcription/openai-transcribe";
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type SessionEvent =
@@ -149,7 +149,7 @@ export async function processStreamingSessionChunk(params: {
   }
 
   try {
-    const response = await transcribeWithDeepgram({
+    const response = await transcribeWithOpenAi({
       arrayBuffer: params.arrayBuffer,
       requestContentType: params.contentType,
       chunkIndexHeader: String(params.chunkIndex),

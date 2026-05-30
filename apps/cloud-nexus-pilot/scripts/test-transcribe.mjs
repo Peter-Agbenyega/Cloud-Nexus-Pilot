@@ -30,7 +30,7 @@ function fail(message, detail, exitCode = 1) {
 function warnEmptyTranscript() {
   console.error("LAYER 1 TRANSCRIBE TEST: EMPTY TRANSCRIPT");
   console.error(
-    "Deepgram returned empty transcript — fixture may be silent or contain no recognizable speech."
+    "OpenAI returned an empty transcript. The fixture may be silent or contain no recognizable speech."
   );
   process.exit(2);
 }
@@ -85,7 +85,7 @@ async function main() {
     if (error instanceof Error && error.name === "AbortError") {
       fail(
         `Request to /api/transcribe timed out after ${timeoutMs}ms.`,
-        "The backend or Deepgram request did not complete before the timeout."
+        "The backend or OpenAI request did not complete before the timeout."
       );
     }
     fail(

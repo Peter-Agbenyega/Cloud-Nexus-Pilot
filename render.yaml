@@ -30,5 +30,5 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
+      - key: OPENAI_TRANSCRIPTION_MODEL
+        value: gpt-4o-mini-transcribe

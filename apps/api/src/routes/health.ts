@@ -9,8 +9,7 @@ export const healthRoute: FastifyPluginAsync = async (app) => {
       uptime: process.uptime(),
       dbProvider: process.env.DB_PROVIDER ?? "sqlite",
       aiProviders: {
-        openai: process.env.OPENAI_API_KEY ? "configured" : "mock",
-        anthropic: process.env.ANTHROPIC_API_KEY ? "configured" : "mock"
+        openai: process.env.OPENAI_API_KEY ? "configured" : "mock"
       }
     };
   });

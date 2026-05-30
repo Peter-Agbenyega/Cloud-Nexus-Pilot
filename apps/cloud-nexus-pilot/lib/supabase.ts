@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const rawSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
 const rawSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
+const expectedCloudNexusSupabaseUrl = "https://wwhxaligcyqpnpdfxynr.supabase.co";
 
 function isPlaceholderSupabaseUrl(value: string): boolean {
   return /your-project-ref/i.test(value) || /example\.supabase\.co/i.test(value);
@@ -40,6 +41,9 @@ if (rawSupabaseUrl && !hasPlaceholderSupabaseUrl) {
 const hasValidSupabaseUrl =
   Boolean(parsedSupabaseUrl) &&
   Boolean(parsedSupabaseUrl?.hostname?.endsWith(".supabase.co"));
+const matchesExpectedCloudNexusProject =
+  !parsedSupabaseUrl ||
+  rawSupabaseUrl.replace(/\/+$/, "") === expectedCloudNexusSupabaseUrl;
 const hasValidAnonKey =
   Boolean(rawSupabaseAnonKey) &&
   !hasPlaceholderAnonKey &&
@@ -76,6 +80,9 @@ export const supabaseConfigError = (() => {
   if (!hasValidSupabaseUrl) {
     return "Supabase URL host is invalid. It must end with .supabase.co";
   }
+  if (!matchesExpectedCloudNexusProject) {
+    return `Supabase URL points to ${parsedSupabaseUrl?.origin ?? "an unknown project"}, but Cloud Nexus Pilot expects ${expectedCloudNexusSupabaseUrl}. Update NEXT_PUBLIC_SUPABASE_URL in Vercel and redeploy.`;
+  }
   if (!hasValidAnonKey) {
     return "Supabase anon key format is invalid. Set NEXT_PUBLIC_SUPABASE_ANON_KEY to a valid Supabase anon or publishable key.";
   }
@@ -92,6 +99,8 @@ export const supabaseConfigDiagnostics = {
   hasAnonKey: Boolean(supabaseAnonKey),
   urlIsValid: Boolean(parsedSupabaseUrl),
   urlHostMatchesSupabase: hasValidSupabaseUrl,
+  matchesExpectedCloudNexusProject,
+  expectedOrigin: expectedCloudNexusSupabaseUrl,
   anonKeyLooksValid: hasValidAnonKey,
   origin: parsedSupabaseUrl?.origin ?? "",
   authSignupEndpoint: supabaseSignupEndpoint,

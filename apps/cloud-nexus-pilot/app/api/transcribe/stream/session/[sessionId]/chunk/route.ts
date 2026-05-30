@@ -18,10 +18,12 @@ function toChunkIndex(value: string | null): number {
 const ACCEPTED_CONTENT_TYPES = new Set([
   "audio/wav",
   "audio/webm",
-  "audio/ogg",
   "audio/mpeg",
+  "audio/mpga",
   "audio/mp3",
   "audio/mp4",
+  "audio/m4a",
+  "audio/x-m4a",
   "video/webm",
 ]);
 

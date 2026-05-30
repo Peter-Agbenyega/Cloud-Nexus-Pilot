@@ -828,7 +828,7 @@ export function useTranscriptionWorkflow(
 
         if (!shouldFlushBufferedSegment) {
           setStatus("receiving-transcript");
-          setFeedback("Receiving transcript from Deepgram in near real time.");
+          setFeedback("Receiving transcript from OpenAI in near real time.");
           setError("");
           return;
         }
@@ -865,7 +865,7 @@ export function useTranscriptionWorkflow(
           captureMode: activeCaptureModeRef.current,
         });
         setStatus("receiving-transcript");
-        setFeedback("Receiving transcript from Deepgram in near real time.");
+        setFeedback("Receiving transcript from OpenAI in near real time.");
         setError("");
       } catch (uploadError) {
         const message =

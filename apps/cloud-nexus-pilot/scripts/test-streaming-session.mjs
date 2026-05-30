@@ -223,10 +223,10 @@ async function main() {
 
           if (!transcriptText) {
             settleFailure(
-              "Deepgram returned empty transcript — fixture may be silent or contain no recognizable speech."
+              "OpenAI returned an empty transcript. The fixture may be silent or contain no recognizable speech."
             );
             failAfterCleanup(
-              "Deepgram returned empty transcript — fixture may be silent or contain no recognizable speech.",
+              "OpenAI returned an empty transcript. The fixture may be silent or contain no recognizable speech.",
               "",
               2
             );

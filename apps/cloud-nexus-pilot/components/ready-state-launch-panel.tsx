@@ -377,6 +377,11 @@ export function ReadyStateLaunchPanel({
             setGuidanceText(streamedText);
           }
 
+          if (payload.type === "chunk" && typeof payload.content === "string") {
+            streamedText += payload.content;
+            setGuidanceText(streamedText);
+          }
+
           if (payload.type === "error" && typeof payload.message === "string") {
             throw new Error(payload.message);
           }

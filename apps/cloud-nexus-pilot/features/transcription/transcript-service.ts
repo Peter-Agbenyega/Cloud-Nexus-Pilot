@@ -75,6 +75,7 @@ export async function transcribeLiveAudioChunk(params: {
     source: payload.source,
     contentType: payload.contentType,
     durationMs: payload.durationMs ?? null,
+    speakerId: payload.speakerId ?? null,
   };
 }
 

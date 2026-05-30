@@ -83,12 +83,12 @@ export function TranscriptionRuntimeSurface({
             <h2 className="mt-4 text-3xl font-semibold text-slate-950">
               {isWorkspaceVariant
                 ? "Run the same browser-local transcript workflow inside the workspace shell."
-                : "Capture live audio or stage uploads with real Deepgram transcription."}
+                : "Capture live audio or stage uploads with OpenAI transcription."}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               {isWorkspaceVariant
-                ? "This workspace transcript lane can attach directly to the active browser-local stream. Transcript output comes from Deepgram and remains visible in this local runtime surface."
-                : "This workflow sends captured audio chunks to a secure server route, which calls Deepgram for transcription. No Deepgram secrets are exposed in the browser."}
+                ? "This workspace transcript lane can attach directly to the active browser-local stream. Transcript output comes from OpenAI and remains visible in this local runtime surface."
+                : "This workflow sends captured audio chunks to a secure server route, which calls OpenAI for transcription. No OpenAI secrets are exposed in the browser."}
             </p>
             <p className="mt-3 text-sm leading-7 text-slate-500">{persistenceInfo.note}</p>
             {!isWorkspaceVariant ? (
@@ -156,7 +156,7 @@ export function TranscriptionRuntimeSurface({
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
             {isSupported
-              ? "MediaRecorder is available. Live capture can stream chunks to Deepgram through the server route."
+              ? "MediaRecorder is available. Live capture can stream chunks to OpenAI through the server route."
               : "This browser does not support MediaRecorder. Upload mode still works for transcript flow validation."}
           </div>
         </div>
@@ -310,7 +310,7 @@ export function TranscriptionRuntimeSurface({
                 : isRecording
                   ? "Live audio stream is active."
                   : isTranscribing
-                    ? "Deepgram is processing incoming audio."
+                    ? "OpenAI is processing incoming audio."
                     : status === "failed"
                       ? "Transcription failed to start or continue."
                       : "No active stream or upload yet."}
@@ -324,7 +324,7 @@ export function TranscriptionRuntimeSurface({
               </pre>
             ) : status === "failed" ? (
               <p className="text-rose-600">
-                Transcription failed to start. Check permissions, Deepgram configuration, and try
+                Transcription failed to start. Check permissions, OpenAI configuration, and try
                 again.
               </p>
             ) : status === "no-speech-yet" || status === "listening" ? (

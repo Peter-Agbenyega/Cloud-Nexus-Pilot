@@ -14,13 +14,13 @@ export function ContentGrid({ items }: ContentGridProps) {
       {items.map((item) => (
         <article
           key={item.title}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition hover:bg-elevated"
         >
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-slate-950">{item.title}</h3>
-            <p className="text-sm leading-6 text-slate-600">{item.description}</p>
+            <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+            <p className="text-sm leading-6 text-text-secondary">{item.description}</p>
             {item.meta ? (
-              <p className="text-sm font-medium text-indigo-600">{item.meta}</p>
+              <p className="text-sm font-medium text-primary">{item.meta}</p>
             ) : null}
           </div>
         </article>

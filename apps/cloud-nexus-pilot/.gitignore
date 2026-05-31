@@ -12,3 +12,4 @@ pnpm-debug.log*
 .env.development.local
 .DS_Store
 dist
+.vercel

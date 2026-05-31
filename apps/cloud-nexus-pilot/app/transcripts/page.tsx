@@ -1,21 +1,15 @@
-import { AppShell } from "@/components/app-shell";
 import { TranscriptPanel } from "@/features/transcription/transcript-panel";
-
-const nav = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Upload Queue", href: "/transcripts" },
-  { label: "AI Summary", href: "/summary" },
-  { label: "Prompt Library", href: "/prompt-library" },
-];
 
 export default function TranscriptsPage() {
   return (
-    <AppShell
-      title="Transcription Workspace"
-      description="Capture live audio, stage uploads, and review transcript output in a frontend-safe workflow that is ready for future backend wiring."
-      nav={nav}
-    >
+    <div className="section-shell py-10">
+      <h1 style={{ fontSize: 20, fontWeight: 500, color: "#F0F0FF", marginBottom: 4 }}>
+        Transcription Workspace
+      </h1>
+      <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
+        Capture live audio, stage uploads, and review transcript output
+      </p>
       <TranscriptPanel />
-    </AppShell>
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/site";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/50 bg-surface/80">
+    <footer data-site-chrome="footer" className="border-t border-border/50 bg-surface/80">
       <div className="section-shell flex flex-col gap-6 py-10 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="font-semibold text-foreground">{siteConfig.name}</p>

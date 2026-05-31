@@ -149,6 +149,23 @@ a {
 }
 
 /* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+
+/* ============================================================
    FOCUS & ACCESSIBILITY
    ============================================================ */
 
@@ -158,6 +175,29 @@ a {
 }
 
 ::selection {
-  background: rgb(var(--color-primary) / 0.3);
-  color: rgb(var(--color-text-primary));
+  background: rgba(79, 70, 229, 0.3);
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }

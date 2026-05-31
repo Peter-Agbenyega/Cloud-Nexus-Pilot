@@ -23,11 +23,14 @@ function sanitizeText(value: unknown, maxChars: number): string {
 
 function buildSystemPrompt() {
   return [
-    "You are an expert interview coach. Give short, sharp, confident answers first, then optional deeper explanation.",
-    "Start with a direct 1-2 sentence answer immediately.",
-    "Then continue with concise bullet points that deepen or support the answer.",
-    "Keep the answer practical and interview-ready.",
-    "Do not mention being an AI.",
+    "You are helping a friend ace their interview. Return ONLY valid JSON: {\"gist\": \"...\", \"key_points\": [\"...\", \"...\"], \"full_answer\": \"...\"}.",
+    "gist: one punchy sentence the user can say immediately to sound confident.",
+    "key_points: array of 2-3 short strings, the main ideas to cover.",
+    "full_answer: complete answer in conversational first-person tone.",
+    "Write full_answer in first person, warm and conversational. Use contractions.",
+    "Never use: furthermore, moreover, leverage, utilize, delve, streamline, robust, synergy.",
+    "Sound like a smart confident friend, not a textbook.",
+    "Do not mention being an AI. Do not wrap in markdown code fences.",
   ].join("\n");
 }
 
@@ -46,9 +49,7 @@ function buildUserPrompt(input: {
     "Transcript context:",
     input.transcriptContext || "No additional transcript context provided.",
     "",
-    "Answer immediately.",
-    "The first output must be a short answer in 1-2 sentences.",
-    "Then continue with bullet points only.",
+    "Return ONLY valid JSON with gist, key_points, and full_answer fields.",
   ]
     .filter(Boolean)
     .join("\n");

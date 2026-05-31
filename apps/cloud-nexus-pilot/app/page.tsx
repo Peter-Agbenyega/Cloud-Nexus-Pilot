@@ -82,7 +82,7 @@ export default function HomePage() {
               <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.08] p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-200">SAY THIS NOW</p>
                 <p className="mt-2 text-sm leading-6 text-[#F0F0FF]">
-                  Great question - let me walk you through how I'd approach it.
+                  Great question — let me walk you through how I'd approach it.
                 </p>
               </div>
 

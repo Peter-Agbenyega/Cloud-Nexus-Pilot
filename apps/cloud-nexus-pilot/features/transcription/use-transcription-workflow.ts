@@ -11,7 +11,6 @@ import {
 } from "@/features/transcription/audio-capture";
 import {
   cleanTranscriptText,
-  detectQuestionBoundary,
   getDetectedQuestion,
   summarizeTranscriptState,
 } from "@/features/transcription/transcript-bridge";
@@ -133,6 +132,7 @@ const MAX_LIVE_SEGMENT_BUFFER_MS = 4_000;
 const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
 const LIVE_SEGMENT_MERGE_WINDOW_MS = 10_000;
 const SHORT_LIVE_FRAGMENT_WORDS = 8;
+const INCOMPLETE_QUESTION_WAIT_MS = 3_000;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 const WHISPER_SILENCE_HALLUCINATIONS = new Set([
@@ -158,6 +158,16 @@ const DOMAIN_CONTEXT_PATTERNS = [
   /\binterview copilot\b/i,
   /\bmock interview\b/i,
   /\brecruiter screen\b/i,
+] as const;
+
+const WEAK_TRAILING_QUESTION_PATTERNS = [
+  /\babout the time you\s*$/i,
+  /\babout a time you\s*$/i,
+  /\btell me about\s*$/i,
+  /\bcan you tell me\s*$/i,
+  /\bcould you tell me\s*$/i,
+  /\bhow would you\s*$/i,
+  /\bwhat would you\s*$/i,
 ] as const;
 
 function normalizeTranscriptForFiltering(text: string): string {
@@ -227,6 +237,15 @@ function shouldMergeLiveSegment(params: {
   );
 }
 
+function isIncompleteDetectedQuestion(text: string): boolean {
+  const cleaned = cleanTranscriptText(text);
+  if (!cleaned) return true;
+  if (/[?]["']?\s*$/.test(cleaned)) return false;
+  if (WEAK_TRAILING_QUESTION_PATTERNS.some((pattern) => pattern.test(cleaned))) return true;
+
+  return countMeaningfulWords(cleaned) < 8;
+}
+
 export function useTranscriptionWorkflow(
   options?: UseTranscriptionWorkflowOptions
 ): UseTranscriptionWorkflowResult {
@@ -288,6 +307,8 @@ export function useTranscriptionWorkflow(
   const transcriptCreationPromiseRef = useRef<Promise<TranscriptRecord> | null>(null);
   const aiQuestionInFlightRef = useRef(false);
   const aiQuestionAbortRef = useRef<AbortController | null>(null);
+  const incompleteQuestionTimerRef = useRef<number | null>(null);
+  const pendingIncompleteQuestionRef = useRef("");
   const pendingLiveSegmentRef = useRef("");
   const pendingLiveSegmentAgeRef = useRef<number | null>(null);
   const pendingLiveSegmentSpeakerRef = useRef<number | null>(null);
@@ -322,8 +343,17 @@ export function useTranscriptionWorkflow(
     activeTranscriptIdRef.current = activeTranscriptId;
   }, [activeTranscriptId]);
 
+  const clearIncompleteQuestionWait = useCallback(() => {
+    pendingIncompleteQuestionRef.current = "";
+    if (incompleteQuestionTimerRef.current) {
+      window.clearTimeout(incompleteQuestionTimerRef.current);
+      incompleteQuestionTimerRef.current = null;
+    }
+  }, []);
+
   const hydrateFromTranscriptRecord = useCallback((record: TranscriptRecord | null) => {
     if (!record) return;
+    clearIncompleteQuestionWait();
 
     setTranscript(record.transcriptText);
     setLatestSegment(record.summary.latestSegment);
@@ -343,7 +373,7 @@ export function useTranscriptionWorkflow(
     activeCaptureModeRef.current = record.captureMode;
     activeContentTypeRef.current = record.contentType;
     activeFilenameRef.current = record.filename;
-  }, []);
+  }, [clearIncompleteQuestionWait]);
 
   const loadTranscriptInventory = useCallback(
     async (options?: { hydrateFirst?: boolean }) => {
@@ -727,7 +757,9 @@ export function useTranscriptionWorkflow(
     [appendSegment]
   );
 
-  const triggerAiQuestionDetection = useCallback((segments: TranscriptSegment[]) => {
+  const triggerAiQuestionDetection = useCallback(function runQuestionDetection(
+    segments: TranscriptSegment[]
+  ) {
     if (aiQuestionInFlightRef.current) {
       return;
     }
@@ -762,7 +794,29 @@ export function useTranscriptionWorkflow(
         if (abortController.signal.aborted) {
           return;
         }
-        setAiDetectedQuestion(payload.question?.trim() || "");
+        const nextQuestion = payload.question?.trim() || "";
+        if (nextQuestion && isIncompleteDetectedQuestion(nextQuestion)) {
+          // Avoid generating answers from partial live questions; wait briefly for the next chunk.
+          setAiDetectedQuestion("");
+          if (pendingIncompleteQuestionRef.current !== nextQuestion) {
+            pendingIncompleteQuestionRef.current = nextQuestion;
+            if (incompleteQuestionTimerRef.current) {
+              window.clearTimeout(incompleteQuestionTimerRef.current);
+            }
+            incompleteQuestionTimerRef.current = window.setTimeout(() => {
+              incompleteQuestionTimerRef.current = null;
+              runQuestionDetection(segmentsRef.current);
+            }, INCOMPLETE_QUESTION_WAIT_MS);
+          }
+          return;
+        }
+
+        pendingIncompleteQuestionRef.current = "";
+        if (incompleteQuestionTimerRef.current) {
+          window.clearTimeout(incompleteQuestionTimerRef.current);
+          incompleteQuestionTimerRef.current = null;
+        }
+        setAiDetectedQuestion(nextQuestion);
       })
       .catch(() => {
         if (!abortController.signal.aborted) {
@@ -787,6 +841,7 @@ export function useTranscriptionWorkflow(
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
     setAiDetectedQuestion("");
+    clearIncompleteQuestionWait();
     void streamingClientRef.current?.stop();
     streamingClientRef.current = null;
     streamingConnectPromiseRef.current = null;
@@ -813,7 +868,7 @@ export function useTranscriptionWorkflow(
     pendingLiveSegmentAgeRef.current = null;
     pendingLiveSegmentSpeakerRef.current = null;
     setDraftSegment("");
-  }, [flushPendingLiveSegment]);
+  }, [clearIncompleteQuestionWait, flushPendingLiveSegment]);
 
   const processAudioChunk = useCallback(
     async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource, overrideContentType?: string) => {
@@ -1095,6 +1150,7 @@ export function useTranscriptionWorkflow(
       aiQuestionAbortRef.current = null;
       aiQuestionInFlightRef.current = false;
       setAiDetectedQuestion("");
+      clearIncompleteQuestionWait();
       pendingLiveSegmentRef.current = "";
       pendingLiveSegmentAgeRef.current = null;
       pendingLiveSegmentSpeakerRef.current = null;
@@ -1308,7 +1364,7 @@ export function useTranscriptionWorkflow(
         }
       }
     },
-    [ensureStreamingClient, logStreamingSeam, processAudioChunk, stopInternal]
+    [clearIncompleteQuestionWait, ensureStreamingClient, logStreamingSeam, processAudioChunk, stopInternal]
   );
 
   const stopCapture = useCallback(() => {
@@ -1556,10 +1612,16 @@ export function useTranscriptionWorkflow(
 
   const transcriptSummary = useMemo(() => summarizeTranscriptState(transcript), [transcript]);
   const questionBoundaryDetected = useMemo(
-    () => detectQuestionBoundary(latestSegment),
+    () => {
+      const detectedQuestion = getDetectedQuestion(latestSegment);
+      return Boolean(detectedQuestion && !isIncompleteDetectedQuestion(detectedQuestion));
+    },
     [latestSegment]
   );
-  const latestDetectedQuestion = useMemo(() => getDetectedQuestion(latestSegment) ?? "", [latestSegment]);
+  const latestDetectedQuestion = useMemo(() => {
+    const detectedQuestion = getDetectedQuestion(latestSegment) ?? "";
+    return detectedQuestion && !isIncompleteDetectedQuestion(detectedQuestion) ? detectedQuestion : "";
+  }, [latestSegment]);
   const activeTranscriptRecord = useMemo(
     () => transcriptRecords.find((item) => item.id === activeTranscriptId) ?? null,
     [activeTranscriptId, transcriptRecords]

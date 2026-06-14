@@ -129,8 +129,10 @@ const MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD = 3;
 const PCM_CHUNK_FLUSH_INTERVAL_MS = DEFAULT_CHUNK_INTERVAL_MS;
 const PCM_MIN_FRAMES_PER_CHUNK = 64_000;
 const MIN_LIVE_SEGMENT_WORDS = 5;
-const MAX_LIVE_SEGMENT_BUFFER_MS = 5_000;
+const MAX_LIVE_SEGMENT_BUFFER_MS = 4_000;
 const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
+const LIVE_SEGMENT_MERGE_WINDOW_MS = 10_000;
+const SHORT_LIVE_FRAGMENT_WORDS = 8;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 const WHISPER_SILENCE_HALLUCINATIONS = new Set([
@@ -192,6 +194,37 @@ function isLikelyHallucinatedTranscript(text: string): boolean {
   if (containsDomainContext(text)) return false;
 
   return countMeaningfulWords(text) < 4;
+}
+
+function startsLikeContinuation(text: string): boolean {
+  return /^(and|or|but|so|because|that|which|for|to|with|in|on|as)\b/i.test(text.trim());
+}
+
+function shouldMergeLiveSegment(params: {
+  previousSegment: TranscriptSegment | null;
+  nextText: string;
+  nextSource: LiveTranscriptionSource;
+  nextSpeakerId: number | null;
+  now: number;
+}): boolean {
+  const { previousSegment, nextText, nextSource, nextSpeakerId, now } = params;
+  if (!previousSegment) return false;
+  if (previousSegment.source !== nextSource) return false;
+  if ((previousSegment.speakerId ?? null) !== nextSpeakerId) return false;
+  if (now - previousSegment.createdAt > LIVE_SEGMENT_MERGE_WINDOW_MS) return false;
+  if (getDetectedQuestion(nextText) || containsQuestionCue(nextText)) return false;
+
+  const previousEndsWithQuestion = /\?["']?\s*$/.test(previousSegment.text);
+  if (previousEndsWithQuestion) return false;
+
+  const nextWordCount = countMeaningfulWords(nextText);
+  const previousContinues = !/[.?!]["']?\s*$/.test(previousSegment.text);
+
+  return (
+    nextWordCount <= SHORT_LIVE_FRAGMENT_WORDS ||
+    previousContinues ||
+    startsLikeContinuation(nextText)
+  );
 }
 
 export function useTranscriptionWorkflow(
@@ -613,12 +646,48 @@ export function useTranscriptionWorkflow(
       }
 
       const createdAt = Date.now();
+      const previousSegment = segmentsRef.current.at(-1) ?? null;
+      const nextSpeakerId = speakerId ?? null;
+
+      // Merge short adjacent live chunks into one card for readable live transcription.
+      if (
+        previousSegment &&
+        shouldMergeLiveSegment({
+          previousSegment,
+          nextText: cleaned,
+          nextSource,
+          nextSpeakerId,
+          now: createdAt,
+        })
+      ) {
+        const mergedSegment: TranscriptSegment = {
+          ...previousSegment,
+          text: cleanTranscriptText(`${previousSegment.text} ${cleaned}`),
+          chunkIndex,
+        };
+        const nextSegments = [...segmentsRef.current.slice(0, -1), mergedSegment];
+        const nextTranscript = nextSegments.map((segment) => segment.text).join("\n");
+        segmentsRef.current = nextSegments;
+        transcriptRef.current = nextTranscript;
+
+        startTransition(() => {
+          setLatestSegment(mergedSegment.text);
+          setSegments(nextSegments);
+          setTranscript(nextTranscript);
+        });
+
+        return {
+          nextSegments,
+          nextTranscript,
+        };
+      }
+
       const nextSegment: TranscriptSegment = {
         id: `segment-${createdAt}-${chunkIndex}`,
         chunkIndex,
         text: cleaned,
         source: nextSource,
-        speakerId: speakerId ?? null,
+        speakerId: nextSpeakerId,
         createdAt,
       };
 

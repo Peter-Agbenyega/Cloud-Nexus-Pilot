@@ -3,6 +3,16 @@ import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/tr
 
 const DEEPGRAM_TRANSCRIPTION_URL = "https://api.deepgram.com/v1/listen";
 const DEEPGRAM_TRANSCRIPTION_MODEL = "nova-3";
+const DEEPGRAM_KEYTERMS = [
+  "Cloud Nexus Pilot",
+  "Cloud Nexus",
+  "interview copilot",
+  "Deepgram",
+  "live transcription",
+  "interview coaching",
+  "microphone transcription",
+  "tab audio",
+] as const;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type DeepgramTranscriptionResponse = {
@@ -122,6 +132,9 @@ export async function transcribeWithDeepgram(params: {
     smart_format: "true",
     punctuate: "true",
   });
+  for (const keyterm of DEEPGRAM_KEYTERMS) {
+    searchParams.append("keyterm", keyterm);
+  }
 
   if (shouldDebugLogs) {
     console.info("[transcription][deepgram] request", {

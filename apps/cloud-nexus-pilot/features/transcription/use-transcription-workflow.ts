@@ -133,6 +133,67 @@ const MAX_LIVE_SEGMENT_BUFFER_MS = 5_000;
 const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
+const WHISPER_SILENCE_HALLUCINATIONS = new Set([
+  "thank you",
+  "thank you for watching",
+  "thank you for joining us",
+  "thanks for watching",
+  "please subscribe",
+  "music",
+  "applause",
+  "you should not receive a live exit from the train in the netherlands",
+]);
+
+const QUESTION_CUE_PATTERNS = [
+  /\b(who|what|when|where|why|how|explain|describe)\b/i,
+  /\btell me\b/i,
+  /\bcan you\b/i,
+  /\bcould you\b/i,
+] as const;
+
+const DOMAIN_CONTEXT_PATTERNS = [
+  /\bcloud nexus pilot\b/i,
+  /\binterview copilot\b/i,
+  /\bmock interview\b/i,
+  /\brecruiter screen\b/i,
+] as const;
+
+function normalizeTranscriptForFiltering(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\[\](){}]/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function countMeaningfulWords(text: string): number {
+  return normalizeTranscriptForFiltering(text)
+    .split(/\s+/)
+    .filter((word) => word.length > 1)
+    .length;
+}
+
+function containsQuestionCue(text: string): boolean {
+  return text.includes("?") || QUESTION_CUE_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function containsDomainContext(text: string): boolean {
+  return DOMAIN_CONTEXT_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function isLikelyHallucinatedTranscript(text: string): boolean {
+  const normalized = normalizeTranscriptForFiltering(text);
+  if (!normalized) return true;
+
+  // Avoid Whisper silence hallucinations from noisy chunks before they become transcript segments.
+  if (containsQuestionCue(text)) return false;
+  if (WHISPER_SILENCE_HALLUCINATIONS.has(normalized)) return true;
+  if (containsDomainContext(text)) return false;
+
+  return countMeaningfulWords(text) < 4;
+}
+
 export function useTranscriptionWorkflow(
   options?: UseTranscriptionWorkflowOptions
 ): UseTranscriptionWorkflowResult {
@@ -541,6 +602,15 @@ export function useTranscriptionWorkflow(
     ) => {
       const cleaned = cleanTranscriptText(text);
       if (!cleaned) return null;
+      if (isLikelyHallucinatedTranscript(cleaned)) {
+        if (shouldDebugLogs) {
+          console.log("[transcription] segment suppressed: likely silence hallucination", {
+            chunkIndex,
+            text: cleaned,
+          });
+        }
+        return null;
+      }
 
       const createdAt = Date.now();
       const nextSegment: TranscriptSegment = {
@@ -768,13 +838,16 @@ export function useTranscriptionWorkflow(
         activeContentTypeRef.current = result.contentType || contentType;
 
         const cleanedChunkText = cleanTranscriptText(result.text) || result.text.trim();
-        if (!cleanedChunkText) {
+        const shouldSuppressChunk =
+          Boolean(cleanedChunkText) && isLikelyHallucinatedTranscript(cleanedChunkText);
+        if (!cleanedChunkText || shouldSuppressChunk) {
           if (shouldDebugLogs) {
-            console.log("[transcription] transcript accepted: no speech detected", {
+            console.log("[transcription] transcript accepted: no usable speech detected", {
               chunkIndex: result.chunkIndex,
               size: audioBlob.size,
               textLength: result.text.length,
               source: result.source,
+              suppressed: shouldSuppressChunk,
             });
           }
           setStatus("no-speech-yet");

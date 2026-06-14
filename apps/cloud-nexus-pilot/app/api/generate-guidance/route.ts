@@ -2,9 +2,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-4.1-mini";
+const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
 const MAX_QUESTION_CHARS = 500;
-const MAX_CONTEXT_CHARS = 6_000;
+const MAX_CONTEXT_CHARS = 1_200;
+const GUIDANCE_TIMEOUT_MS = 12_000;
 
 type GuidanceRequestBody = {
   question?: unknown;
@@ -21,12 +22,19 @@ function sanitizeText(value: unknown, maxChars: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxChars) : "";
 }
 
+function sanitizeRecentText(value: unknown, maxChars: number): string {
+  return typeof value === "string" ? value.trim().slice(-maxChars) : "";
+}
+
 function buildSystemPrompt() {
   return [
     "You are helping a friend ace their interview. Return ONLY valid JSON: {\"gist\": \"...\", \"key_points\": [\"...\", \"...\"], \"full_answer\": \"...\"}.",
-    "gist: one punchy sentence the user can say immediately to sound confident.",
-    "key_points: array of 2-3 short strings, the main ideas to cover.",
-    "full_answer: complete answer in conversational first-person tone.",
+    "Return concise JSON immediately.",
+    "Do not over-explain.",
+    "No long stories unless explicitly requested.",
+    "gist: max 1 short sentence under 18 words.",
+    "key_points: exactly 3 short bullets, each under 10 words.",
+    "full_answer: 80-120 words max in conversational first-person tone.",
     "Write full_answer in first person, warm and conversational. Use contractions.",
     "Never use: furthermore, moreover, leverage, utilize, delve, streamline, robust, synergy.",
     "Sound like a smart confident friend, not a textbook.",
@@ -49,7 +57,7 @@ function buildUserPrompt(input: {
     "Transcript context:",
     input.transcriptContext || "No additional transcript context provided.",
     "",
-    "Return ONLY valid JSON with gist, key_points, and full_answer fields.",
+    "Return ONLY valid JSON with gist, key_points, and full_answer fields. Keep it short.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -61,12 +69,44 @@ async function streamFailure(controller: ReadableStreamDefaultController<Uint8Ar
   controller.close();
 }
 
+function getOpenAiModel(): string {
+  return process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
+}
+
+function createTimeoutSignal(parentSignal: AbortSignal, timeoutMs: number): AbortSignal {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  const abort = () => {
+    clearTimeout(timeoutId);
+    controller.abort();
+  };
+
+  if (parentSignal.aborted) {
+    abort();
+  } else {
+    parentSignal.addEventListener("abort", abort, { once: true });
+    controller.signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timeoutId);
+        parentSignal.removeEventListener("abort", abort);
+      },
+      { once: true }
+    );
+  }
+
+  return controller.signal;
+}
+
 export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const body = (await request.json().catch(() => ({}))) as GuidanceRequestBody;
       const question = sanitizeText(body.question, MAX_QUESTION_CHARS);
-      const transcriptContext = sanitizeText(body.transcriptContext, MAX_CONTEXT_CHARS);
+      const transcriptContext = sanitizeRecentText(body.transcriptContext, MAX_CONTEXT_CHARS);
       const interviewMode = sanitizeText(body.interviewMode, 80) || "general";
       const promptRef = sanitizeText(body.promptRef, 120);
 
@@ -87,6 +127,8 @@ export async function POST(request: Request) {
       }
 
       try {
+        const model = getOpenAiModel();
+        const guidanceSignal = createTimeoutSignal(request.signal, GUIDANCE_TIMEOUT_MS);
         const openAiResponse = await fetch(OPENAI_API_URL, {
           method: "POST",
           headers: {
@@ -94,10 +136,11 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${openAiApiKey}`,
           },
           body: JSON.stringify({
-            model: OPENAI_MODEL,
-            max_completion_tokens: 500,
+            model,
+            max_completion_tokens: 240,
             temperature: 0.3,
             stream: true,
+            response_format: { type: "json_object" },
             messages: [
               {
                 role: "system",
@@ -115,7 +158,7 @@ export async function POST(request: Request) {
             ],
           }),
           cache: "no-store",
-          signal: request.signal,
+          signal: guidanceSignal,
         });
 
         if (!openAiResponse.ok || !openAiResponse.body) {
@@ -185,7 +228,7 @@ export async function POST(request: Request) {
       } catch (error) {
         const message =
           error instanceof Error && error.name === "AbortError"
-            ? "Guidance generation was cancelled."
+            ? "Guidance generation timed out or was cancelled."
             : "Unable to generate guidance right now.";
         await streamFailure(controller, message);
       }

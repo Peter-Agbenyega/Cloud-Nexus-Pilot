@@ -29,6 +29,8 @@ type GuidanceData = {
   full_answer: string;
 };
 
+const GUIDANCE_CONTEXT_CHAR_LIMIT = 1_200;
+
 const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
   status: "idle",
   detail: "Share a tab with audio to start live transcription.",
@@ -98,13 +100,14 @@ function buildTranscriptContext(
   segments: ReturnType<typeof useTranscriptionWorkflow>["segments"],
   limit = 8
 ) {
-  return segments
+  const context = segments
     .slice(-limit)
     .map((segment, index) => {
       const speaker = segment.speakerId === 0 ? "Them" : segment.speakerId === 1 ? "You" : "Unknown";
       return `Segment ${index + 1} (${speaker}): ${segment.text.trim()}`;
     })
     .join("\n");
+  return context.slice(-GUIDANCE_CONTEXT_CHAR_LIMIT);
 }
 
 function parseSsePayloads(buffer: string) {
@@ -355,22 +358,22 @@ export function ReadyStateLaunchPanel() {
         setGuidanceData(structured);
         // Staggered card reveal
         setShowCard1(true);
-        setTimeout(() => setShowCard2(true), 600);
+        setTimeout(() => setShowCard2(true), 150);
         setTimeout(() => {
           setShowCard3(true);
           // Simulate streaming the full answer character by character
           let i = 0;
           const fullAnswer = structured.full_answer;
           const streamInterval = setInterval(() => {
-            i += 2;
+            i += 6;
             if (i >= fullAnswer.length) {
               setStreamedFullAnswer(fullAnswer);
               clearInterval(streamInterval);
             } else {
               setStreamedFullAnswer(fullAnswer.slice(0, i));
             }
-          }, 15);
-        }, 1200);
+          }, 8);
+        }, 300);
       } else {
         // Fallback: show raw text as full_answer
         setGuidanceData({
@@ -379,7 +382,7 @@ export function ReadyStateLaunchPanel() {
           full_answer: streamedText,
         });
         setShowCard1(true);
-        setTimeout(() => setShowCard3(true), 300);
+        setTimeout(() => setShowCard3(true), 150);
         setStreamedFullAnswer(streamedText);
       }
 

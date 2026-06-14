@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 
 import {
+  DeepgramTranscriptionError,
+  isDeepgramTranscriptionConfigured,
+  transcribeWithDeepgram,
+} from "@/lib/transcription/deepgram-transcribe";
+import {
   OpenAiTranscriptionError,
   transcribeWithOpenAi,
 } from "@/lib/transcription/openai-transcribe";
@@ -11,7 +16,10 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     const arrayBuffer = await request.arrayBuffer();
-    const response = await transcribeWithOpenAi({
+    const transcribe = isDeepgramTranscriptionConfigured()
+      ? transcribeWithDeepgram
+      : transcribeWithOpenAi;
+    const response = await transcribe({
       arrayBuffer,
       requestContentType: request.headers.get("content-type")?.trim() || "audio/webm",
       chunkIndexHeader: request.headers.get("X-Chunk-Index"),
@@ -19,7 +27,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    if (error instanceof OpenAiTranscriptionError) {
+    if (error instanceof DeepgramTranscriptionError || error instanceof OpenAiTranscriptionError) {
       return NextResponse.json(
         {
           error: {

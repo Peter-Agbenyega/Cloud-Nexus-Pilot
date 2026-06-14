@@ -121,12 +121,14 @@ export type UseTranscriptionWorkflowOptions = {
   repositoryMode?: "auto" | "local-only";
 };
 
-const DEFAULT_CHUNK_INTERVAL_MS = 1000;
+// 8-second chunks give OpenAI Whisper more speech context than short fragments,
+// improving live microphone and tab transcription quality.
+const DEFAULT_CHUNK_INTERVAL_MS = 8_000;
 const MIN_UPLOAD_CHUNK_BYTES = 1_024;
 const MIN_RAW_CHUNK_BYTES = 256;
 const MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD = 3;
-const PCM_CHUNK_FLUSH_INTERVAL_MS = 1_000;
-const PCM_MIN_FRAMES_PER_CHUNK = 16_000;
+const PCM_CHUNK_FLUSH_INTERVAL_MS = DEFAULT_CHUNK_INTERVAL_MS;
+const PCM_MIN_FRAMES_PER_CHUNK = 128_000;
 const MIN_LIVE_SEGMENT_WORDS = 8;
 const MAX_LIVE_SEGMENT_BUFFER_MS = 5_000;
 const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;

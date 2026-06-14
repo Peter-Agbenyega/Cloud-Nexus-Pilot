@@ -3,6 +3,8 @@ import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/tr
 
 const OPENAI_TRANSCRIPTION_URL = "https://api.openai.com/v1/audio/transcriptions";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
+const TRANSCRIPTION_CONTEXT_PROMPT =
+  "Cloud Nexus Pilot is an AI interview copilot. Common phrases include Cloud Nexus Pilot, interview copilot, microphone transcription, tab audio, share tab audio, longer audio chunks, recruiter screen, mock interview, resume studio, culture scanner, AI-powered answer guidance.";
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type OpenAiTranscriptionResponse = {
@@ -120,6 +122,8 @@ export async function transcribeWithOpenAi(params: {
   formData.set("model", model);
   formData.set("file", audioFile);
   formData.set("response_format", "json");
+  formData.set("language", "en");
+  formData.set("prompt", TRANSCRIPTION_CONTEXT_PROMPT);
 
   if (shouldDebugLogs) {
     console.info("[transcription][openai] request", {

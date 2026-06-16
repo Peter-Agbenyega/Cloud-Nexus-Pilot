@@ -30,6 +30,12 @@ type GuidanceData = {
 };
 
 const GUIDANCE_CONTEXT_CHAR_LIMIT = 1_200;
+const FALLBACK_GIST = "That's a great question. Let me take a moment to walk you through my thinking on that.";
+const FALLBACK_GUIDANCE: GuidanceData = {
+  gist: FALLBACK_GIST,
+  key_points: [],
+  full_answer: "",
+};
 
 const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
   status: "idle",
@@ -49,19 +55,6 @@ function inferInterviewIntent(question: string): InterviewIntent {
   if (/code|algorithm|api|database|debug|deploy|kubernetes|terraform|aws|react|typescript/i.test(normalized)) return "technical";
   if (/tell me about|describe a time|how did you handle/i.test(normalized)) return "behavioral";
   return "general";
-}
-
-function getLiveStatusLabel(params: {
-  status: ReturnType<typeof useTranscriptionWorkflow>["status"];
-  transportStatus: ReturnType<typeof useTranscriptionWorkflow>["transportStatus"];
-}) {
-  if (
-    params.transportStatus === "streaming-session-failed" ||
-    params.transportStatus === "legacy-fallback-active" ||
-    params.status === "failed"
-  ) return "Transcription unavailable. Retrying...";
-  if (params.status === "receiving-transcript") return "Receiving transcript...";
-  return "Listening...";
 }
 
 function normalizeQuestionMatchText(value: string) {
@@ -110,6 +103,51 @@ function buildTranscriptContext(
   return context.slice(-GUIDANCE_CONTEXT_CHAR_LIMIT);
 }
 
+function getParsedResumeBackground(): string {
+  if (typeof window === "undefined") return "";
+  const raw = window.localStorage.getItem("cnp_parsed_resume");
+  if (!raw) return "";
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const contact = typeof parsed.contact === "object" && parsed.contact !== null
+      ? (parsed.contact as Record<string, unknown>)
+      : {};
+    const name =
+      typeof parsed.name === "string"
+        ? parsed.name
+        : typeof parsed.fullName === "string"
+          ? parsed.fullName
+          : typeof contact.name === "string"
+            ? contact.name
+            : "";
+    const title =
+      typeof parsed.title === "string"
+        ? parsed.title
+        : typeof parsed.headline === "string"
+          ? parsed.headline
+          : typeof parsed.currentTitle === "string"
+            ? parsed.currentTitle
+            : "";
+    const skillSource =
+      Array.isArray(parsed.skills)
+        ? parsed.skills
+        : Array.isArray(parsed.topSkills)
+          ? parsed.topSkills
+          : [];
+    const skills = skillSource
+      .filter((skill): skill is string => typeof skill === "string" && skill.trim().length > 0)
+      .slice(0, 3)
+      .map((skill) => skill.trim());
+
+    const identity = [name, title].filter(Boolean).join(", ");
+    if (!identity && skills.length === 0) return "";
+    return `User background: ${identity || "Candidate"}. Skills: ${skills.join(", ") || "not provided"}.`;
+  } catch {
+    return "";
+  }
+}
+
 function parseSsePayloads(buffer: string) {
   const payloads: Array<Record<string, unknown>> = [];
   let nextBuffer = buffer;
@@ -151,6 +189,46 @@ function parseGuidanceJson(rawText: string): GuidanceData | null {
   }
 }
 
+function getLiveIndicatorState(params: {
+  guidanceStatus: "idle" | "loading" | "ready" | "failed";
+  preferredDetectedQuestion: string;
+  answerReadyVisible: boolean;
+}) {
+  if (params.guidanceStatus === "loading") {
+    return {
+      color: "#FBBF24",
+      shadow: "rgba(251,191,36,0.5)",
+      label: "Question detected — generating answer...",
+    };
+  }
+  if (params.answerReadyVisible && params.guidanceStatus === "ready") {
+    return {
+      color: "#7C6CFF",
+      shadow: "rgba(124,108,255,0.5)",
+      label: "Answer ready",
+    };
+  }
+  if (params.guidanceStatus === "ready" || params.guidanceStatus === "failed") {
+    return {
+      color: "#10B981",
+      shadow: "rgba(16,185,129,0.5)",
+      label: "Listening...",
+    };
+  }
+  if (params.preferredDetectedQuestion) {
+    return {
+      color: "#FBBF24",
+      shadow: "rgba(251,191,36,0.5)",
+      label: "Question detected — generating answer...",
+    };
+  }
+  return {
+    color: "#10B981",
+    shadow: "rgba(16,185,129,0.5)",
+    label: "Listening...",
+  };
+}
+
 /* ================================================================
    COMPONENT
    ================================================================ */
@@ -168,13 +246,13 @@ export function ReadyStateLaunchPanel() {
   const [guidanceText, setGuidanceText] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
   const [guidanceStatus, setGuidanceStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
-  const [guidanceError, setGuidanceError] = useState("");
   const [questionsCoached, setQuestionsCoached] = useState(0);
   const [sessionStartTime] = useState<number>(Date.now());
   const [streamedFullAnswer, setStreamedFullAnswer] = useState("");
   const [showCard1, setShowCard1] = useState(false);
   const [showCard2, setShowCard2] = useState(false);
   const [showCard3, setShowCard3] = useState(false);
+  const [answerReadyVisible, setAnswerReadyVisible] = useState(false);
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
@@ -213,6 +291,17 @@ export function ReadyStateLaunchPanel() {
     guidanceAbortControllerRef.current?.abort();
     guidanceAbortControllerRef.current = null;
   }
+
+  const showFallbackGuidance = useCallback(() => {
+    setGuidanceData(FALLBACK_GUIDANCE);
+    setGuidanceText(JSON.stringify(FALLBACK_GUIDANCE));
+    setStreamedFullAnswer("");
+    setShowCard1(true);
+    setShowCard2(false);
+    setShowCard3(false);
+    setGuidanceStatus("failed");
+    setAnswerReadyVisible(false);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -279,10 +368,10 @@ export function ReadyStateLaunchPanel() {
     setGuidanceText("");
     setGuidanceData(null);
     setGuidanceStatus("idle");
-    setGuidanceError("");
     setShowCard1(false);
     setShowCard2(false);
     setShowCard3(false);
+    setAnswerReadyVisible(false);
     setCaptureState({ status: "idle", detail: "Session ended.", streamId: null });
     setLaunchFlowStep("ready");
   }
@@ -300,14 +389,15 @@ export function ReadyStateLaunchPanel() {
     setGuidanceStatus("loading");
     setGuidanceText("");
     setGuidanceData(null);
-    setGuidanceError("");
     setStreamedFullAnswer("");
     setShowCard1(false);
     setShowCard2(false);
     setShowCard3(false);
+    setAnswerReadyVisible(false);
 
     try {
       void ensureSessionExecution();
+      const userBackground = getParsedResumeBackground();
       const response = await fetch("/api/generate-guidance", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
@@ -315,6 +405,7 @@ export function ReadyStateLaunchPanel() {
           question: detectedQuestion,
           transcriptContext: buildTranscriptContext(transcriptionWorkflow.segments),
           interviewMode: inferInterviewIntent(detectedQuestion),
+          userBackground,
         }),
         signal: abortController.signal,
       });
@@ -354,11 +445,15 @@ export function ReadyStateLaunchPanel() {
 
       // Try to parse structured JSON
       const structured = parseGuidanceJson(streamedText);
+      if (structured?.gist.trim() === FALLBACK_GIST) {
+        showFallbackGuidance();
+        return;
+      }
       if (structured) {
         setGuidanceData(structured);
         // Staggered card reveal
         setShowCard1(true);
-        setTimeout(() => setShowCard2(true), 150);
+        setTimeout(() => setShowCard2(true), 400);
         setTimeout(() => {
           setShowCard3(true);
           // Simulate streaming the full answer character by character
@@ -373,7 +468,7 @@ export function ReadyStateLaunchPanel() {
               setStreamedFullAnswer(fullAnswer.slice(0, i));
             }
           }, 8);
-        }, 300);
+        }, 800);
       } else {
         // Fallback: show raw text as full_answer
         setGuidanceData({
@@ -382,27 +477,34 @@ export function ReadyStateLaunchPanel() {
           full_answer: streamedText,
         });
         setShowCard1(true);
-        setTimeout(() => setShowCard3(true), 150);
+        setTimeout(() => setShowCard3(true), 800);
         setStreamedFullAnswer(streamedText);
       }
 
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
+      setAnswerReadyVisible(true);
+      window.setTimeout(() => setAnswerReadyVisible(false), 2_000);
     } catch (error) {
       if (abortController.signal.aborted) return;
-      setGuidanceStatus("failed");
-      setGuidanceError(error instanceof Error ? error.message : "Unable to generate guidance right now.");
+      showFallbackGuidance();
     } finally {
       if (guidanceAbortControllerRef.current === abortController) guidanceAbortControllerRef.current = null;
     }
-  }, [transcriptionWorkflow.aiDetectedQuestion, transcriptionWorkflow.latestDetectedQuestion, transcriptionWorkflow.segments]);
+  }, [
+    showFallbackGuidance,
+    transcriptionWorkflow.aiDetectedQuestion,
+    transcriptionWorkflow.latestDetectedQuestion,
+    transcriptionWorkflow.segments,
+  ]);
 
-  const liveStatus = getLiveStatusLabel({
-    status: transcriptionWorkflow.status,
-    transportStatus: transcriptionWorkflow.transportStatus,
-  });
   const preferredDetectedQuestion =
     transcriptionWorkflow.aiDetectedQuestion || transcriptionWorkflow.latestDetectedQuestion;
+  const liveIndicator = getLiveIndicatorState({
+    guidanceStatus,
+    preferredDetectedQuestion,
+    answerReadyVisible,
+  });
   const transcriptSegments = transcriptionWorkflow.segments;
   const draftSegment = transcriptionWorkflow.draftSegment;
   const latestSegmentId = transcriptSegments.at(-1)?.id ?? null;
@@ -560,11 +662,12 @@ export function ReadyStateLaunchPanel() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{
-              width: 8, height: 8, borderRadius: "50%", background: "#10B981",
-              boxShadow: "0 0 8px rgba(16,185,129,0.5)",
+              width: 8, height: 8, borderRadius: "50%", background: liveIndicator.color,
+              boxShadow: `0 0 8px ${liveIndicator.shadow}`,
               display: "inline-block",
+              animation: "blink 2s ease-in-out infinite",
             }} />
-            <span style={{ fontSize: 13, color: "#A0A0C0" }}>{liveStatus}</span>
+            <span style={{ fontSize: 13, color: "#A0A0C0" }}>{liveIndicator.label}</span>
           </div>
         </div>
         <button
@@ -624,21 +727,6 @@ export function ReadyStateLaunchPanel() {
           >
             {guidanceStatus === "loading" ? "Generating..." : "Get Guidance"}
           </button>
-        </div>
-      )}
-
-      {/* Error display */}
-      {guidanceError && (
-        <div style={{
-          background: "rgba(239,68,68,0.08)",
-          borderLeft: "3px solid #EF4444",
-          borderRadius: "0 10px 10px 0",
-          padding: "10px 14px",
-          marginBottom: 12,
-          fontSize: 12,
-          color: "#EF4444",
-        }}>
-          {guidanceError}
         </div>
       )}
 
@@ -727,6 +815,25 @@ export function ReadyStateLaunchPanel() {
             </div>
           )}
         </div>
+      )}
+
+      {guidanceStatus === "failed" && guidanceData && (
+        <button
+          type="button"
+          onClick={() => void handleGetGuidance()}
+          style={{
+            marginTop: 10,
+            background: "rgba(251,191,36,0.08)",
+            border: "0.5px solid rgba(251,191,36,0.35)",
+            borderRadius: 6,
+            color: "#FBBF24",
+            cursor: "pointer",
+            fontSize: 11,
+            padding: "5px 10px",
+          }}
+        >
+          Try again
+        </button>
       )}
 
       {/* Loading state */}

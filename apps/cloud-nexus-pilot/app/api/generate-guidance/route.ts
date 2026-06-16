@@ -2,16 +2,23 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const MAX_QUESTION_CHARS = 500;
 const MAX_CONTEXT_CHARS = 1_200;
 const GUIDANCE_TIMEOUT_MS = 12_000;
+const FALLBACK_GUIDANCE = {
+  gist: "Great question — give me a second to think through that.",
+  key_points: ["Clarify the problem", "Show your process", "End with impact"],
+  full_answer:
+    "That's a great question. Let me take a moment to walk you through my thinking on that. I want to make sure I explain the situation clearly, what I was responsible for, and how I approached the problem step by step. The main thing I focus on in those moments is staying calm, understanding the root issue, communicating clearly with the people involved, and then choosing a practical path forward.",
+};
 
 type GuidanceRequestBody = {
   question?: unknown;
   transcriptContext?: unknown;
   interviewMode?: unknown;
   promptRef?: unknown;
+  userBackground?: unknown;
 };
 
 function toSseChunk(payload: unknown): Uint8Array {
@@ -28,16 +35,12 @@ function sanitizeRecentText(value: unknown, maxChars: number): string {
 
 function buildSystemPrompt() {
   return [
-    "You are helping a friend ace their interview. Return ONLY valid JSON: {\"gist\": \"...\", \"key_points\": [\"...\", \"...\"], \"full_answer\": \"...\"}.",
-    "Return concise JSON immediately.",
-    "Do not over-explain.",
-    "No long stories unless explicitly requested.",
-    "gist: max 1 short sentence under 18 words.",
-    "key_points: exactly 3 short bullets, each under 10 words.",
-    "full_answer: 80-120 words max in conversational first-person tone.",
-    "Write full_answer in first person, warm and conversational. Use contractions.",
-    "Never use: furthermore, moreover, leverage, utilize, delve, streamline, robust, synergy.",
-    "Sound like a smart confident friend, not a textbook.",
+    "You are a fast interview coach. Return ONLY valid JSON immediately with no preamble. Be concise. Do not over-explain. No long stories. No corporate buzzwords like furthermore, leverage, utilize, synergy, streamline. Sound like a smart friend giving a quick tip. JSON shape: {gist, key_points, full_answer}",
+    "gist: maximum 18 words, one punchy sentence the user can say immediately.",
+    "key_points: exactly 3 bullets, each under 10 words.",
+    "full_answer: 80 to 120 words maximum, first person conversational tone.",
+    "The user is a real person in a live interview. Write the full_answer as if THEY are speaking — first person, warm, natural, using their actual background if provided. Avoid sounding like a chatbot. Vary sentence length. Start with a human opener, not a textbook definition.",
+    "The candidate may be from any country. Do not assume US-specific experience. Accept international education, work experience from any country, and non-US company names as valid credentials. Treat all backgrounds equally.",
     "Do not mention being an AI. Do not wrap in markdown code fences.",
   ].join("\n");
 }
@@ -47,9 +50,11 @@ function buildUserPrompt(input: {
   transcriptContext: string;
   interviewMode: string;
   promptRef?: string;
+  userBackground?: string;
 }) {
   return [
     `Interview mode: ${input.interviewMode || "general"}`,
+    input.userBackground ? input.userBackground : "",
     "",
     "Question:",
     input.question,
@@ -65,6 +70,12 @@ function buildUserPrompt(input: {
 
 async function streamFailure(controller: ReadableStreamDefaultController<Uint8Array>, message: string) {
   controller.enqueue(toSseChunk({ type: "error", message }));
+  controller.enqueue(toSseChunk({ type: "done" }));
+  controller.close();
+}
+
+async function streamFallbackGuidance(controller: ReadableStreamDefaultController<Uint8Array>) {
+  controller.enqueue(toSseChunk({ type: "chunk", content: JSON.stringify(FALLBACK_GUIDANCE) }));
   controller.enqueue(toSseChunk({ type: "done" }));
   controller.close();
 }
@@ -109,6 +120,7 @@ export async function POST(request: Request) {
       const transcriptContext = sanitizeRecentText(body.transcriptContext, MAX_CONTEXT_CHARS);
       const interviewMode = sanitizeText(body.interviewMode, 80) || "general";
       const promptRef = sanitizeText(body.promptRef, 120);
+      const userBackground = sanitizeText(body.userBackground, 300);
 
       controller.enqueue(toSseChunk({ type: "start" }));
 
@@ -119,10 +131,7 @@ export async function POST(request: Request) {
 
       const openAiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
       if (!openAiApiKey) {
-        await streamFailure(
-          controller,
-          "OPENAI_API_KEY is not configured on the server, so live guidance is unavailable."
-        );
+        await streamFallbackGuidance(controller);
         return;
       }
 
@@ -153,6 +162,7 @@ export async function POST(request: Request) {
                   transcriptContext,
                   interviewMode,
                   promptRef: promptRef || undefined,
+                  userBackground: userBackground || undefined,
                 }),
               },
             ],
@@ -162,10 +172,7 @@ export async function POST(request: Request) {
         });
 
         if (!openAiResponse.ok || !openAiResponse.body) {
-          await streamFailure(
-            controller,
-            "The guidance model did not return a usable stream. Please try again."
-          );
+          await streamFallbackGuidance(controller);
           return;
         }
 
@@ -226,11 +233,11 @@ export async function POST(request: Request) {
           }
         }
       } catch (error) {
-        const message =
-          error instanceof Error && error.name === "AbortError"
-            ? "Guidance generation timed out or was cancelled."
-            : "Unable to generate guidance right now.";
-        await streamFailure(controller, message);
+        if (error instanceof Error && error.name === "AbortError") {
+          await streamFallbackGuidance(controller);
+          return;
+        }
+        await streamFailure(controller, "Unable to generate guidance right now.");
       }
     },
   });

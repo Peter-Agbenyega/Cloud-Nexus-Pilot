@@ -306,6 +306,7 @@ export function useTranscriptionWorkflow(
   const isCreatingTranscriptRef = useRef(false);
   const transcriptCreationPromiseRef = useRef<Promise<TranscriptRecord> | null>(null);
   const aiQuestionInFlightRef = useRef(false);
+  const pendingAiQuestionDetectionRef = useRef(false);
   const aiQuestionAbortRef = useRef<AbortController | null>(null);
   const incompleteQuestionTimerRef = useRef<number | null>(null);
   const pendingIncompleteQuestionRef = useRef("");
@@ -761,6 +762,7 @@ export function useTranscriptionWorkflow(
     segments: TranscriptSegment[]
   ) {
     if (aiQuestionInFlightRef.current) {
+      pendingAiQuestionDetectionRef.current = true;
       return;
     }
 
@@ -828,6 +830,10 @@ export function useTranscriptionWorkflow(
           aiQuestionAbortRef.current = null;
         }
         aiQuestionInFlightRef.current = false;
+        if (pendingAiQuestionDetectionRef.current) {
+          pendingAiQuestionDetectionRef.current = false;
+          runQuestionDetection(segmentsRef.current);
+        }
       });
   }, []);
 
@@ -840,6 +846,7 @@ export function useTranscriptionWorkflow(
     aiQuestionAbortRef.current?.abort();
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
+    pendingAiQuestionDetectionRef.current = false;
     setAiDetectedQuestion("");
     clearIncompleteQuestionWait();
     void streamingClientRef.current?.stop();

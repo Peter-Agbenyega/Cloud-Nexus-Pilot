@@ -201,7 +201,7 @@ function getLiveIndicatorState(params: {
       label: "Question detected — generating answer...",
     };
   }
-  if (params.answerReadyVisible && params.guidanceStatus === "ready") {
+  if (params.answerReadyVisible && (params.guidanceStatus === "ready" || params.guidanceStatus === "failed")) {
     return {
       color: "#7C6CFF",
       shadow: "rgba(124,108,255,0.5)",
@@ -300,7 +300,8 @@ export function ReadyStateLaunchPanel() {
     setShowCard2(false);
     setShowCard3(false);
     setGuidanceStatus("failed");
-    setAnswerReadyVisible(false);
+    setAnswerReadyVisible(true);
+    window.setTimeout(() => setAnswerReadyVisible(false), 2_000);
   }, []);
 
   useEffect(() => {

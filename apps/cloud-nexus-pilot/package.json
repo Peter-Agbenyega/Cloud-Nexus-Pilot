@@ -12,6 +12,7 @@
     "test:streaming": "node ./scripts/test-streaming-session.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.99.0",
     "@tabler/icons-react": "^3.44.0",
     "next": "^15.2.6",

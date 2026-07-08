@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ReadyStateLaunchPanel } from "@/components/ready-state-launch-panel";
 import { SessionWorkspaceShell } from "@/components/session-workspace-shell";
 
@@ -18,7 +19,9 @@ export default async function WorkspacePage({
         <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
           Practice with a simulated recruiter call scenario
         </p>
-        <SessionWorkspaceShell demoMode />
+        <ErrorBoundary>
+          <SessionWorkspaceShell demoMode />
+        </ErrorBoundary>
       </div>
     );
   }
@@ -31,7 +34,9 @@ export default async function WorkspacePage({
       <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
         Real-time transcription and AI-powered answer guidance
       </p>
-      <ReadyStateLaunchPanel />
+      <ErrorBoundary>
+        <ReadyStateLaunchPanel />
+      </ErrorBoundary>
     </div>
   );
 }

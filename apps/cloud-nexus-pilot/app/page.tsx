@@ -33,10 +33,10 @@ export default function HomePage() {
               LIVE INTERVIEW COPILOT
             </span>
             <h1 className="mt-7 text-4xl font-semibold leading-[1.05] tracking-tight text-[#F0F0FF] sm:text-5xl lg:text-6xl">
-              Your quiet AI helper for interviews and live calls.
+              Your interview copilot that answers before you panic
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#A0A0C0] sm:text-lg">
-              Cloud Nexus Pilot listens, detects the question, and gives you a simple answer path in real time.
+              Real-time coaching in three layers — what to say now, key points to hit, and your full answer in your own voice.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link

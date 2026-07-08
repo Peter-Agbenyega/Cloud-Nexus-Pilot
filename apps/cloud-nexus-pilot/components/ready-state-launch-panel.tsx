@@ -30,6 +30,9 @@ type GuidanceData = {
 };
 
 const GUIDANCE_CONTEXT_CHAR_LIMIT = 1_200;
+const FREE_SESSION_LIMIT = 10;
+const SESSION_COUNT_STORAGE_KEY = "cnp_session_count";
+const ONBOARDING_STORAGE_KEY = "cnp_onboarding_done";
 const FALLBACK_GIST = "That's a great question. Let me take a moment to walk you through my thinking on that.";
 const FALLBACK_GUIDANCE: GuidanceData = {
   gist: FALLBACK_GIST,
@@ -45,6 +48,12 @@ const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
 
 function createStableId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readStoredNumber(key: string): number {
+  if (typeof window === "undefined") return 0;
+  const value = Number.parseInt(window.localStorage.getItem(key) || "0", 10);
+  return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 function inferInterviewIntent(question: string): InterviewIntent {
@@ -253,9 +262,12 @@ export function ReadyStateLaunchPanel() {
   const [showCard2, setShowCard2] = useState(false);
   const [showCard3, setShowCard3] = useState(false);
   const [answerReadyVisible, setAnswerReadyVisible] = useState(false);
+  const [freeSessionCount, setFreeSessionCount] = useState(0);
+  const [onboardingDone, setOnboardingDone] = useState(true);
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
+  const isFreeLimitReached = freeSessionCount >= FREE_SESSION_LIMIT;
 
   async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
     if (sessionExecutionIdRef.current) return sessionExecutionIdRef.current;
@@ -305,6 +317,9 @@ export function ReadyStateLaunchPanel() {
   }, []);
 
   useEffect(() => {
+    setFreeSessionCount(readStoredNumber(SESSION_COUNT_STORAGE_KEY));
+    setOnboardingDone(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === "true");
+
     return () => {
       cancelActiveGuidanceRequest();
       stopActiveStream();
@@ -314,6 +329,12 @@ export function ReadyStateLaunchPanel() {
 
   async function handleStartLiveCopilot() {
     if (typeof window === "undefined") return;
+    const currentSessionCount = readStoredNumber(SESSION_COUNT_STORAGE_KEY);
+    if (currentSessionCount >= FREE_SESSION_LIMIT) {
+      setFreeSessionCount(currentSessionCount);
+      return;
+    }
+
     setLaunchFlowStep("requesting");
     setCaptureState({ status: "requesting", detail: "Choose a browser tab and enable tab audio to continue.", streamId: null });
 
@@ -335,6 +356,10 @@ export function ReadyStateLaunchPanel() {
       } else {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
+
+      const nextSessionCount = Math.min(FREE_SESSION_LIMIT, currentSessionCount + 1);
+      window.localStorage.setItem(SESSION_COUNT_STORAGE_KEY, String(nextSessionCount));
+      setFreeSessionCount(nextSessionCount);
 
       activeStreamRef.current = stream;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
@@ -485,7 +510,10 @@ export function ReadyStateLaunchPanel() {
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
       setAnswerReadyVisible(true);
-      window.setTimeout(() => setAnswerReadyVisible(false), 2_000);
+      window.setTimeout(() => {
+        setAnswerReadyVisible(false);
+        setGuidanceStatus((current) => current === "ready" ? "idle" : current);
+      }, 2_000);
     } catch (error) {
       if (abortController.signal.aborted) return;
       showFallbackGuidance();
@@ -544,6 +572,74 @@ export function ReadyStateLaunchPanel() {
   if (launchFlowStep !== "live") {
     return (
       <div>
+        {!onboardingDone && freeSessionCount === 0 && (
+          <div style={{
+            background: "#13131F",
+            border: "0.5px solid rgba(124,108,255,0.22)",
+            borderRadius: 10,
+            padding: "12px 14px",
+            marginBottom: 14,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "center",
+          }}>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: "#A0A0C0" }}>
+              1. Pick your audio source · 2. Join your interview call · 3. Answers appear here automatically
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                window.localStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
+                setOnboardingDone(true);
+              }}
+              style={{
+                background: "transparent",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 6,
+                color: "#7C6CFF",
+                cursor: "pointer",
+                fontSize: 11,
+                padding: "5px 9px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {isFreeLimitReached ? (
+          <div style={{
+            background: "#13131F",
+            border: "0.5px solid rgba(251,191,36,0.28)",
+            borderRadius: 10,
+            padding: 18,
+          }}>
+            <p style={{ fontSize: 16, fontWeight: 500, color: "#F0F0FF", marginBottom: 6 }}>
+              You've used all 10 free sessions
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: "#A0A0C0", marginBottom: 14 }}>
+              Upgrade to keep using live interview guidance. Your past transcripts stay available.
+            </p>
+            <a
+              href="/pricing"
+              style={{
+                background: "#4F46E5",
+                borderRadius: 8,
+                color: "white",
+                display: "inline-flex",
+                fontSize: 13,
+                fontWeight: 500,
+                padding: "9px 14px",
+                textDecoration: "none",
+              }}
+            >
+              View pricing
+            </a>
+          </div>
+        ) : (
+          <>
         {/* Mode selection cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {/* Microphone card */}
@@ -649,6 +745,8 @@ export function ReadyStateLaunchPanel() {
         {captureState.status === "failed" && (
           <p style={{ fontSize: 12, color: "#EF4444", marginTop: 8 }}>{captureState.detail}</p>
         )}
+          </>
+        )}
       </div>
     );
   }
@@ -690,6 +788,20 @@ export function ReadyStateLaunchPanel() {
           End Session
         </button>
       </div>
+
+      {transcriptionWorkflow.feedback === "Connection unstable — retrying..." && (
+        <div style={{
+          background: "rgba(251,191,36,0.08)",
+          border: "0.5px solid rgba(251,191,36,0.35)",
+          borderRadius: 8,
+          color: "#FBBF24",
+          fontSize: 12,
+          marginBottom: 12,
+          padding: "8px 10px",
+        }}>
+          Connection unstable — retrying...
+        </div>
+      )}
 
       {/* Detected question */}
       {preferredDetectedQuestion && (
@@ -884,7 +996,7 @@ export function ReadyStateLaunchPanel() {
             padding: 12,
             textAlign: "center",
           }}>
-            <p style={{ fontSize: 22, fontWeight: 500, color: "#FBBF24" }}>{Math.max(0, 10 - questionsCoached)}</p>
+            <p style={{ fontSize: 22, fontWeight: 500, color: "#FBBF24" }}>{Math.max(0, FREE_SESSION_LIMIT - freeSessionCount)}</p>
             <p style={{ fontSize: 10, color: "#4A4A6A", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
               Remaining
             </p>

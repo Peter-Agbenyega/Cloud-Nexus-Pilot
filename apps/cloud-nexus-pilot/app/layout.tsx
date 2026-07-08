@@ -3,7 +3,6 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { siteConfig } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,8 +17,14 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
-  description: siteConfig.description,
+  title: "Cloud Nexus Pilot — Real-Time AI Interview Copilot",
+  description:
+    "Live answers for interviews and mock interviews, with real-time coaching and international candidate support.",
+  openGraph: {
+    title: "Cloud Nexus Pilot — Real-Time AI Interview Copilot",
+    description:
+      "Live answers for interviews and mock interviews, with real-time coaching and international candidate support.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

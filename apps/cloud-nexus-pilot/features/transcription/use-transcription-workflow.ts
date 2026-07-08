@@ -133,6 +133,7 @@ const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
 const LIVE_SEGMENT_MERGE_WINDOW_MS = 10_000;
 const SHORT_LIVE_FRAGMENT_WORDS = 8;
 const INCOMPLETE_QUESTION_WAIT_MS = 3_000;
+const CHUNK_UPLOAD_RETRY_BACKOFF_MS = 2_000;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 const WHISPER_SILENCE_HALLUCINATIONS = new Set([
@@ -313,6 +314,7 @@ export function useTranscriptionWorkflow(
   const pendingLiveSegmentRef = useRef("");
   const pendingLiveSegmentAgeRef = useRef<number | null>(null);
   const pendingLiveSegmentSpeakerRef = useRef<number | null>(null);
+  const consecutiveChunkUploadFailuresRef = useRef(0);
   const seedChunkRef = useRef<Blob | null>(null);
   const pendingChunkPartsRef = useRef<Blob[]>([]);
   const pendingChunkBytesRef = useRef(0);
@@ -847,6 +849,7 @@ export function useTranscriptionWorkflow(
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
     pendingAiQuestionDetectionRef.current = false;
+    consecutiveChunkUploadFailuresRef.current = 0;
     setAiDetectedQuestion("");
     clearIncompleteQuestionWait();
     void streamingClientRef.current?.stop();
@@ -965,6 +968,7 @@ export function useTranscriptionWorkflow(
 
         setTransportStatus("streaming-session-connected");
         setTransportFallbackReason("");
+        consecutiveChunkUploadFailuresRef.current = 0;
         activeByteSizeRef.current += audioBlob.size;
         activeContentTypeRef.current = result.contentType || contentType;
 
@@ -1077,32 +1081,25 @@ export function useTranscriptionWorkflow(
           uploadError instanceof Error
             ? uploadError.message
             : "Unable to process the latest audio chunk.";
-        const canContinueSession =
-          streamingClientRef.current !== null || streamingConnectPromiseRef.current !== null;
-        if (canContinueSession) {
-          console.warn("[transcription] live chunk failed; session remains active", {
-            chunkIndex,
-            message,
-          });
-          setError(message);
-          setFeedback("The latest live audio chunk failed, but the session is still listening.");
-          setStatus(transcriptRef.current.trim() ? "receiving-transcript" : "listening");
-          return;
-        }
-        setError(message);
-        setStatus("failed");
-        logStreamingSeam("create-failed", message);
-        await persistCurrentTranscript({
-          transcriptText: transcriptRef.current,
-          segments: segmentsRef.current,
-          status: "failed",
-          source: sourceRef.current,
-          filename: activeFilenameRef.current,
-          contentType: activeContentTypeRef.current,
-          byteSize: activeByteSizeRef.current,
-          captureMode: activeCaptureModeRef.current,
-          errorMessage: message,
+        consecutiveChunkUploadFailuresRef.current += 1;
+        console.warn("[transcription] live chunk failed; retrying without ending session", {
+          chunkIndex,
+          consecutiveFailures: consecutiveChunkUploadFailuresRef.current,
+          message,
         });
+        setError("");
+        setFeedback(
+          consecutiveChunkUploadFailuresRef.current >= 3
+            ? "Connection unstable — retrying..."
+            : "The latest live audio chunk failed, but the session is still listening."
+        );
+        setStatus(transcriptRef.current.trim() ? "receiving-transcript" : "listening");
+        window.setTimeout(() => {
+          if (recorderRef.current?.state === "recording" || audioPipelineRef.current) {
+            void processAudioChunk(audioBlob, chunkIndex, nextSource, overrideContentType);
+          }
+        }, CHUNK_UPLOAD_RETRY_BACKOFF_MS);
+        return;
       } finally {
         inFlightChunkCountRef.current = Math.max(0, inFlightChunkCountRef.current - 1);
         setActiveUploads(() => {
@@ -1156,6 +1153,8 @@ export function useTranscriptionWorkflow(
       aiQuestionAbortRef.current?.abort();
       aiQuestionAbortRef.current = null;
       aiQuestionInFlightRef.current = false;
+      pendingAiQuestionDetectionRef.current = false;
+      consecutiveChunkUploadFailuresRef.current = 0;
       setAiDetectedQuestion("");
       clearIncompleteQuestionWait();
       pendingLiveSegmentRef.current = "";

@@ -10,7 +10,7 @@ const FALLBACK_GUIDANCE = {
   gist: "Great question — give me a second to think through that.",
   key_points: ["Clarify the problem", "Show your process", "End with impact"],
   full_answer:
-    "That's a great question. Let me take a moment to walk you through my thinking on that. I want to make sure I explain the situation clearly, what I was responsible for, and how I approached the problem step by step. The main thing I focus on in those moments is staying calm, understanding the root issue, communicating clearly with the people involved, and then choosing a practical path forward.",
+    "That's a great question. Let me take a moment to walk you through my thinking on that. I want to make sure I explain the situation clearly, what I was responsible for, and how I approached the problem step by step. The main thing I focus on in those moments is staying calm, understanding the root issue, communicating clearly with the people involved, and choosing a practical path forward. From there, I would explain the tradeoffs, make the next step clear, and connect the answer back to the result the team needed.",
 };
 
 type GuidanceRequestBody = {
@@ -20,6 +20,8 @@ type GuidanceRequestBody = {
   promptRef?: unknown;
   userBackground?: unknown;
 };
+
+type GuidancePayload = typeof FALLBACK_GUIDANCE;
 
 function toSseChunk(payload: unknown): Uint8Array {
   return new TextEncoder().encode(`data: ${JSON.stringify(payload)}\n\n`);
@@ -80,6 +82,15 @@ async function streamFallbackGuidance(controller: ReadableStreamDefaultControlle
   controller.close();
 }
 
+async function streamGuidancePayload(
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  payload: GuidancePayload
+) {
+  controller.enqueue(toSseChunk({ type: "chunk", content: JSON.stringify(payload) }));
+  controller.enqueue(toSseChunk({ type: "done" }));
+  controller.close();
+}
+
 function getOpenAiModel(): string {
   return process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
 }
@@ -110,6 +121,66 @@ function createTimeoutSignal(parentSignal: AbortSignal, timeoutMs: number): Abor
   }
 
   return controller.signal;
+}
+
+function limitWords(text: string, maxWords: number): string {
+  return text.trim().split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
+}
+
+function normalizeGuidancePayload(value: unknown): GuidancePayload {
+  if (!value || typeof value !== "object") return FALLBACK_GUIDANCE;
+  const record = value as Record<string, unknown>;
+  const gist =
+    typeof record.gist === "string" && record.gist.trim()
+      ? limitWords(record.gist, 18)
+      : FALLBACK_GUIDANCE.gist;
+  const keyPoints = Array.isArray(record.key_points)
+    ? record.key_points
+        .filter((point): point is string => typeof point === "string" && point.trim().length > 0)
+        .slice(0, 3)
+        .map((point) => limitWords(point, 9))
+    : [];
+  const fullAnswer =
+    typeof record.full_answer === "string" && record.full_answer.trim()
+      ? limitWords(record.full_answer, 120)
+      : FALLBACK_GUIDANCE.full_answer;
+
+  while (keyPoints.length < 3) {
+    keyPoints.push(FALLBACK_GUIDANCE.key_points[keyPoints.length]);
+  }
+
+  return {
+    gist,
+    key_points: keyPoints,
+    full_answer: fullAnswer,
+  };
+}
+
+function parseGuidancePayload(rawText: string): GuidancePayload {
+  const stripped = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+
+  if (jsonMatch) {
+    try {
+      return normalizeGuidancePayload(JSON.parse(jsonMatch[0]));
+    } catch {
+      // Fall through to regex extraction below.
+    }
+  }
+
+  const gistMatch = stripped.match(/"gist"\s*:\s*"([^"]+)"/i) ?? stripped.match(/gist\s*[:\-]\s*([^\n.?!]+[.?!]?)/i);
+  if (gistMatch?.[1]) {
+    return {
+      ...FALLBACK_GUIDANCE,
+      gist: limitWords(gistMatch[1], 18),
+    };
+  }
+
+  return FALLBACK_GUIDANCE;
 }
 
 export async function POST(request: Request) {
@@ -179,6 +250,7 @@ export async function POST(request: Request) {
         const reader = openAiResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let modelContent = "";
 
         while (true) {
           const { done, value } = await reader.read();
@@ -199,19 +271,27 @@ export async function POST(request: Request) {
               const dataText = dataLines.join("\n");
 
               if (dataText === "[DONE]") {
-                controller.enqueue(toSseChunk({ type: "done" }));
-                controller.close();
+                await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
                 return;
               }
 
-              const payload = JSON.parse(dataText) as {
+              let payload: {
                 choices?: Array<{ delta?: { content?: string | null } }>;
                 error?: { message?: string };
               };
+              try {
+                payload = JSON.parse(dataText) as {
+                  choices?: Array<{ delta?: { content?: string | null } }>;
+                  error?: { message?: string };
+                };
+              } catch {
+                await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
+                return;
+              }
 
               const token = payload.choices?.[0]?.delta?.content;
               if (typeof token === "string" && token.length > 0) {
-                controller.enqueue(toSseChunk({ type: "chunk", content: token }));
+                modelContent += token;
               }
 
               if (payload.error) {
@@ -227,8 +307,7 @@ export async function POST(request: Request) {
           }
 
           if (done) {
-            controller.enqueue(toSseChunk({ type: "done" }));
-            controller.close();
+            await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
             return;
           }
         }

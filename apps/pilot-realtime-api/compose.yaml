@@ -11,6 +11,10 @@ services:
     env_file:
       - .env
 
+    # Keep the container port aligned with the Docker health check.
+    environment:
+      PORT: "3010"
+
     ports:
       - "127.0.0.1:3010:3010"
 

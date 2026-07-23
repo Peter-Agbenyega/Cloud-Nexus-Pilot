@@ -3,6 +3,7 @@ import websocket from "@fastify/websocket";
 import Fastify from "fastify";
 
 import { getEnvironment } from "./env.js";
+import { registerSessionRoute } from "./sessionRoute.js";
 
 async function buildServer() {
   const env = getEnvironment();
@@ -22,6 +23,8 @@ async function buildServer() {
   });
 
   await app.register(websocket);
+
+  registerSessionRoute(app);
 
   app.get("/health", async () => {
     return {

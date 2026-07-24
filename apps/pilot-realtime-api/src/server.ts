@@ -1,12 +1,15 @@
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import Fastify from "fastify";
+import { pathToFileURL } from "node:url";
 
 import { getEnvironment } from "./env.js";
+import { getCorsOriginOption, parseOriginPolicy } from "./originPolicy.js";
 import { registerSessionRoute } from "./sessionRoute.js";
 
-async function buildServer() {
+export async function buildServer() {
   const env = getEnvironment();
+  const originPolicy = parseOriginPolicy(env.CORS_ORIGIN);
 
   const app = Fastify({
     logger: {
@@ -15,16 +18,13 @@ async function buildServer() {
   });
 
   await app.register(cors, {
-    origin:
-      env.CORS_ORIGIN === "*"
-        ? true
-        : env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
+    origin: getCorsOriginOption(originPolicy),
     credentials: true,
   });
 
   await app.register(websocket);
 
-  registerSessionRoute(app);
+  registerSessionRoute(app, originPolicy);
 
   app.get("/health", async () => {
     return {
@@ -66,4 +66,6 @@ async function startServer() {
   }
 }
 
-void startServer();
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void startServer();
+}

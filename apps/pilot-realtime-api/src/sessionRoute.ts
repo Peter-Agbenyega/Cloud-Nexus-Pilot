@@ -2,17 +2,26 @@ import { randomUUID } from "node:crypto";
 
 import type { FastifyInstance } from "fastify";
 
+import { isWebSocketOriginAllowed, type OriginPolicy } from "./originPolicy.js";
 import {
   parseClientMessage,
   serializeServerMessage,
   WEBSOCKET_PROTOCOL_VERSION,
 } from "./sessionProtocol.js";
 
-export function registerSessionRoute(app: FastifyInstance): void {
+export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginPolicy): void {
   app.get(
     "/ws/session",
     {
       websocket: true,
+      preValidation: async (request, reply) => {
+        if (isWebSocketOriginAllowed(request.headers.origin, originPolicy)) {
+          return;
+        }
+
+        request.log.warn("Rejected WebSocket session from unauthorized origin");
+        await reply.code(403).send({ error: "Forbidden" });
+      },
     },
     (socket, request) => {
       const sessionId = randomUUID();

@@ -7,7 +7,8 @@
     "dev": "npm run build && node dist/server.js",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "test": "npm run build && node --test dist/*.test.js",
+    "test": "npm run build && npm run test:run",
+    "test:run": "node --test dist/*.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo 'pilot-realtime-api: no lint configured yet'"
   },

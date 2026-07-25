@@ -8,13 +8,20 @@ import {
   serializeServerMessage,
   WEBSOCKET_PROTOCOL_VERSION,
 } from "./sessionProtocol.js";
+import { WS_CLOSE_CODES, type WebSocketRuntime } from "./wsRuntime.js";
 
-export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginPolicy): void {
+export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginPolicy, runtime: WebSocketRuntime): void {
   app.get(
     "/ws/session",
     {
       websocket: true,
       preValidation: async (request, reply) => {
+        if (!runtime.canAcceptHttpUpgrade()) {
+          request.log.info("Rejected WebSocket session while server is shutting down");
+          await reply.code(503).send({ error: "Service Unavailable" });
+          return;
+        }
+
         if (isWebSocketOriginAllowed(request.headers.origin, originPolicy)) {
           return;
         }
@@ -26,10 +33,16 @@ export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginP
     (socket, request) => {
       const sessionId = randomUUID();
       const connectedAt = new Date().toISOString();
+      const registration = runtime.registerSession(socket, request, sessionId);
+
+      if (!registration.accepted) {
+        return;
+      }
 
       request.log.info(
         {
           sessionId,
+          clientIp: registration.clientIp,
         },
         "Realtime WebSocket session connected"
       );
@@ -63,6 +76,8 @@ export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginP
           return;
         }
 
+        registration.noteValidClientActivity();
+
         switch (result.message.type) {
           case "ping":
             socket.send(
@@ -82,15 +97,17 @@ export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginP
               })
             );
 
-            socket.close(1000, "Session ended by client");
+            socket.close(WS_CLOSE_CODES.normal, "Session ended by client");
             break;
         }
       });
 
       socket.on("close", (code) => {
+        registration.cleanup();
         request.log.info(
           {
             sessionId,
+            clientIp: registration.clientIp,
             closeCode: code,
           },
           "Realtime WebSocket session disconnected"
@@ -98,10 +115,12 @@ export function registerSessionRoute(app: FastifyInstance, originPolicy: OriginP
       });
 
       socket.on("error", (error) => {
+        registration.cleanup();
         request.log.error(
           {
             sessionId,
-            error,
+            clientIp: registration.clientIp,
+            err: error,
           },
           "Realtime WebSocket session error"
         );

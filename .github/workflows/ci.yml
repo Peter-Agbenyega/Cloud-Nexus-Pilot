@@ -35,3 +35,6 @@ jobs:
         run: npm run typecheck --workspace ${{ matrix.project }}
       - name: Build
         run: npm run build --workspace ${{ matrix.project }}
+      - name: Test realtime API
+        if: matrix.project == 'apps/pilot-realtime-api'
+        run: npm run test:run --workspace ${{ matrix.project }}

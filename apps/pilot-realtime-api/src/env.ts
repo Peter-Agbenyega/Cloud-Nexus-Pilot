@@ -1,4 +1,40 @@
 import { z } from "zod";
+import { isIP } from "node:net";
+
+function isTrustedProxyEntry(value: string): boolean {
+  const [address, prefix, extra] = value.split("/");
+
+  if (address === undefined || address.length === 0 || extra !== undefined || isIP(address) === 0) {
+    return false;
+  }
+
+  if (prefix === undefined) {
+    return true;
+  }
+
+  if (!/^\d+$/.test(prefix)) {
+    return false;
+  }
+
+  const prefixLength = Number(prefix);
+  const maxPrefixLength = isIP(address) === 4 ? 32 : 128;
+  return prefixLength >= 0 && prefixLength <= maxPrefixLength;
+}
+
+const TrustedProxyCidrsSchema = z.preprocess((value) => {
+  if (value === undefined || value === "") {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+  }
+
+  return value;
+}, z.array(z.string().refine(isTrustedProxyEntry, "Must be an IP address or CIDR range.")).default([]));
 
 const EnvironmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -14,6 +50,7 @@ const EnvironmentSchema = z.object({
   WS_HEARTBEAT_INTERVAL_MS: z.coerce.number().int().positive().default(30_000),
   WS_IDLE_TIMEOUT_MS: z.coerce.number().int().positive().default(5 * 60_000),
   WS_SHUTDOWN_GRACE_MS: z.coerce.number().int().positive().default(10_000),
+  WS_TRUSTED_PROXY_CIDRS: TrustedProxyCidrsSchema,
 }).superRefine((environment, context) => {
   if (environment.NODE_ENV === "production" && environment.CORS_ORIGIN.split(",").map((origin) => origin.trim()).includes("*")) {
     context.addIssue({
@@ -26,7 +63,7 @@ const EnvironmentSchema = z.object({
 
 export type AppEnvironment = z.infer<typeof EnvironmentSchema>;
 
-export function getEnvironment(source: NodeJS.ProcessEnv | Record<string, string | number | undefined> = process.env): AppEnvironment {
+export function getEnvironment(source: NodeJS.ProcessEnv | Record<string, unknown> = process.env): AppEnvironment {
   const result = EnvironmentSchema.safeParse(source);
 
   if (!result.success) {

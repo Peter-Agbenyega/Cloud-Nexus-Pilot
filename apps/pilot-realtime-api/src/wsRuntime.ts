@@ -43,6 +43,7 @@ type ManagedSession = {
 export class WebSocketRuntime {
   private readonly sessions = new Map<string, ManagedSession>();
   private readonly sessionsByIp = new Map<string, number>();
+  private readonly shutdownDrainWaiters = new Set<() => void>();
   private shuttingDown = false;
 
   constructor(private readonly config: WebSocketRuntimeConfig) {}
@@ -147,6 +148,8 @@ export class WebSocketRuntime {
       } else {
         this.sessionsByIp.set(clientIp, remainingForIp);
       }
+
+      this.notifyShutdownDrainWaiters();
     };
 
     const noteValidClientActivity = (): void => {
@@ -174,6 +177,19 @@ export class WebSocketRuntime {
     };
   }
 
+  private notifyShutdownDrainWaiters(): void {
+    if (!this.shuttingDown || this.sessions.size > 0) {
+      return;
+    }
+
+    const waiters = Array.from(this.shutdownDrainWaiters);
+    this.shutdownDrainWaiters.clear();
+
+    for (const waiter of waiters) {
+      waiter();
+    }
+  }
+
   async shutdown(app: FastifyInstance, graceMs = this.config.WS_SHUTDOWN_GRACE_MS): Promise<void> {
     this.shuttingDown = true;
     app.log.info({ activeSessions: this.sessions.size, graceMs }, "Realtime API graceful shutdown started");
@@ -183,17 +199,41 @@ export class WebSocketRuntime {
       session.socket.close(WS_CLOSE_CODES.serviceRestart, "Service restarting");
     }
 
+    let graceExpired = false;
     await new Promise<void>((resolve) => {
-      const graceTimer = setTimeout(resolve, graceMs);
       if (this.sessions.size === 0) {
-        clearTimeout(graceTimer);
         resolve();
+        return;
       }
+
+      let resolved = false;
+      let graceTimer: NodeJS.Timeout | undefined;
+      const finish = (): void => {
+        if (resolved) {
+          return;
+        }
+
+        resolved = true;
+        if (graceTimer !== undefined) {
+          clearTimeout(graceTimer);
+        }
+        this.shutdownDrainWaiters.delete(finish);
+        resolve();
+      };
+      graceTimer = setTimeout(() => {
+        graceExpired = true;
+        finish();
+      }, graceMs);
+
+      this.shutdownDrainWaiters.add(finish);
+      this.notifyShutdownDrainWaiters();
     });
 
-    for (const [sessionId, session] of this.sessions) {
-      app.log.warn({ sessionId, clientIp: session.clientIp }, "Terminating WebSocket session after shutdown grace period");
-      session.socket.terminate();
+    if (graceExpired) {
+      for (const [sessionId, session] of this.sessions) {
+        app.log.warn({ sessionId, clientIp: session.clientIp }, "Terminating WebSocket session after shutdown grace period");
+        session.socket.terminate();
+      }
     }
 
     await app.close();

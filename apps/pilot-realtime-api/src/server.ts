@@ -19,6 +19,10 @@ export type BuildServerOptions = {
   env?: AppEnvironment;
 };
 
+export function getTrustProxyOption(env: Pick<AppEnvironment, "WS_TRUSTED_PROXY_CIDRS">): false | string[] {
+  return env.WS_TRUSTED_PROXY_CIDRS.length === 0 ? false : env.WS_TRUSTED_PROXY_CIDRS;
+}
+
 export async function buildServer(options: BuildServerOptions = {}) {
   const env = options.env ?? getEnvironment();
   const originPolicy = parseOriginPolicy(env.CORS_ORIGIN);
@@ -31,6 +35,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
     logController: new LogController({
       disableRequestLogging: true,
     }),
+    trustProxy: getTrustProxyOption(env),
   });
 
   app.decorate("webSocketRuntime", runtime);

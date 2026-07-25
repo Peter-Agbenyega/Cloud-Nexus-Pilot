@@ -14,6 +14,10 @@ services:
     # Keep the container port aligned with the Docker health check.
     environment:
       PORT: "3010"
+      # Leave WS_TRUSTED_PROXY_CIDRS unset unless the only inbound path is a
+      # deliberately configured local reverse proxy that overwrites
+      # X-Forwarded-* headers before proxying to this loopback-bound port.
+      # Example for a same-host proxy: WS_TRUSTED_PROXY_CIDRS: "127.0.0.1/32"
 
     ports:
       - "127.0.0.1:3010:3010"

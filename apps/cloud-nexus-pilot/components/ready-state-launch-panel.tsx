@@ -9,6 +9,7 @@ import {
   getCreateOrResumeSessionEndpointUrl,
 } from "@/lib/contracts/session-execution-client";
 import type { SessionExecutionId } from "@/lib/contracts/session-execution";
+import { usePilotRealtimeConnection } from "@/lib/realtime/use-pilot-realtime";
 
 /* ================================================================
    TYPES & CONSTANTS — unchanged logic
@@ -238,6 +239,43 @@ function getLiveIndicatorState(params: {
   };
 }
 
+function getRealtimeStatusLabel(state: ReturnType<typeof usePilotRealtimeConnection>["state"]) {
+  switch (state) {
+    case "connecting":
+      return "Connecting";
+    case "authenticating":
+      return "Authenticating";
+    case "reconnecting":
+      return "Reconnecting";
+    case "ready":
+      return "Realtime connected";
+    case "closed":
+      return "Disconnected";
+    case "error":
+      return "Connection error";
+    case "idle":
+    default:
+      return "Disconnected";
+  }
+}
+
+function getRealtimeStatusColor(state: ReturnType<typeof usePilotRealtimeConnection>["state"]) {
+  switch (state) {
+    case "ready":
+      return "#2DD4BF";
+    case "connecting":
+    case "authenticating":
+    case "reconnecting":
+      return "#FBBF24";
+    case "error":
+      return "#EF4444";
+    case "closed":
+    case "idle":
+    default:
+      return "#7070A0";
+  }
+}
+
 /* ================================================================
    COMPONENT
    ================================================================ */
@@ -251,6 +289,7 @@ export function ReadyStateLaunchPanel() {
   const lastAutoGuidanceQuestionRef = useRef<string>("");
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({ repositoryMode: "local-only" });
+  const realtimeConnection = usePilotRealtimeConnection();
 
   const [guidanceText, setGuidanceText] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
@@ -387,6 +426,7 @@ export function ReadyStateLaunchPanel() {
 
   async function handleEndSession() {
     cancelActiveGuidanceRequest();
+    realtimeConnection.endSession();
     stopTranscriptionCapture();
     stopActiveStream();
     lastAutoGuidanceQuestionRef.current = "";
@@ -565,6 +605,8 @@ export function ReadyStateLaunchPanel() {
   }, [preferredDetectedQuestion, transcriptSegments]);
 
   const avgResponseTime = questionsCoached > 0 ? `${Math.round((Date.now() - sessionStartTime) / 1000 / questionsCoached)}s` : "--";
+  const realtimeStatusLabel = getRealtimeStatusLabel(realtimeConnection.state);
+  const realtimeStatusColor = getRealtimeStatusColor(realtimeConnection.state);
 
   /* ================================================================
      RENDER — IDLE STATE (two mode cards)
@@ -572,6 +614,24 @@ export function ReadyStateLaunchPanel() {
   if (launchFlowStep !== "live") {
     return (
       <div>
+        <div style={{
+          alignItems: "center",
+          color: realtimeStatusColor,
+          display: "inline-flex",
+          fontSize: 12,
+          gap: 7,
+          marginBottom: 12,
+        }}>
+          <span style={{
+            background: realtimeStatusColor,
+            borderRadius: "50%",
+            display: "inline-block",
+            height: 7,
+            width: 7,
+          }} />
+          {realtimeStatusLabel}
+        </div>
+
         {!onboardingDone && freeSessionCount === 0 && (
           <div style={{
             background: "#13131F",
@@ -767,6 +827,23 @@ export function ReadyStateLaunchPanel() {
               animation: "blink 2s ease-in-out infinite",
             }} />
             <span style={{ fontSize: 13, color: "#A0A0C0" }}>{liveIndicator.label}</span>
+          </div>
+          <div style={{
+            alignItems: "center",
+            color: realtimeStatusColor,
+            display: "inline-flex",
+            fontSize: 11,
+            gap: 6,
+            marginTop: 6,
+          }}>
+            <span style={{
+              background: realtimeStatusColor,
+              borderRadius: "50%",
+              display: "inline-block",
+              height: 6,
+              width: 6,
+            }} />
+            {realtimeStatusLabel}
           </div>
         </div>
         <button

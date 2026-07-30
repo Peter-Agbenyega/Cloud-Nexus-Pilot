@@ -3,6 +3,7 @@ import websocket from "@fastify/websocket";
 import Fastify, { LogController } from "fastify";
 import { pathToFileURL } from "node:url";
 
+import { createSupabaseAuthVerifier, type AuthVerifier } from "./authVerifier.js";
 import { getEnvironment } from "./env.js";
 import type { AppEnvironment } from "./env.js";
 import { getCorsOriginOption, parseOriginPolicy } from "./originPolicy.js";
@@ -16,7 +17,9 @@ declare module "fastify" {
 }
 
 export type BuildServerOptions = {
+  authVerifier?: AuthVerifier;
   env?: AppEnvironment;
+  loggerStream?: NodeJS.WritableStream;
 };
 
 export function getTrustProxyOption(env: Pick<AppEnvironment, "WS_TRUSTED_PROXY_CIDRS">): false | string[] {
@@ -27,10 +30,23 @@ export async function buildServer(options: BuildServerOptions = {}) {
   const env = options.env ?? getEnvironment();
   const originPolicy = parseOriginPolicy(env.CORS_ORIGIN);
   const runtime = new WebSocketRuntime(env);
+  const authVerifier =
+    options.authVerifier ??
+    (env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY
+      ? createSupabaseAuthVerifier({
+          SUPABASE_URL: env.SUPABASE_URL,
+          SUPABASE_PUBLISHABLE_KEY: env.SUPABASE_PUBLISHABLE_KEY,
+        })
+      : undefined);
+
+  if (authVerifier === undefined) {
+    throw new Error("WebSocket authentication is not configured");
+  }
 
   const app = Fastify({
     logger: {
       level: env.NODE_ENV === "development" ? "debug" : "info",
+      stream: options.loggerStream,
     },
     logController: new LogController({
       disableRequestLogging: true,
@@ -55,7 +71,7 @@ export async function buildServer(options: BuildServerOptions = {}) {
     },
   });
 
-  registerSessionRoute(app, originPolicy, runtime);
+  registerSessionRoute(app, originPolicy, runtime, authVerifier, env);
 
   app.get("/health", async () => {
     return {

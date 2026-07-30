@@ -1,6 +1,22 @@
 import { z } from "zod";
 
-export const WEBSOCKET_PROTOCOL_VERSION = "1.0" as const;
+export const WEBSOCKET_PROTOCOL_VERSION = "1.1" as const;
+
+const AccessTokenSchema = z.string().trim().min(1).max(8_192);
+
+const AuthenticateMessageSchema = z
+  .object({
+    type: z.literal("session.authenticate"),
+    accessToken: AccessTokenSchema,
+  })
+  .strict();
+
+const ReauthenticateMessageSchema = z
+  .object({
+    type: z.literal("session.reauthenticate"),
+    accessToken: AccessTokenSchema,
+  })
+  .strict();
 
 const PingMessageSchema = z
   .object({
@@ -17,6 +33,8 @@ const EndSessionMessageSchema = z
   .strict();
 
 export const ClientMessageSchema = z.discriminatedUnion("type", [
+  AuthenticateMessageSchema,
+  ReauthenticateMessageSchema,
   PingMessageSchema,
   EndSessionMessageSchema,
 ]);
@@ -25,10 +43,22 @@ export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 
 export type ServerMessage =
   | {
+      type: "session.auth_required";
+      sessionId: string;
+      protocolVersion: typeof WEBSOCKET_PROTOCOL_VERSION;
+      authTimeoutMs: number;
+    }
+  | {
       type: "session.ready";
       sessionId: string;
       protocolVersion: typeof WEBSOCKET_PROTOCOL_VERSION;
       connectedAt: string;
+      expiresAt: string;
+    }
+  | {
+      type: "session.auth_refreshed";
+      sessionId: string;
+      expiresAt: string;
     }
   | {
       type: "pong";
@@ -41,7 +71,7 @@ export type ServerMessage =
     }
   | {
       type: "error";
-      code: "invalid_json" | "invalid_message";
+      code: "authentication_failed" | "invalid_json" | "invalid_message";
       message: string;
     };
 

@@ -36,14 +36,21 @@ const TrustedProxyCidrsSchema = z.preprocess((value) => {
   return value;
 }, z.array(z.string().refine(isTrustedProxyEntry, "Must be an IP address or CIDR range.")).default([]));
 
+function hasServiceRoleMarker(value: string): boolean {
+  return /service[_-]?role/i.test(value) || value.startsWith("sb_secret_");
+}
+
 const EnvironmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   HOST: z.string().default("0.0.0.0"),
   PORT: z.coerce.number().int().positive().default(3010),
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
+  SUPABASE_URL: z.string().trim().optional(),
+  SUPABASE_PUBLISHABLE_KEY: z.string().trim().optional(),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default("gpt-4o-mini"),
   DEEPGRAM_API_KEY: z.string().optional(),
+  WS_AUTH_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   WS_MAX_PAYLOAD_BYTES: z.coerce.number().int().positive().default(64 * 1024),
   WS_MAX_CONNECTIONS: z.coerce.number().int().positive().default(100),
   WS_MAX_CONNECTIONS_PER_IP: z.coerce.number().int().positive().default(10),
@@ -57,6 +64,49 @@ const EnvironmentSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ["CORS_ORIGIN"],
       message: "Production CORS_ORIGIN must list explicit origins.",
+    });
+  }
+
+  if (environment.NODE_ENV === "production" && !environment.SUPABASE_URL) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["SUPABASE_URL"],
+      message: "Production SUPABASE_URL is required for WebSocket authentication.",
+    });
+  }
+
+  if (environment.NODE_ENV === "production" && !environment.SUPABASE_PUBLISHABLE_KEY) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["SUPABASE_PUBLISHABLE_KEY"],
+      message: "Production SUPABASE_PUBLISHABLE_KEY is required for WebSocket authentication.",
+    });
+  }
+
+  if (environment.SUPABASE_URL) {
+    try {
+      const supabaseUrl = new URL(environment.SUPABASE_URL);
+      if (environment.NODE_ENV !== "test" && supabaseUrl.protocol !== "https:") {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["SUPABASE_URL"],
+          message: "SUPABASE_URL must use HTTPS outside test mode.",
+        });
+      }
+    } catch {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["SUPABASE_URL"],
+        message: "SUPABASE_URL must be a valid URL.",
+      });
+    }
+  }
+
+  if (environment.SUPABASE_PUBLISHABLE_KEY && hasServiceRoleMarker(environment.SUPABASE_PUBLISHABLE_KEY)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["SUPABASE_PUBLISHABLE_KEY"],
+      message: "SUPABASE_PUBLISHABLE_KEY must not be a service-role secret.",
     });
   }
 });

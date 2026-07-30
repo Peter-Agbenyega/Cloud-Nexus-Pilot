@@ -5,6 +5,7 @@ import type { AppEnvironment } from "./env.js";
 
 export const WS_CLOSE_CODES = {
   normal: 1000,
+  policyViolation: 1008,
   goingAway: 1001,
   messageTooLarge: 1009,
   serviceRestart: 1012,
@@ -27,6 +28,8 @@ export type SessionRegistration =
       clientIp: string;
       cleanup: () => void;
       noteValidClientActivity: () => void;
+      onShutdownStart: (callback: () => void) => () => void;
+      setAuthenticatedUser: (userId: string, expiresAtEpochSeconds: number) => void;
     }
   | {
       accepted: false;
@@ -38,6 +41,9 @@ type ManagedSession = {
   heartbeatTimer: NodeJS.Timeout;
   idleTimer: NodeJS.Timeout;
   socket: WebSocket;
+  shutdownCallbacks: Set<() => void>;
+  tokenExpiresAtEpochSeconds?: number;
+  userId?: string;
 };
 
 export class WebSocketRuntime {
@@ -126,6 +132,7 @@ export class WebSocketRuntime {
       heartbeatTimer,
       idleTimer,
       isAlive: true,
+      shutdownCallbacks: new Set(),
       socket,
     };
 
@@ -140,6 +147,7 @@ export class WebSocketRuntime {
 
       clearInterval(activeSession.heartbeatTimer);
       clearTimeout(activeSession.idleTimer);
+      activeSession.shutdownCallbacks.clear();
       this.sessions.delete(sessionId);
 
       const remainingForIp = (this.sessionsByIp.get(clientIp) ?? 1) - 1;
@@ -161,6 +169,28 @@ export class WebSocketRuntime {
       activeSession.idleTimer.refresh();
     };
 
+    const setAuthenticatedUser = (userId: string, expiresAtEpochSeconds: number): void => {
+      const activeSession = this.sessions.get(sessionId);
+      if (activeSession === undefined) {
+        return;
+      }
+
+      activeSession.userId = userId;
+      activeSession.tokenExpiresAtEpochSeconds = expiresAtEpochSeconds;
+    };
+
+    const onShutdownStart = (callback: () => void): (() => void) => {
+      const activeSession = this.sessions.get(sessionId);
+      if (activeSession === undefined) {
+        return () => {};
+      }
+
+      activeSession.shutdownCallbacks.add(callback);
+      return () => {
+        activeSession.shutdownCallbacks.delete(callback);
+      };
+    };
+
     socket.on("pong", () => {
       const activeSession = this.sessions.get(sessionId);
       if (activeSession !== undefined) {
@@ -174,6 +204,8 @@ export class WebSocketRuntime {
       clientIp,
       cleanup,
       noteValidClientActivity,
+      onShutdownStart,
+      setAuthenticatedUser,
     };
   }
 
@@ -196,6 +228,21 @@ export class WebSocketRuntime {
 
     for (const [sessionId, session] of this.sessions) {
       app.log.info({ sessionId, clientIp: session.clientIp, closeCode: WS_CLOSE_CODES.serviceRestart }, "Closing WebSocket session for shutdown");
+      const shutdownCallbacks = Array.from(session.shutdownCallbacks);
+      for (const callback of shutdownCallbacks) {
+        try {
+          callback();
+        } catch {
+          app.log.error(
+            {
+              sessionId,
+              clientIp: session.clientIp,
+              event: "shutdown_callback_failed",
+            },
+            "Realtime WebSocket shutdown callback failed"
+          );
+        }
+      }
       session.socket.close(WS_CLOSE_CODES.serviceRestart, "Service restarting");
     }
 

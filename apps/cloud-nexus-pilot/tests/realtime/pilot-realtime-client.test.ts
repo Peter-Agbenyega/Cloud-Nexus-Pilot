@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  disconnectPilotRealtimeForSignedOut,
   PilotRealtimeClient,
   type PilotRealtimeAuthProvider,
   type PilotRealtimeSocket,
@@ -485,4 +486,180 @@ test("session.end prevents reconnect when the server close arrives first", () =>
 
   assert.equal(client.snapshot.state, "closed");
   assert.equal(scheduled.pendingCount(), 0);
+});
+
+test("SIGNED_OUT closes the active WebSocket", () => {
+  const socket = new MockSocket();
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => socket,
+  });
+
+  client.connect();
+  socket.emitOpen();
+  socket.emitMessage(ready());
+  disconnectPilotRealtimeForSignedOut(client);
+
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(socket.closeCalls[0]?.code, 1000);
+  assert.equal(client.snapshot.state, "closed");
+});
+
+test("SIGNED_OUT prevents reconnect", () => {
+  const scheduled = createScheduler();
+  const socket = new MockSocket();
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    scheduler: scheduled.scheduler,
+    socketFactory: () => socket,
+  });
+
+  client.connect();
+  socket.emitOpen();
+  socket.emitClose(1012);
+  assert.equal(scheduled.pendingCount(), 1);
+  disconnectPilotRealtimeForSignedOut(client);
+
+  assert.equal(client.snapshot.state, "closed");
+  assert.equal(scheduled.pendingCount(), 0);
+});
+
+test("a later normal session start can connect again after SIGNED_OUT", () => {
+  const sockets: MockSocket[] = [];
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["first-token", "second-token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => {
+      const socket = new MockSocket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  client.connect();
+  sockets[0]!.emitOpen();
+  disconnectPilotRealtimeForSignedOut(client);
+  client.connect();
+
+  assert.equal(sockets.length, 2);
+  assert.equal(sockets[0]!.readyState, sockets[0]!.CLOSED);
+  assert.equal(sockets[1]!.readyState, sockets[1]!.CONNECTING);
+});
+
+test("first live session start connects", () => {
+  const sockets: MockSocket[] = [];
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => {
+      const socket = new MockSocket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  client.connect();
+
+  assert.equal(sockets.length, 1);
+  assert.equal(client.snapshot.state, "connecting");
+});
+
+test("endSession closes the active WebSocket", () => {
+  const socket = new MockSocket();
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => socket,
+  });
+
+  client.connect();
+  socket.emitOpen();
+  socket.emitMessage(ready());
+  client.endSession("done");
+
+  assert.equal(socket.sent[0], serializePilotRealtimeClientMessage({ type: "session.end", reason: "done" }));
+  assert.equal(socket.closeCalls.length, 1);
+  assert.equal(socket.closeCalls[0]?.code, 1000);
+  assert.equal(client.snapshot.state, "closed");
+});
+
+test("starting a second live session reconnects after session.end", () => {
+  const sockets: MockSocket[] = [];
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["first-token", "second-token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => {
+      const socket = new MockSocket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  client.connect();
+  sockets[0]!.emitOpen();
+  sockets[0]!.emitMessage(ready());
+  client.endSession("done");
+  client.connect();
+
+  assert.equal(sockets.length, 2);
+  assert.equal(sockets[0]!.readyState, sockets[0]!.CLOSED);
+  assert.equal(sockets[1]!.readyState, sockets[1]!.CONNECTING);
+});
+
+test("only one live WebSocket exists when connect is called repeatedly", () => {
+  const sockets: MockSocket[] = [];
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    socketFactory: () => {
+      const socket = new MockSocket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  client.connect();
+  client.connect();
+  sockets[0]!.emitOpen();
+  client.connect();
+
+  const liveSockets = sockets.filter((socket) => socket.readyState !== socket.CLOSED);
+  assert.equal(sockets.length, 1);
+  assert.equal(liveSockets.length, 1);
+});
+
+test("connect does nothing while connecting, authenticating, ready, or reconnecting", () => {
+  const scheduled = createScheduler();
+  const sockets: MockSocket[] = [];
+  const client = new PilotRealtimeClient({
+    authProvider: createAuthProvider(["token"]),
+    url: "ws://localhost:3010/ws/session",
+    scheduler: scheduled.scheduler,
+    socketFactory: () => {
+      const socket = new MockSocket();
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  client.connect();
+  client.connect();
+  assert.equal(sockets.length, 1);
+
+  sockets[0]!.emitOpen();
+  sockets[0]!.emitMessage(authRequired());
+  client.connect();
+  assert.equal(sockets.length, 1);
+
+  sockets[0]!.emitMessage(ready());
+  client.connect();
+  assert.equal(sockets.length, 1);
+
+  sockets[0]!.emitClose(1012);
+  client.connect();
+  assert.equal(client.snapshot.state, "reconnecting");
+  assert.equal(sockets.length, 1);
+  assert.equal(scheduled.pendingCount(), 1);
 });

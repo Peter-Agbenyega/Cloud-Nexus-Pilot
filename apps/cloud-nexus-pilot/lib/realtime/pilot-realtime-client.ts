@@ -59,6 +59,8 @@ export type PilotRealtimeClientOptions = {
   onMessage?: (message: PilotRealtimeServerMessage) => void;
 };
 
+export type PilotRealtimeDisconnectClient = Pick<PilotRealtimeClient, "disconnect">;
+
 const SERVICE_RESTART_CLOSE_CODE = 1012;
 const POLICY_VIOLATION_CLOSE_CODE = 1008;
 const NORMAL_CLOSE_CODE = 1000;
@@ -82,6 +84,10 @@ export function getPilotRealtimeWsUrl(): string {
   return process.env.NEXT_PUBLIC_PILOT_REALTIME_WS_URL?.trim() ?? "";
 }
 
+export function disconnectPilotRealtimeForSignedOut(client: PilotRealtimeDisconnectClient): void {
+  client.disconnect("Supabase signed out");
+}
+
 export class PilotRealtimeClient {
   private readonly authProvider: PilotRealtimeAuthProvider;
   private readonly baseReconnectDelayMs: number;
@@ -100,6 +106,7 @@ export class PilotRealtimeClient {
   private reconnectTimer: PilotRealtimeTimerHandle | null = null;
   private reauthInFlight = false;
   private sessionId: string | null = null;
+  private socketListenerCleanup: (() => void) | null = null;
   private socket: PilotRealtimeSocket | null = null;
   private state: PilotRealtimeConnectionState = "idle";
   private stateError: PilotRealtimeStateSnapshot["error"] = null;
@@ -133,12 +140,17 @@ export class PilotRealtimeClient {
       return;
     }
 
+    if (this.state !== "idle" && this.state !== "closed" && this.state !== "error") {
+      return;
+    }
+
     if (this.socket !== null && this.socket.readyState !== this.socket.CLOSED) {
       return;
     }
 
     this.explicitDisconnect = false;
     this.clearReconnectTimer();
+    this.currentReconnectAttempt = 0;
     this.openSocket();
   }
 
@@ -146,6 +158,7 @@ export class PilotRealtimeClient {
     this.explicitDisconnect = true;
     this.generation += 1;
     this.clearReconnectTimer();
+    this.detachSocketListeners();
     this.reauthInFlight = false;
     this.sessionId = null;
     const socket = this.socket;
@@ -165,6 +178,7 @@ export class PilotRealtimeClient {
     this.explicitDisconnect = true;
     this.clearReconnectTimer();
     this.socket?.send(serializePilotRealtimeClientMessage({ type: "session.end", reason }));
+    this.disconnect("Session ended by client");
   }
 
   ping(): void {
@@ -239,6 +253,9 @@ export class PilotRealtimeClient {
 
     const onClose: EventListener = (event): void => {
       removeListeners();
+      if (this.socketListenerCleanup === removeListeners) {
+        this.socketListenerCleanup = null;
+      }
       if (capturedGeneration !== this.generation) {
         return;
       }
@@ -259,6 +276,7 @@ export class PilotRealtimeClient {
     socket.addEventListener("message", onMessage);
     socket.addEventListener("close", onClose);
     socket.addEventListener("error", onError);
+    this.socketListenerCleanup = removeListeners;
   }
 
   private async handleRawMessage(rawMessage: unknown, capturedGeneration: number): Promise<void> {
@@ -321,6 +339,7 @@ export class PilotRealtimeClient {
     this.explicitDisconnect = true;
     this.generation += 1;
     this.clearReconnectTimer();
+    this.detachSocketListeners();
     this.reauthInFlight = false;
     const socket = this.socket;
     this.socket = null;
@@ -373,6 +392,11 @@ export class PilotRealtimeClient {
       this.scheduler.clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+  }
+
+  private detachSocketListeners(): void {
+    this.socketListenerCleanup?.();
+    this.socketListenerCleanup = null;
   }
 
   private setState(state: PilotRealtimeConnectionState, error: PilotRealtimeStateSnapshot["error"]): void {

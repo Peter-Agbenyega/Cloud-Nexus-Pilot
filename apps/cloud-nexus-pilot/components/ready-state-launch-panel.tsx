@@ -376,6 +376,7 @@ export function ReadyStateLaunchPanel() {
 
     setLaunchFlowStep("requesting");
     setCaptureState({ status: "requesting", detail: "Choose a browser tab and enable tab audio to continue.", streamId: null });
+    realtimeConnection.connect();
 
     try {
       stopTranscriptionCapture();

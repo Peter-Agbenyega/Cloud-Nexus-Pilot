@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  disconnectPilotRealtimeForSignedOut,
   getPilotRealtimeWsUrl,
   PilotRealtimeClient,
   type PilotRealtimeStateSnapshot,
@@ -15,6 +16,30 @@ const INITIAL_SNAPSHOT: PilotRealtimeStateSnapshot = {
   error: null,
   reconnectAttempt: 0,
 };
+
+type PilotRealtimeAuthClient = Pick<PilotRealtimeClient, "disconnect" | "reauthenticate">;
+type PilotRealtimeAuthSession = {
+  access_token?: string | null;
+} | null;
+
+export function handlePilotRealtimeAuthStateChange(
+  client: PilotRealtimeAuthClient,
+  event: string,
+  session: PilotRealtimeAuthSession
+): void {
+  if (event === "SIGNED_OUT") {
+    client.disconnect("Supabase signed out");
+    return;
+  }
+
+  if (event !== "TOKEN_REFRESHED" && event !== "SIGNED_IN") {
+    return;
+  }
+  if (!session?.access_token) {
+    return;
+  }
+  client.reauthenticate();
+}
 
 async function getCurrentSupabaseAccessToken(): Promise<string | null> {
   if (supabase === null) {
@@ -52,13 +77,11 @@ export function usePilotRealtimeConnection() {
 
     const authSubscription =
       supabase?.auth.onAuthStateChange((event, session) => {
-        if (event !== "TOKEN_REFRESHED" && event !== "SIGNED_IN") {
+        if (event === "SIGNED_OUT") {
+          disconnectPilotRealtimeForSignedOut(client);
           return;
         }
-        if (!session?.access_token) {
-          return;
-        }
-        client.reauthenticate();
+        handlePilotRealtimeAuthStateChange(client, event, session);
       }).data.subscription ?? null;
 
     return () => {
@@ -75,6 +98,10 @@ export function usePilotRealtimeConnection() {
     clientRef.current?.disconnect("Manual disconnect");
   }, []);
 
+  const connect = useCallback(() => {
+    clientRef.current?.connect();
+  }, []);
+
   const endSession = useCallback(() => {
     clientRef.current?.endSession("User ended session");
   }, []);
@@ -85,6 +112,7 @@ export function usePilotRealtimeConnection() {
 
   return {
     ...snapshot,
+    connect,
     disconnect,
     endSession,
     ping,

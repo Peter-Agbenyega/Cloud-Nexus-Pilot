@@ -6,6 +6,7 @@ import { createQuestionDedupeKey, detectStreamingQuestions } from "../../lib/int
 import { extractJobProfile, extractResumeProfile } from "../../lib/interview-intelligence/profile-ingestion";
 import { generateInterviewReport } from "../../lib/interview-intelligence/report";
 import { createScreenContextFromText } from "../../lib/interview-intelligence/screen-context";
+import { diagnoseTerminalArtifact } from "../../lib/interview-intelligence/terminal-debugging";
 
 test("detects implicit technical prompts and classifies cloud debugging context", () => {
   const questions = detectStreamingQuestions({
@@ -74,6 +75,24 @@ test("classifies screen text from terminal and extracts operational errors", () 
   assert.equal(screen.sourceType, "terminal");
   assert.ok(screen.errorMessages.length > 0);
   assert.equal(screen.detectedLanguage, "Shell");
+});
+
+test("diagnoses terminal debugging artifacts with safe next steps", () => {
+  const terraform = diagnoseTerminalArtifact(`
+    Error: AccessDenied: User is not authorized to perform: iam:CreateRole
+    on main.tf line 12, in resource "aws_iam_role" "worker"
+  `);
+  const kubernetes = diagnoseTerminalArtifact(`
+    Error from server (Forbidden): pods is forbidden: User cannot list resource pods
+  `);
+  const destructive = diagnoseTerminalArtifact("terraform destroy -auto-approve");
+
+  assert.equal(terraform.artifactType, "terraform");
+  assert.match(terraform.nextCommand ?? "", /sts get-caller-identity/);
+  assert.equal(kubernetes.artifactType, "kubectl");
+  assert.match(kubernetes.nextCommand ?? "", /auth can-i/);
+  assert.equal(destructive.dangerousCommand, true);
+  assert.equal(destructive.riskLevel, "high");
 });
 
 test("generates a post-interview report from transcript text", () => {

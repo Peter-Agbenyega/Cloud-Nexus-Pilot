@@ -14,6 +14,26 @@ CREATE TABLE IF NOT EXISTS user_preferences (
   UNIQUE(user_id)
 );
 
+CREATE TABLE IF NOT EXISTS transcript_records (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL,
+  title TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('uploaded', 'processing', 'completed', 'failed')),
+  capture_mode TEXT NOT NULL CHECK (capture_mode IN ('live-capture', 'file-upload')),
+  source TEXT CHECK (source IN ('microphone', 'system-audio')),
+  content_type TEXT NOT NULL,
+  transcript_text TEXT NOT NULL DEFAULT '',
+  segments JSONB NOT NULL DEFAULT '[]'::jsonb,
+  summary JSONB NOT NULL DEFAULT '{}'::jsonb,
+  byte_size INTEGER NOT NULL DEFAULT 0,
+  duration_ms INTEGER,
+  storage_key TEXT,
+  error_message TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS resumes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL,
@@ -141,6 +161,7 @@ CREATE TABLE IF NOT EXISTS interview_reports (
 );
 
 CREATE INDEX IF NOT EXISTS idx_resumes_user_updated ON resumes(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_transcript_records_user_updated ON transcript_records(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_job_descriptions_user_updated ON job_descriptions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_interview_sessions_user_updated ON interview_sessions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_transcript_segments_session_time ON transcript_segments(interview_session_id, captured_at);
@@ -149,6 +170,7 @@ CREATE INDEX IF NOT EXISTS idx_guidance_items_session_time ON guidance_items(int
 CREATE INDEX IF NOT EXISTS idx_screen_context_events_session_time ON screen_context_events(interview_session_id, captured_at);
 
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transcript_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE resumes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE job_descriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE interview_sessions ENABLE ROW LEVEL SECURITY;
@@ -160,6 +182,11 @@ ALTER TABLE interview_reports ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users manage own preferences" ON user_preferences;
 CREATE POLICY "Users manage own preferences" ON user_preferences
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users manage own transcript records" ON transcript_records;
+CREATE POLICY "Users manage own transcript records" ON transcript_records
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 

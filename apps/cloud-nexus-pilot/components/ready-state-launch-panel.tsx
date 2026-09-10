@@ -9,6 +9,11 @@ import {
   getCreateOrResumeSessionEndpointUrl,
 } from "@/lib/contracts/session-execution-client";
 import type { SessionExecutionId } from "@/lib/contracts/session-execution";
+import {
+  createInterviewPersistenceRepository,
+  type InterviewPersistenceInfo,
+  type PersistedInterviewSession,
+} from "@/lib/interview-persistence";
 import { usePilotRealtimeConnection } from "@/lib/realtime/use-pilot-realtime";
 
 /* ================================================================
@@ -342,12 +347,15 @@ export function ReadyStateLaunchPanel() {
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
   const lastAutoGuidanceQuestionRef = useRef<string>("");
   const lastRealtimeTranscriptSegmentIdRef = useRef<string>("");
+  const activeInterviewSessionRef = useRef<PersistedInterviewSession | null>(null);
+  const lastPersistedDetectedQuestionIdRef = useRef<string | null>(null);
   const captureStartedAtRef = useRef<number | null>(null);
   const firstTranscriptAtRef = useRef<number | null>(null);
   const lastGuidanceStartedAtRef = useRef<number | null>(null);
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({ repositoryMode: "local-only" });
   const realtimeConnection = usePilotRealtimeConnection();
+  const interviewPersistenceRepository = useMemo(() => createInterviewPersistenceRepository(), []);
 
   const [guidanceText, setGuidanceText] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
@@ -370,12 +378,14 @@ export function ReadyStateLaunchPanel() {
   const [onboardingDone, setOnboardingDone] = useState(true);
   const [interviewContextDraft, setInterviewContextDraft] =
     useState<InterviewContextDraft>(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+  const [interviewPersistenceInfo, setInterviewPersistenceInfo] =
+    useState<InterviewPersistenceInfo | null>(null);
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
   const isFreeLimitReached = freeSessionCount >= FREE_SESSION_LIMIT;
 
-  async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
+  const ensureSessionExecution = useCallback(async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
     if (sessionExecutionIdRef.current) return sessionExecutionIdRef.current;
     const localSessionExecutionId = createStableId("session-execution");
     sessionExecutionIdRef.current = localSessionExecutionId;
@@ -398,7 +408,24 @@ export function ReadyStateLaunchPanel() {
       return localSessionExecutionId;
     }
     return sessionExecutionIdRef.current;
-  }
+  }, []);
+
+  const ensureInterviewSession = useCallback(async function ensureInterviewSession(): Promise<PersistedInterviewSession | null> {
+    if (activeInterviewSessionRef.current) return activeInterviewSessionRef.current;
+
+    const { data: session, persistence } = await interviewPersistenceRepository.createSession({
+      title: "Live interview session",
+      mode: "general",
+      resumeText: interviewContextDraft.resumeText,
+      jobDescriptionText: interviewContextDraft.jobDescriptionText,
+      companyContext: interviewContextDraft.companyContext,
+      notes: interviewContextDraft.interviewNotes,
+    });
+
+    activeInterviewSessionRef.current = session;
+    setInterviewPersistenceInfo(persistence);
+    return session;
+  }, [interviewContextDraft, interviewPersistenceRepository]);
 
   function stopActiveStream() {
     activeStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -474,6 +501,7 @@ export function ReadyStateLaunchPanel() {
       firstTranscriptAtRef.current = null;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
       setLaunchFlowStep("live");
+      void ensureInterviewSession();
 
       stream.getTracks().forEach((track) => {
         track.addEventListener("ended", () => { void handleEndSession(); }, { once: true });
@@ -498,10 +526,27 @@ export function ReadyStateLaunchPanel() {
   async function handleEndSession() {
     cancelActiveGuidanceRequest();
     realtimeConnection.endSession();
+    const activeInterviewSession = activeInterviewSessionRef.current;
+    if (activeInterviewSession) {
+      interviewPersistenceRepository
+        .endSession(activeInterviewSession.id)
+        .then(({ persistence }) => setInterviewPersistenceInfo(persistence))
+        .catch(() => {
+          setInterviewPersistenceInfo({
+            mode: "local",
+            note: "Interview session end could not be synced. The live workspace has stopped safely.",
+            cloudSyncReady: false,
+            authState: "signed-out-local",
+            userEmail: null,
+          });
+        });
+    }
     stopTranscriptionCapture();
     stopActiveStream();
     lastAutoGuidanceQuestionRef.current = "";
     lastRealtimeTranscriptSegmentIdRef.current = "";
+    activeInterviewSessionRef.current = null;
+    lastPersistedDetectedQuestionIdRef.current = null;
     captureStartedAtRef.current = null;
     firstTranscriptAtRef.current = null;
     lastGuidanceStartedAtRef.current = null;
@@ -593,11 +638,13 @@ export function ReadyStateLaunchPanel() {
 
       // Try to parse structured JSON
       const structured = parseGuidanceJson(streamedText);
+      let completedGuidance: GuidanceData;
       if (structured?.gist.trim() === FALLBACK_GIST) {
         showFallbackGuidance();
         return;
       }
       if (structured) {
+        completedGuidance = structured;
         setGuidanceData(structured);
         // Staggered card reveal
         setShowCard1(true);
@@ -619,11 +666,15 @@ export function ReadyStateLaunchPanel() {
         }, 800);
       } else {
         // Fallback: show raw text as full_answer
-        setGuidanceData({
+        completedGuidance = {
+          headline: "Draft answer",
+          speakNow: streamedText.split(/[.!?]/)[0]?.trim() || streamedText.slice(0, 120),
+          keyPoints: [],
           gist: streamedText.split(/[.!?]/)[0]?.trim() || streamedText.slice(0, 80),
           key_points: [],
           full_answer: streamedText,
-        });
+        };
+        setGuidanceData(completedGuidance);
         setShowCard1(true);
         setTimeout(() => setShowCard3(true), 800);
         setStreamedFullAnswer(streamedText);
@@ -649,6 +700,41 @@ export function ReadyStateLaunchPanel() {
           timestamp: new Date().toISOString(),
         });
       }
+      void ensureInterviewSession()
+        .then((session) => {
+          if (!session) return null;
+          return interviewPersistenceRepository.saveGuidance({
+            sessionId: session.id,
+            detectedQuestionId: lastPersistedDetectedQuestionIdRef.current,
+            guidance: {
+              headline: completedGuidance.headline || completedGuidance.gist || "Live guidance",
+              speakNow:
+                completedGuidance.speakNow ||
+                completedGuidance.gist ||
+                completedGuidance.full_answer.slice(0, 180),
+              keyPoints: completedGuidance.keyPoints ?? completedGuidance.key_points ?? [],
+              example: null,
+              technicalDetail: completedGuidance.full_answer,
+              caution: completedGuidance.caution ?? null,
+              followUp: completedGuidance.followUp ?? null,
+              provider: "configured-llm",
+              model: null,
+              latencyMs: totalFirstGuidanceMs,
+            },
+          });
+        })
+        .then((result) => {
+          if (result?.persistence) setInterviewPersistenceInfo(result.persistence);
+        })
+        .catch(() => {
+          setInterviewPersistenceInfo({
+            mode: "local",
+            note: "Guidance persistence failed. The answer remained available in the live workspace.",
+            cloudSyncReady: false,
+            authState: "signed-out-local",
+            userEmail: null,
+          });
+        });
       setAnswerReadyVisible(true);
       window.setTimeout(() => {
         setAnswerReadyVisible(false);
@@ -666,6 +752,9 @@ export function ReadyStateLaunchPanel() {
     transcriptionWorkflow.latestDetectedQuestion,
     transcriptionWorkflow.segments,
     interviewContextDraft,
+    interviewPersistenceRepository,
+    ensureInterviewSession,
+    ensureSessionExecution,
     realtimeConnection,
   ]);
 
@@ -710,7 +799,38 @@ export function ReadyStateLaunchPanel() {
       source: latestSegment.source,
       timestamp: new Date(latestSegment.createdAt).toISOString(),
     });
-  }, [launchFlowStep, realtimeConnection, transcriptSegments]);
+    void ensureInterviewSession()
+      .then((session) => {
+        if (!session) return null;
+        return interviewPersistenceRepository.saveTranscriptSegment({
+          sessionId: session.id,
+          clientEventId: latestSegment.id,
+          text: latestSegment.text,
+          source: latestSegment.source,
+          speakerId: latestSegment.speakerId ?? null,
+          isPartial: false,
+          capturedAt: new Date(latestSegment.createdAt).toISOString(),
+        });
+      })
+      .then((result) => {
+        if (result?.persistence) setInterviewPersistenceInfo(result.persistence);
+      })
+      .catch(() => {
+        setInterviewPersistenceInfo({
+          mode: "local",
+          note: "Transcript segment persistence failed. Capture and local transcript display are continuing.",
+          cloudSyncReady: false,
+          authState: "signed-out-local",
+          userEmail: null,
+        });
+      });
+  }, [
+    ensureInterviewSession,
+    interviewPersistenceRepository,
+    launchFlowStep,
+    realtimeConnection,
+    transcriptSegments,
+  ]);
 
   useEffect(() => {
     if (launchFlowStep !== "live") lastAutoGuidanceQuestionRef.current = "";
@@ -725,17 +845,65 @@ export function ReadyStateLaunchPanel() {
       detectedQuestion === lastAutoGuidanceQuestionRef.current
     ) return;
     lastAutoGuidanceQuestionRef.current = detectedQuestion;
+    const questionId = createStableId("question");
     realtimeConnection.sendRuntimeEvent({
       type: "question.detected",
       clientEventId: createStableId("question-event"),
-      questionId: createStableId("question"),
+      questionId,
       normalizedQuestion: detectedQuestion,
       category: inferInterviewIntent(detectedQuestion),
       confidence: 0.72,
       timestamp: new Date().toISOString(),
     });
+    void ensureInterviewSession()
+      .then((session) => {
+        if (!session) return null;
+        return interviewPersistenceRepository.saveDetectedQuestion({
+          sessionId: session.id,
+          questionId,
+          rawText: detectedQuestion,
+          normalizedQuestion: detectedQuestion,
+          category: inferInterviewIntent(detectedQuestion),
+          confidence: 0.72,
+          urgency: /debug|outage|down|accessdenied|failed|incident/i.test(detectedQuestion)
+            ? "high"
+            : "normal",
+          requiresResumeContext: /tell me about|describe a time|leadership|ksa/i.test(
+            detectedQuestion
+          ),
+          requiresCodeContext: /code|debug|terminal|terraform|kubectl|docker|git/i.test(
+            detectedQuestion
+          ),
+          requiresVisualContext: /screen|shown|diagram|this error|this code/i.test(
+            detectedQuestion
+          ),
+          detectedAt: new Date().toISOString(),
+        });
+      })
+      .then((result) => {
+        if (!result) return;
+        lastPersistedDetectedQuestionIdRef.current = result.data;
+        setInterviewPersistenceInfo(result.persistence);
+      })
+      .catch(() => {
+        setInterviewPersistenceInfo({
+          mode: "local",
+          note: "Detected question persistence failed. Live guidance is continuing.",
+          cloudSyncReady: false,
+          authState: "signed-out-local",
+          userEmail: null,
+        });
+      });
     void handleGetGuidance();
-  }, [guidanceStatus, handleGetGuidance, launchFlowStep, preferredDetectedQuestion, realtimeConnection]);
+  }, [
+    guidanceStatus,
+    handleGetGuidance,
+    ensureInterviewSession,
+    interviewPersistenceRepository,
+    launchFlowStep,
+    preferredDetectedQuestion,
+    realtimeConnection,
+  ]);
 
   const questionSegmentIds = useMemo(() => {
     const detectedQuestion = preferredDetectedQuestion.trim();
@@ -854,7 +1022,7 @@ export function ReadyStateLaunchPanel() {
             <div>
               <p style={{ fontSize: 12, fontWeight: 600, color: "#E0E0FF" }}>Session Context</p>
               <p style={{ fontSize: 11, color: "#7070A0", lineHeight: 1.5 }}>
-                Paste resume, role, and notes before capture. Stored locally in this browser.
+                Paste resume, role, and notes before capture. Local-first, with cloud persistence when signed in.
               </p>
             </div>
             <button
@@ -1117,6 +1285,15 @@ export function ReadyStateLaunchPanel() {
               width: 6,
             }} />
             {realtimeStatusLabel}
+          </div>
+          <div style={{
+            color: interviewPersistenceInfo?.mode === "supabase-active" ? "#2DD4BF" : "#7070A0",
+            fontSize: 11,
+            marginTop: 4,
+          }}>
+            {interviewPersistenceInfo?.mode === "supabase-active"
+              ? "Cloud interview persistence active"
+              : "Local interview persistence active"}
           </div>
         </div>
         <button

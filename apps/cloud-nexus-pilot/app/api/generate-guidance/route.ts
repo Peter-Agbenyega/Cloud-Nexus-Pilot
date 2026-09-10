@@ -5,6 +5,7 @@ import { buildInterviewContext, serializeInterviewContextForPrompt } from "@/lib
 import { detectStreamingQuestions } from "@/lib/interview-intelligence/question-detector";
 import { extractJobProfile, extractResumeProfile } from "@/lib/interview-intelligence/profile-ingestion";
 import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
+import { diagnoseTerminalArtifact } from "@/lib/interview-intelligence/terminal-debugging";
 import type { InterviewMode } from "@/lib/interview-intelligence/types";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -307,7 +308,15 @@ export async function POST(request: Request) {
           detectStreamingQuestions({ text: `What is your answer to: ${question}?` })[0];
         const resumeProfile = resumeText ? extractResumeProfile(resumeText) : null;
         const jobProfile = jobDescriptionText ? extractJobProfile(jobDescriptionText, resumeProfile ?? undefined) : null;
-        const packedContext = detectedQuestion
+        const screenContext = screenText ? createScreenContextFromText(screenText) : null;
+        const terminalDiagnosis =
+          screenContext &&
+          (screenContext.sourceType === "terminal" ||
+            screenContext.errorMessages.length > 0 ||
+            detectedQuestion?.category === "terminal_debugging")
+            ? diagnoseTerminalArtifact(screenText || question)
+            : null;
+        const basePackedContext = detectedQuestion
           ? serializeInterviewContextForPrompt(
               buildInterviewContext({
                 question: detectedQuestion,
@@ -317,10 +326,32 @@ export async function POST(request: Request) {
                 jobProfile,
                 companyContext,
                 previousAnswers,
-                screenContext: screenText ? createScreenContextFromText(screenText) : null,
+                screenContext,
               })
             )
           : transcriptContext;
+        const packedContext = [
+          basePackedContext,
+          terminalDiagnosis
+            ? [
+                "Operational debugging diagnosis:",
+                `- Type: ${terminalDiagnosis.artifactType}`,
+                `- Diagnosis: ${terminalDiagnosis.diagnosis}`,
+                `- Likely root cause: ${terminalDiagnosis.likelyRootCause}`,
+                terminalDiagnosis.nextCommand
+                  ? `- Next read-only/safe command: ${terminalDiagnosis.nextCommand}`
+                  : "",
+                `- Risk level: ${terminalDiagnosis.riskLevel}`,
+                terminalDiagnosis.dangerousCommand
+                  ? "- Caution: visible command includes destructive or high-risk operations; do not recommend automatic execution."
+                  : "",
+              ]
+                .filter(Boolean)
+                .join("\n")
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
         const openAiResponse = await fetch(OPENAI_API_URL, {
           method: "POST",
           headers: {

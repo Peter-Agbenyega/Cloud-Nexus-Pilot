@@ -25,6 +25,11 @@ type LaunchCaptureState = {
 };
 
 type GuidanceData = {
+  headline?: string;
+  speakNow?: string;
+  keyPoints?: string[];
+  caution?: string | null;
+  followUp?: string | null;
   gist: string;
   key_points: string[];
   full_answer: string;
@@ -34,11 +39,31 @@ const GUIDANCE_CONTEXT_CHAR_LIMIT = 1_200;
 const FREE_SESSION_LIMIT = 10;
 const SESSION_COUNT_STORAGE_KEY = "cnp_session_count";
 const ONBOARDING_STORAGE_KEY = "cnp_onboarding_done";
+const INTERVIEW_CONTEXT_STORAGE_KEY = "cnp_interview_context_v1";
 const FALLBACK_GIST = "That's a great question. Let me take a moment to walk you through my thinking on that.";
 const FALLBACK_GUIDANCE: GuidanceData = {
+  headline: "Answer with structure",
+  speakNow: "Let me frame this around the problem, tradeoffs, and practical next step.",
+  keyPoints: ["Clarify scope", "Explain tradeoffs", "Close with impact"],
+  caution: null,
+  followUp: null,
   gist: FALLBACK_GIST,
   key_points: [],
   full_answer: "",
+};
+
+type InterviewContextDraft = {
+  resumeText: string;
+  jobDescriptionText: string;
+  companyContext: string;
+  interviewNotes: string;
+};
+
+const EMPTY_INTERVIEW_CONTEXT_DRAFT: InterviewContextDraft = {
+  resumeText: "",
+  jobDescriptionText: "",
+  companyContext: "",
+  interviewNotes: "",
 };
 
 const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
@@ -158,6 +183,29 @@ function getParsedResumeBackground(): string {
   }
 }
 
+function readStoredInterviewContextDraft(): InterviewContextDraft {
+  if (typeof window === "undefined") return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  const raw = window.localStorage.getItem(INTERVIEW_CONTEXT_STORAGE_KEY);
+  if (!raw) return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  try {
+    const parsed = JSON.parse(raw) as Partial<InterviewContextDraft>;
+    return {
+      resumeText: typeof parsed.resumeText === "string" ? parsed.resumeText : "",
+      jobDescriptionText:
+        typeof parsed.jobDescriptionText === "string" ? parsed.jobDescriptionText : "",
+      companyContext: typeof parsed.companyContext === "string" ? parsed.companyContext : "",
+      interviewNotes: typeof parsed.interviewNotes === "string" ? parsed.interviewNotes : "",
+    };
+  } catch {
+    return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  }
+}
+
+function writeStoredInterviewContextDraft(draft: InterviewContextDraft) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(INTERVIEW_CONTEXT_STORAGE_KEY, JSON.stringify(draft));
+}
+
 function parseSsePayloads(buffer: string) {
   const payloads: Array<Record<string, unknown>> = [];
   let nextBuffer = buffer;
@@ -186,10 +234,16 @@ function parseGuidanceJson(rawText: string): GuidanceData | null {
     const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
     const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-    if (typeof parsed.gist === "string" && Array.isArray(parsed.key_points) && typeof parsed.full_answer === "string") {
+    const rawKeyPoints = Array.isArray(parsed.keyPoints) ? parsed.keyPoints : parsed.key_points;
+    if (typeof parsed.gist === "string" && Array.isArray(rawKeyPoints) && typeof parsed.full_answer === "string") {
       return {
+        headline: typeof parsed.headline === "string" ? parsed.headline : undefined,
+        speakNow: typeof parsed.speakNow === "string" ? parsed.speakNow : undefined,
+        keyPoints: rawKeyPoints.filter((p): p is string => typeof p === "string"),
+        caution: typeof parsed.caution === "string" ? parsed.caution : null,
+        followUp: typeof parsed.followUp === "string" ? parsed.followUp : null,
         gist: parsed.gist,
-        key_points: parsed.key_points.filter((p): p is string => typeof p === "string"),
+        key_points: rawKeyPoints.filter((p): p is string => typeof p === "string"),
         full_answer: parsed.full_answer,
       };
     }
@@ -287,6 +341,10 @@ export function ReadyStateLaunchPanel() {
   const activeStreamRef = useRef<MediaStream | null>(null);
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
   const lastAutoGuidanceQuestionRef = useRef<string>("");
+  const lastRealtimeTranscriptSegmentIdRef = useRef<string>("");
+  const captureStartedAtRef = useRef<number | null>(null);
+  const firstTranscriptAtRef = useRef<number | null>(null);
+  const lastGuidanceStartedAtRef = useRef<number | null>(null);
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({ repositoryMode: "local-only" });
   const realtimeConnection = usePilotRealtimeConnection();
@@ -297,12 +355,21 @@ export function ReadyStateLaunchPanel() {
   const [questionsCoached, setQuestionsCoached] = useState(0);
   const [sessionStartTime] = useState<number>(Date.now());
   const [streamedFullAnswer, setStreamedFullAnswer] = useState("");
+  const [latencySnapshot, setLatencySnapshot] = useState<{
+    sttFirstPartialMs: number | null;
+    totalFirstGuidanceMs: number | null;
+  }>({
+    sttFirstPartialMs: null,
+    totalFirstGuidanceMs: null,
+  });
   const [showCard1, setShowCard1] = useState(false);
   const [showCard2, setShowCard2] = useState(false);
   const [showCard3, setShowCard3] = useState(false);
   const [answerReadyVisible, setAnswerReadyVisible] = useState(false);
   const [freeSessionCount, setFreeSessionCount] = useState(0);
   const [onboardingDone, setOnboardingDone] = useState(true);
+  const [interviewContextDraft, setInterviewContextDraft] =
+    useState<InterviewContextDraft>(EMPTY_INTERVIEW_CONTEXT_DRAFT);
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
@@ -358,6 +425,7 @@ export function ReadyStateLaunchPanel() {
   useEffect(() => {
     setFreeSessionCount(readStoredNumber(SESSION_COUNT_STORAGE_KEY));
     setOnboardingDone(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === "true");
+    setInterviewContextDraft(readStoredInterviewContextDraft());
 
     return () => {
       cancelActiveGuidanceRequest();
@@ -402,6 +470,8 @@ export function ReadyStateLaunchPanel() {
       setFreeSessionCount(nextSessionCount);
 
       activeStreamRef.current = stream;
+      captureStartedAtRef.current = performance.now();
+      firstTranscriptAtRef.current = null;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
       setLaunchFlowStep("live");
 
@@ -431,6 +501,10 @@ export function ReadyStateLaunchPanel() {
     stopTranscriptionCapture();
     stopActiveStream();
     lastAutoGuidanceQuestionRef.current = "";
+    lastRealtimeTranscriptSegmentIdRef.current = "";
+    captureStartedAtRef.current = null;
+    firstTranscriptAtRef.current = null;
+    lastGuidanceStartedAtRef.current = null;
     sessionExecutionIdRef.current = null;
     setGuidanceText("");
     setGuidanceData(null);
@@ -463,6 +537,8 @@ export function ReadyStateLaunchPanel() {
     setAnswerReadyVisible(false);
 
     try {
+      const guidanceStartedAt = performance.now();
+      lastGuidanceStartedAtRef.current = guidanceStartedAt;
       void ensureSessionExecution();
       const userBackground = getParsedResumeBackground();
       const response = await fetch("/api/generate-guidance", {
@@ -473,6 +549,11 @@ export function ReadyStateLaunchPanel() {
           transcriptContext: buildTranscriptContext(transcriptionWorkflow.segments),
           interviewMode: inferInterviewIntent(detectedQuestion),
           userBackground,
+          resumeText: interviewContextDraft.resumeText || userBackground,
+          jobDescriptionText: interviewContextDraft.jobDescriptionText,
+          companyContext: [interviewContextDraft.companyContext, interviewContextDraft.interviewNotes]
+            .filter(Boolean)
+            .join("\n\n"),
         }),
         signal: abortController.signal,
       });
@@ -550,6 +631,24 @@ export function ReadyStateLaunchPanel() {
 
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
+      const totalFirstGuidanceMs =
+        captureStartedAtRef.current === null
+          ? null
+          : Math.round(performance.now() - captureStartedAtRef.current);
+      setLatencySnapshot((current) => ({
+        ...current,
+        totalFirstGuidanceMs,
+      }));
+      if (totalFirstGuidanceMs !== null) {
+        realtimeConnection.sendRuntimeEvent({
+          type: "session.metrics",
+          clientEventId: createStableId("metrics"),
+          metrics: {
+            total_first_guidance_ms: totalFirstGuidanceMs,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
       setAnswerReadyVisible(true);
       window.setTimeout(() => {
         setAnswerReadyVisible(false);
@@ -566,6 +665,8 @@ export function ReadyStateLaunchPanel() {
     transcriptionWorkflow.aiDetectedQuestion,
     transcriptionWorkflow.latestDetectedQuestion,
     transcriptionWorkflow.segments,
+    interviewContextDraft,
+    realtimeConnection,
   ]);
 
   const preferredDetectedQuestion =
@@ -580,6 +681,38 @@ export function ReadyStateLaunchPanel() {
   const latestSegmentId = transcriptSegments.at(-1)?.id ?? null;
 
   useEffect(() => {
+    if (launchFlowStep !== "live") return;
+    const latestSegment = transcriptSegments.at(-1);
+    if (!latestSegment || latestSegment.id === lastRealtimeTranscriptSegmentIdRef.current) return;
+    lastRealtimeTranscriptSegmentIdRef.current = latestSegment.id;
+
+    if (firstTranscriptAtRef.current === null && captureStartedAtRef.current !== null) {
+      const sttFirstPartialMs = Math.round(performance.now() - captureStartedAtRef.current);
+      firstTranscriptAtRef.current = performance.now();
+      setLatencySnapshot((current) => ({
+        ...current,
+        sttFirstPartialMs,
+      }));
+      realtimeConnection.sendRuntimeEvent({
+        type: "session.metrics",
+        clientEventId: createStableId("metrics"),
+        metrics: {
+          stt_first_partial_ms: sttFirstPartialMs,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    realtimeConnection.sendRuntimeEvent({
+      type: "transcript.final",
+      clientEventId: latestSegment.id,
+      text: latestSegment.text,
+      source: latestSegment.source,
+      timestamp: new Date(latestSegment.createdAt).toISOString(),
+    });
+  }, [launchFlowStep, realtimeConnection, transcriptSegments]);
+
+  useEffect(() => {
     if (launchFlowStep !== "live") lastAutoGuidanceQuestionRef.current = "";
   }, [launchFlowStep]);
 
@@ -592,8 +725,17 @@ export function ReadyStateLaunchPanel() {
       detectedQuestion === lastAutoGuidanceQuestionRef.current
     ) return;
     lastAutoGuidanceQuestionRef.current = detectedQuestion;
+    realtimeConnection.sendRuntimeEvent({
+      type: "question.detected",
+      clientEventId: createStableId("question-event"),
+      questionId: createStableId("question"),
+      normalizedQuestion: detectedQuestion,
+      category: inferInterviewIntent(detectedQuestion),
+      confidence: 0.72,
+      timestamp: new Date().toISOString(),
+    });
     void handleGetGuidance();
-  }, [guidanceStatus, handleGetGuidance, launchFlowStep, preferredDetectedQuestion]);
+  }, [guidanceStatus, handleGetGuidance, launchFlowStep, preferredDetectedQuestion, realtimeConnection]);
 
   const questionSegmentIds = useMemo(() => {
     const detectedQuestion = preferredDetectedQuestion.trim();
@@ -701,6 +843,136 @@ export function ReadyStateLaunchPanel() {
           </div>
         ) : (
           <>
+        <div style={{
+          background: "#13131F",
+          border: "0.5px solid rgba(255,255,255,0.08)",
+          borderRadius: 12,
+          marginBottom: 14,
+          padding: 14,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#E0E0FF" }}>Session Context</p>
+              <p style={{ fontSize: 11, color: "#7070A0", lineHeight: 1.5 }}>
+                Paste resume, role, and notes before capture. Stored locally in this browser.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setInterviewContextDraft(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+                writeStoredInterviewContextDraft(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+              }}
+              style={{
+                background: "transparent",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 6,
+                color: "#7070A0",
+                cursor: "pointer",
+                fontSize: 11,
+                padding: "5px 9px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
+            <textarea
+              aria-label="Resume text"
+              placeholder="Resume highlights, achievements, certifications..."
+              value={interviewContextDraft.resumeText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, resumeText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                minHeight: 86,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
+            <textarea
+              aria-label="Job description"
+              placeholder="Job description, required skills, interview focus..."
+              value={interviewContextDraft.jobDescriptionText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, jobDescriptionText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                minHeight: 86,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
+            <input
+              aria-label="Company context"
+              placeholder="Company, team, cloud stack"
+              value={interviewContextDraft.companyContext}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, companyContext: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                padding: "9px 10px",
+              }}
+            />
+            <input
+              aria-label="Interview notes"
+              placeholder="Interviewer notes, constraints, topics"
+              value={interviewContextDraft.interviewNotes}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, interviewNotes: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                padding: "9px 10px",
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+            {interviewContextDraft.resumeText.trim() && (
+              <span style={{ border: "0.5px solid rgba(45,212,191,0.3)", borderRadius: 999, color: "#2DD4BF", fontSize: 10, padding: "4px 8px" }}>
+                Resume loaded
+              </span>
+            )}
+            {interviewContextDraft.jobDescriptionText.trim() && (
+              <span style={{ border: "0.5px solid rgba(251,191,36,0.3)", borderRadius: 999, color: "#FBBF24", fontSize: 10, padding: "4px 8px" }}>
+                Job loaded
+              </span>
+            )}
+            {interviewContextDraft.companyContext.trim() && (
+              <span style={{ border: "0.5px solid rgba(124,108,255,0.3)", borderRadius: 999, color: "#7C6CFF", fontSize: 10, padding: "4px 8px" }}>
+                Company loaded
+              </span>
+            )}
+          </div>
+        </div>
         {/* Mode selection cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {/* Microphone card */}
@@ -940,13 +1212,13 @@ export function ReadyStateLaunchPanel() {
                 Say This Now
               </p>
               <p style={{ fontSize: 13, lineHeight: 1.6, color: "#D4A820" }}>
-                {guidanceData.gist}
+                {guidanceData.speakNow || guidanceData.gist}
               </p>
             </div>
           )}
 
           {/* Card 2 — HIT THESE POINTS (teal) */}
-          {showCard2 && guidanceData.key_points.length > 0 && (
+          {showCard2 && (guidanceData.keyPoints ?? guidanceData.key_points).length > 0 && (
             <div style={{
               background: "rgba(45,212,191,0.07)",
               borderLeft: "3px solid #2DD4BF",
@@ -961,7 +1233,7 @@ export function ReadyStateLaunchPanel() {
                 Hit These Points
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {guidanceData.key_points.map((point, i) => (
+                {(guidanceData.keyPoints ?? guidanceData.key_points).map((point, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                     <span style={{
                       width: 5, height: 5, borderRadius: "50%", background: "#2DD4BF",
@@ -1003,6 +1275,20 @@ export function ReadyStateLaunchPanel() {
                   }} />
                 )}
               </p>
+              {(guidanceData.caution || guidanceData.followUp) && (
+                <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                  {guidanceData.caution && (
+                    <p style={{ color: "#FBBF24", fontSize: 11, lineHeight: 1.5 }}>
+                      Caution: {guidanceData.caution}
+                    </p>
+                  )}
+                  {guidanceData.followUp && (
+                    <p style={{ color: "#2DD4BF", fontSize: 11, lineHeight: 1.5 }}>
+                      Follow-up: {guidanceData.followUp}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1079,6 +1365,24 @@ export function ReadyStateLaunchPanel() {
               Remaining
             </p>
           </div>
+        </div>
+      )}
+
+      {launchFlowStep === "live" && (
+        <div style={{
+          background: "#13131F",
+          border: "0.5px solid rgba(255,255,255,0.06)",
+          borderRadius: 8,
+          color: "#7070A0",
+          display: "flex",
+          flexWrap: "wrap",
+          fontSize: 11,
+          gap: 10,
+          marginTop: 8,
+          padding: "8px 10px",
+        }}>
+          <span>STT first partial: {latencySnapshot.sttFirstPartialMs === null ? "--" : `${latencySnapshot.sttFirstPartialMs}ms`}</span>
+          <span>First guidance: {latencySnapshot.totalFirstGuidanceMs === null ? "--" : `${latencySnapshot.totalFirstGuidanceMs}ms`}</span>
         </div>
       )}
 

@@ -16,6 +16,44 @@ export type PilotRealtimeClientMessage =
   | {
       type: "session.end";
       reason?: string;
+    }
+  | {
+      type: "transcript.partial" | "transcript.final";
+      clientEventId?: string;
+      text: string;
+      source?: "microphone" | "system-audio" | "screen" | "manual";
+      timestamp?: string;
+    }
+  | {
+      type: "question.detected";
+      clientEventId?: string;
+      questionId: string;
+      normalizedQuestion: string;
+      category: string;
+      confidence: number;
+      timestamp?: string;
+    }
+  | {
+      type: "screen.context";
+      clientEventId?: string;
+      sourceType: string;
+      extractedText: string;
+      timestamp?: string;
+    }
+  | {
+      type: "session.metrics";
+      clientEventId?: string;
+      metrics: Partial<Record<
+        | "capture_to_server_ms"
+        | "stt_first_partial_ms"
+        | "question_detect_ms"
+        | "context_retrieval_ms"
+        | "llm_first_token_ms"
+        | "guidance_first_render_ms"
+        | "total_first_guidance_ms",
+        number
+      >>;
+      timestamp?: string;
     };
 
 export type PilotRealtimeServerMessage =
@@ -45,6 +83,18 @@ export type PilotRealtimeServerMessage =
       type: "session.ended";
       sessionId: string;
       endedAt: string;
+    }
+  | {
+      type: "event.ack";
+      sessionId: string;
+      clientEventId?: string;
+      receivedType:
+        | "transcript.partial"
+        | "transcript.final"
+        | "question.detected"
+        | "screen.context"
+        | "session.metrics";
+      receivedAt: string;
     }
   | {
       type: "error";
@@ -101,6 +151,20 @@ export function parsePilotRealtimeServerMessage(rawMessage: unknown): PilotRealt
       return null;
     case "session.ended":
       if (typeof message.sessionId === "string" && typeof message.endedAt === "string") {
+        return message as PilotRealtimeServerMessage;
+      }
+      return null;
+    case "event.ack":
+      if (
+        typeof message.sessionId === "string" &&
+        typeof message.receivedAt === "string" &&
+        (message.receivedType === "transcript.partial" ||
+          message.receivedType === "transcript.final" ||
+          message.receivedType === "question.detected" ||
+          message.receivedType === "screen.context" ||
+          message.receivedType === "session.metrics") &&
+        (message.clientEventId === undefined || typeof message.clientEventId === "string")
+      ) {
         return message as PilotRealtimeServerMessage;
       }
       return null;

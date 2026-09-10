@@ -6,6 +6,7 @@ import { AuthVerificationError, type AuthVerifier, type VerifiedAuthToken } from
 import type { AppEnvironment } from "./env.js";
 import { isWebSocketOriginAllowed, type OriginPolicy } from "./originPolicy.js";
 import {
+  type ClientMessage,
   parseClientMessage,
   serializeServerMessage,
   WEBSOCKET_PROTOCOL_VERSION,
@@ -24,6 +25,28 @@ function expirationIso(expiresAtEpochSeconds: number): string {
 
 function millisecondsUntilExpiry(expiresAtEpochSeconds: number): number {
   return Math.max(0, expiresAtEpochSeconds * 1000 - Date.now());
+}
+
+function isRuntimeEventMessage(
+  message: ClientMessage
+): message is Extract<
+  ClientMessage,
+  {
+    type:
+      | "transcript.partial"
+      | "transcript.final"
+      | "question.detected"
+      | "screen.context"
+      | "session.metrics";
+  }
+> {
+  return (
+    message.type === "transcript.partial" ||
+    message.type === "transcript.final" ||
+    message.type === "question.detected" ||
+    message.type === "screen.context" ||
+    message.type === "session.metrics"
+  );
 }
 
 export function registerSessionRoute(
@@ -355,6 +378,36 @@ export function registerSessionRoute(
             );
 
             socket.close(WS_CLOSE_CODES.normal, "Session ended by client");
+            break;
+
+          case "transcript.partial":
+          case "transcript.final":
+          case "question.detected":
+          case "screen.context":
+          case "session.metrics":
+            registration.noteValidClientActivity();
+            if (isRuntimeEventMessage(result.message)) {
+              const authenticatedUserId = authenticatedUser?.userId;
+              request.log.info(
+                {
+                  sessionId,
+                  clientIp: registration.clientIp,
+                  userId: authenticatedUserId,
+                  eventType: result.message.type,
+                  clientEventId: result.message.clientEventId,
+                },
+                "Realtime WebSocket runtime event accepted"
+              );
+              socket.send(
+                serializeServerMessage({
+                  type: "event.ack",
+                  sessionId,
+                  clientEventId: result.message.clientEventId,
+                  receivedType: result.message.type,
+                  receivedAt: new Date().toISOString(),
+                })
+              );
+            }
             break;
         }
       });

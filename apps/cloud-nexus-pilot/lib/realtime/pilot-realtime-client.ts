@@ -1,6 +1,7 @@
 import {
   parsePilotRealtimeServerMessage,
   serializePilotRealtimeClientMessage,
+  type PilotRealtimeClientMessage,
   type PilotRealtimeServerMessage,
 } from "./session-protocol";
 
@@ -194,6 +195,27 @@ export class PilotRealtimeClient {
     );
   }
 
+  sendRuntimeEvent(
+    message: Extract<
+      PilotRealtimeClientMessage,
+      {
+        type:
+          | "transcript.partial"
+          | "transcript.final"
+          | "question.detected"
+          | "screen.context"
+          | "session.metrics";
+      }
+    >
+  ): boolean {
+    if (!isOpen(this.socket) || this.state !== "ready") {
+      return false;
+    }
+
+    this.socket?.send(serializePilotRealtimeClientMessage(message));
+    return true;
+  }
+
   reauthenticate(): void {
     if (!isOpen(this.socket) || this.state !== "ready" || this.reauthInFlight) {
       return;
@@ -316,6 +338,8 @@ export class PilotRealtimeClient {
         break;
       case "session.ended":
         this.disconnect("Session ended");
+        break;
+      case "event.ack":
         break;
       case "pong":
         break;

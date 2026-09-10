@@ -14,6 +14,7 @@ import {
   type InterviewPersistenceInfo,
   type PersistedInterviewSession,
 } from "@/lib/interview-persistence";
+import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
 import { usePilotRealtimeConnection } from "@/lib/realtime/use-pilot-realtime";
 
 /* ================================================================
@@ -62,6 +63,7 @@ type InterviewContextDraft = {
   jobDescriptionText: string;
   companyContext: string;
   interviewNotes: string;
+  screenContextText: string;
 };
 
 const EMPTY_INTERVIEW_CONTEXT_DRAFT: InterviewContextDraft = {
@@ -69,6 +71,7 @@ const EMPTY_INTERVIEW_CONTEXT_DRAFT: InterviewContextDraft = {
   jobDescriptionText: "",
   companyContext: "",
   interviewNotes: "",
+  screenContextText: "",
 };
 
 const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
@@ -200,6 +203,8 @@ function readStoredInterviewContextDraft(): InterviewContextDraft {
         typeof parsed.jobDescriptionText === "string" ? parsed.jobDescriptionText : "",
       companyContext: typeof parsed.companyContext === "string" ? parsed.companyContext : "",
       interviewNotes: typeof parsed.interviewNotes === "string" ? parsed.interviewNotes : "",
+      screenContextText:
+        typeof parsed.screenContextText === "string" ? parsed.screenContextText : "",
     };
   } catch {
     return EMPTY_INTERVIEW_CONTEXT_DRAFT;
@@ -599,6 +604,7 @@ export function ReadyStateLaunchPanel() {
           companyContext: [interviewContextDraft.companyContext, interviewContextDraft.interviewNotes]
             .filter(Boolean)
             .join("\n\n"),
+          screenText: interviewContextDraft.screenContextText,
         }),
         signal: abortController.signal,
       });
@@ -858,6 +864,30 @@ export function ReadyStateLaunchPanel() {
     void ensureInterviewSession()
       .then((session) => {
         if (!session) return null;
+        if (interviewContextDraft.screenContextText.trim()) {
+          const screenContext = createScreenContextFromText(interviewContextDraft.screenContextText);
+          realtimeConnection.sendRuntimeEvent({
+            type: "screen.context",
+            clientEventId: createStableId("screen-context-event"),
+            sourceType: screenContext.sourceType,
+            extractedText: screenContext.extractedText,
+            timestamp: screenContext.timestamp,
+          });
+          void interviewPersistenceRepository.saveScreenContext({
+            sessionId: session.id,
+            context: screenContext,
+          })
+            .then(({ persistence }) => setInterviewPersistenceInfo(persistence))
+            .catch(() => {
+              setInterviewPersistenceInfo({
+                mode: "local",
+                note: "Screen context persistence failed. Live guidance is continuing.",
+                cloudSyncReady: false,
+                authState: "signed-out-local",
+                userEmail: null,
+              });
+            });
+        }
         return interviewPersistenceRepository.saveDetectedQuestion({
           sessionId: session.id,
           questionId,
@@ -1122,6 +1152,27 @@ export function ReadyStateLaunchPanel() {
                 padding: "9px 10px",
               }}
             />
+            <textarea
+              aria-label="Screen or terminal context"
+              placeholder="Optional visible terminal output, code, error, diagram notes..."
+              value={interviewContextDraft.screenContextText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, screenContextText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                gridColumn: "1 / -1",
+                minHeight: 74,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             {interviewContextDraft.resumeText.trim() && (
@@ -1137,6 +1188,11 @@ export function ReadyStateLaunchPanel() {
             {interviewContextDraft.companyContext.trim() && (
               <span style={{ border: "0.5px solid rgba(124,108,255,0.3)", borderRadius: 999, color: "#7C6CFF", fontSize: 10, padding: "4px 8px" }}>
                 Company loaded
+              </span>
+            )}
+            {interviewContextDraft.screenContextText.trim() && (
+              <span style={{ border: "0.5px solid rgba(248,113,113,0.3)", borderRadius: 999, color: "#F87171", fontSize: 10, padding: "4px 8px" }}>
+                Screen context loaded
               </span>
             )}
           </div>

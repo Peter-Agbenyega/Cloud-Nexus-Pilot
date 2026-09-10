@@ -108,11 +108,26 @@ test("local interview persistence stores transcript, question, guidance, and end
       latencyMs: 950,
     },
   });
+  const screenResult = await repository.saveScreenContext({
+    sessionId: session.id,
+    context: {
+      timestamp: "2026-09-10T12:00:02.000Z",
+      sourceType: "terminal",
+      extractedText: "kubectl get pods returned Forbidden",
+      detectedLanguage: "Shell",
+      errorMessages: ["Forbidden"],
+      codeSnippet: "kubectl get pods",
+      infrastructureResources: [],
+      diagramSummary: null,
+      confidence: 0.78,
+    },
+  });
   const endResult = await repository.endSession(session.id);
 
   assert.equal(transcriptResult.data, "segment-1");
   assert.equal(questionResult.data, "question-1");
   assert.match(guidanceResult.data, /^guidance-/);
+  assert.match(screenResult.data, /^screen-context-/);
   assert.equal(endResult.data?.status, "ended");
 
   const rawStore = window.localStorage.getItem(INTERVIEW_SESSION_STORAGE_KEY);
@@ -121,8 +136,10 @@ test("local interview persistence stores transcript, question, guidance, and end
     transcriptSegments: unknown[];
     detectedQuestions: unknown[];
     guidanceItems: unknown[];
+    screenContextEvents: unknown[];
   };
   assert.equal(store.transcriptSegments.length, 1);
   assert.equal(store.detectedQuestions.length, 1);
   assert.equal(store.guidanceItems.length, 1);
+  assert.equal(store.screenContextEvents.length, 1);
 });

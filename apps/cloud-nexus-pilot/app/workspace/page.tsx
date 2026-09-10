@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "@/components/error-boundary";
+import { MockInterviewWorkbench } from "@/components/mock-interview-workbench";
 import { ReadyStateLaunchPanel } from "@/components/ready-state-launch-panel";
-import { SessionWorkspaceShell } from "@/components/session-workspace-shell";
 
 export default async function WorkspacePage({
   searchParams,
@@ -17,10 +17,10 @@ export default async function WorkspacePage({
           Mock Interview
         </h1>
         <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
-          Practice with a simulated recruiter call scenario
+          Practice one question at a time with role-specific follow-ups
         </p>
         <ErrorBoundary>
-          <SessionWorkspaceShell demoMode />
+          <MockInterviewWorkbench />
         </ErrorBoundary>
       </div>
     );

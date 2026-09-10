@@ -7,9 +7,8 @@ import { extractJobProfile, extractResumeProfile } from "@/lib/interview-intelli
 import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
 import { diagnoseTerminalArtifact } from "@/lib/interview-intelligence/terminal-debugging";
 import type { InterviewMode } from "@/lib/interview-intelligence/types";
+import { selectConfiguredLLMProvider } from "@/lib/llm-providers";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const MAX_QUESTION_CHARS = 500;
 const MAX_CONTEXT_CHARS = 1_200;
 const MAX_DOCUMENT_CHARS = 12_000;
@@ -157,10 +156,6 @@ async function streamGuidancePayload(
   controller.close();
 }
 
-function getOpenAiModel(): string {
-  return process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
-}
-
 function createTimeoutSignal(parentSignal: AbortSignal, timeoutMs: number): AbortSignal {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -294,14 +289,13 @@ export async function POST(request: Request) {
         return;
       }
 
-      const openAiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
-      if (!openAiApiKey) {
+      const provider = selectConfiguredLLMProvider();
+      if (!provider) {
         await streamFallbackGuidance(controller);
         return;
       }
 
       try {
-        const model = getOpenAiModel();
         const guidanceSignal = createTimeoutSignal(request.signal, GUIDANCE_TIMEOUT_MS);
         const detectedQuestion =
           detectStreamingQuestions({ text: question })[0] ??
@@ -352,18 +346,10 @@ export async function POST(request: Request) {
         ]
           .filter(Boolean)
           .join("\n\n");
-        const openAiResponse = await fetch(OPENAI_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${openAiApiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            max_completion_tokens: 240,
-            temperature: 0.3,
-            stream: true,
-            response_format: { type: "json_object" },
+        let modelContent = "";
+
+        try {
+          for await (const token of provider.streamText({
             messages: [
               {
                 role: "system",
@@ -378,80 +364,19 @@ export async function POST(request: Request) {
                 }),
               },
             ],
-          }),
-          cache: "no-store",
-          signal: guidanceSignal,
-        });
-
-        if (!openAiResponse.ok || !openAiResponse.body) {
+            maxTokens: 240,
+            temperature: 0.3,
+            responseFormat: "json",
+            signal: guidanceSignal,
+          })) {
+            modelContent += token;
+          }
+        } catch {
           await streamFallbackGuidance(controller);
           return;
         }
 
-        const reader = openAiResponse.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let modelContent = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
-
-          let boundaryIndex = buffer.indexOf("\n\n");
-          while (boundaryIndex >= 0) {
-            const rawEvent = buffer.slice(0, boundaryIndex);
-            buffer = buffer.slice(boundaryIndex + 2);
-
-            const dataLines = rawEvent
-              .split(/\r?\n/)
-              .filter((line) => line.startsWith("data:"))
-              .map((line) => line.slice(5).trim())
-              .filter(Boolean);
-
-            if (dataLines.length > 0) {
-              const dataText = dataLines.join("\n");
-
-              if (dataText === "[DONE]") {
-                await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
-                return;
-              }
-
-              let payload: {
-                choices?: Array<{ delta?: { content?: string | null } }>;
-                error?: { message?: string };
-              };
-              try {
-                payload = JSON.parse(dataText) as {
-                  choices?: Array<{ delta?: { content?: string | null } }>;
-                  error?: { message?: string };
-                };
-              } catch {
-                await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
-                return;
-              }
-
-              const token = payload.choices?.[0]?.delta?.content;
-              if (typeof token === "string" && token.length > 0) {
-                modelContent += token;
-              }
-
-              if (payload.error) {
-                await streamFailure(
-                  controller,
-                  payload.error?.message?.trim() || "The guidance model returned an error."
-                );
-                return;
-              }
-            }
-
-            boundaryIndex = buffer.indexOf("\n\n");
-          }
-
-          if (done) {
-            await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
-            return;
-          }
-        }
+        await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           await streamFallbackGuidance(controller);

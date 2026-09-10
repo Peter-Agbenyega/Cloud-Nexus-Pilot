@@ -653,6 +653,7 @@ export function ReadyStateLaunchPanel() {
       const decoder = new TextDecoder();
       let buffer = "";
       let streamedText = "";
+      let finalGuidanceText = "";
       let receivedDone = false;
 
       while (!receivedDone) {
@@ -670,6 +671,10 @@ export function ReadyStateLaunchPanel() {
             streamedText += payload.content;
             setGuidanceText(streamedText);
           }
+          if (payload.type === "final" && typeof payload.content === "string") {
+            finalGuidanceText = payload.content;
+            setGuidanceText(finalGuidanceText);
+          }
           if (payload.type === "error" && typeof payload.message === "string") {
             throw new Error(payload.message);
           }
@@ -678,10 +683,13 @@ export function ReadyStateLaunchPanel() {
         if (done) receivedDone = true;
       }
 
-      if (!streamedText.trim()) throw new Error("Live guidance returned an empty response.");
+      if (!streamedText.trim() && !finalGuidanceText.trim()) {
+        throw new Error("Live guidance returned an empty response.");
+      }
 
       // Try to parse structured JSON
-      const structured = parseGuidanceJson(streamedText);
+      const guidanceParseText = finalGuidanceText || streamedText;
+      const structured = parseGuidanceJson(guidanceParseText);
       let completedGuidance: GuidanceData;
       if (structured?.gist.trim() === FALLBACK_GIST) {
         showFallbackGuidance();
@@ -712,11 +720,11 @@ export function ReadyStateLaunchPanel() {
         // Fallback: show raw text as full_answer
         completedGuidance = {
           headline: "Draft answer",
-          speakNow: streamedText.split(/[.!?]/)[0]?.trim() || streamedText.slice(0, 120),
+          speakNow: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 120),
           keyPoints: [],
-          gist: streamedText.split(/[.!?]/)[0]?.trim() || streamedText.slice(0, 80),
+          gist: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 80),
           key_points: [],
-          full_answer: streamedText,
+          full_answer: guidanceParseText,
         };
         setGuidanceData(completedGuidance);
         setShowCard1(true);

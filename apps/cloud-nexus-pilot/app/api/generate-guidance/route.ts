@@ -156,6 +156,15 @@ async function streamGuidancePayload(
   controller.close();
 }
 
+async function streamFinalGuidancePayload(
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  payload: GuidancePayload
+) {
+  controller.enqueue(toSseChunk({ type: "final", content: JSON.stringify(payload) }));
+  controller.enqueue(toSseChunk({ type: "done" }));
+  controller.close();
+}
+
 function createTimeoutSignal(parentSignal: AbortSignal, timeoutMs: number): AbortSignal {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -370,13 +379,14 @@ export async function POST(request: Request) {
             signal: guidanceSignal,
           })) {
             modelContent += token;
+            controller.enqueue(toSseChunk({ type: "token", token }));
           }
         } catch {
           await streamFallbackGuidance(controller);
           return;
         }
 
-        await streamGuidancePayload(controller, parseGuidancePayload(modelContent));
+        await streamFinalGuidancePayload(controller, parseGuidancePayload(modelContent));
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           await streamFallbackGuidance(controller);

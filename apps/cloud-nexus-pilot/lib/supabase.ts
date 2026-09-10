@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const rawSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
 const rawSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
-const expectedCloudNexusSupabaseUrl = "https://wwhxaligcyqpnpdfxynr.supabase.co";
+const expectedCloudNexusSupabaseUrl = "https://api.cloudnexuspilot.com";
 
 function isPlaceholderSupabaseUrl(value: string): boolean {
   return /your-project-ref/i.test(value) || /example\.supabase\.co/i.test(value);
@@ -40,7 +40,8 @@ if (rawSupabaseUrl && !hasPlaceholderSupabaseUrl) {
 
 const hasValidSupabaseUrl =
   Boolean(parsedSupabaseUrl) &&
-  Boolean(parsedSupabaseUrl?.hostname?.endsWith(".supabase.co"));
+  parsedSupabaseUrl?.protocol === "https:" &&
+  parsedSupabaseUrl?.origin === expectedCloudNexusSupabaseUrl;
 const matchesExpectedCloudNexusProject =
   !parsedSupabaseUrl ||
   rawSupabaseUrl.replace(/\/+$/, "") === expectedCloudNexusSupabaseUrl;
@@ -75,10 +76,10 @@ export const supabaseConfigError = (() => {
     return "Supabase env vars still use placeholder values. Replace NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY with real project values.";
   }
   if (!parsedSupabaseUrl) {
-    return "Supabase URL is invalid. Use: https://<project-ref>.supabase.co";
+    return "Supabase URL is invalid. Use the configured Cloud Nexus Pilot HTTPS Supabase endpoint.";
   }
   if (!hasValidSupabaseUrl) {
-    return "Supabase URL host is invalid. It must end with .supabase.co";
+    return `Supabase URL is invalid for Cloud Nexus Pilot. Expected ${expectedCloudNexusSupabaseUrl}.`;
   }
   if (!matchesExpectedCloudNexusProject) {
     return `Supabase URL points to ${parsedSupabaseUrl?.origin ?? "an unknown project"}, but Cloud Nexus Pilot expects ${expectedCloudNexusSupabaseUrl}. Update NEXT_PUBLIC_SUPABASE_URL in Vercel and redeploy.`;

@@ -24,8 +24,16 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("[middleware] Supabase env vars missing; allowing protected route access.");
-    return NextResponse.next();
+    console.error("[middleware] Supabase env vars missing; denying protected route access.");
+
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/auth/login";
+    loginUrl.searchParams.set(
+      "returnTo",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`
+    );
+
+    return NextResponse.redirect(loginUrl);
   }
 
   let response = NextResponse.next({
@@ -59,10 +67,18 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (error) {
-    console.warn("[middleware] Supabase auth check failed; allowing protected route access.", {
+    console.error("[middleware] Supabase auth check failed; denying protected route access.", {
       message: error.message,
     });
-    return response;
+
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/auth/login";
+    loginUrl.searchParams.set(
+      "returnTo",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`
+    );
+
+    return NextResponse.redirect(loginUrl);
   }
 
   if (!user) {

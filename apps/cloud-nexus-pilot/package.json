@@ -18,7 +18,9 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.99.0",
     "@tabler/icons-react": "^3.44.0",
+    "mammoth": "^1.12.2",
     "next": "^15.2.6",
+    "pdf-parse": "^2.4.5",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },

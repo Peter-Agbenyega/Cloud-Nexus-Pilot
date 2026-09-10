@@ -385,10 +385,48 @@ export function ReadyStateLaunchPanel() {
     useState<InterviewContextDraft>(EMPTY_INTERVIEW_CONTEXT_DRAFT);
   const [interviewPersistenceInfo, setInterviewPersistenceInfo] =
     useState<InterviewPersistenceInfo | null>(null);
+  const [contextUploadStatus, setContextUploadStatus] = useState("");
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
   const isFreeLimitReached = freeSessionCount >= FREE_SESSION_LIMIT;
+
+  async function handleContextFileUpload(file: File | null, kind: "resume" | "job-description") {
+    if (!file) return;
+    setContextUploadStatus(`Extracting ${file.name}...`);
+    const formData = new FormData();
+    formData.set("file", file);
+    formData.set("kind", kind);
+
+    try {
+      const response = await fetch("/api/ingest-profile", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        extractedText?: unknown;
+        message?: unknown;
+      };
+      if (!response.ok || typeof payload.extractedText !== "string") {
+        throw new Error(
+          typeof payload.message === "string"
+            ? payload.message
+            : "Could not extract readable text from that file."
+        );
+      }
+      const next =
+        kind === "resume"
+          ? { ...interviewContextDraft, resumeText: payload.extractedText }
+          : { ...interviewContextDraft, jobDescriptionText: payload.extractedText };
+      setInterviewContextDraft(next);
+      writeStoredInterviewContextDraft(next);
+      setContextUploadStatus(`${kind === "resume" ? "Resume" : "Job description"} extracted from ${file.name}.`);
+    } catch (error) {
+      setContextUploadStatus(
+        error instanceof Error ? error.message : "File ingestion failed."
+      );
+    }
+  }
 
   const ensureSessionExecution = useCallback(async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
     if (sessionExecutionIdRef.current) return sessionExecutionIdRef.current;
@@ -1076,6 +1114,54 @@ export function ReadyStateLaunchPanel() {
             </button>
           </div>
           <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
+            <label style={{
+              alignItems: "center",
+              background: "#0D0D1A",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+              borderRadius: 8,
+              color: "#A0A0C0",
+              cursor: "pointer",
+              display: "flex",
+              fontSize: 11,
+              justifyContent: "space-between",
+              padding: "8px 10px",
+            }}>
+              Upload resume PDF/DOCX/TXT
+              <input
+                aria-label="Upload resume file"
+                type="file"
+                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                onChange={(event) => {
+                  void handleContextFileUpload(event.target.files?.[0] ?? null, "resume");
+                  event.currentTarget.value = "";
+                }}
+                style={{ display: "none" }}
+              />
+            </label>
+            <label style={{
+              alignItems: "center",
+              background: "#0D0D1A",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+              borderRadius: 8,
+              color: "#A0A0C0",
+              cursor: "pointer",
+              display: "flex",
+              fontSize: 11,
+              justifyContent: "space-between",
+              padding: "8px 10px",
+            }}>
+              Upload job PDF/DOCX/TXT
+              <input
+                aria-label="Upload job description file"
+                type="file"
+                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                onChange={(event) => {
+                  void handleContextFileUpload(event.target.files?.[0] ?? null, "job-description");
+                  event.currentTarget.value = "";
+                }}
+                style={{ display: "none" }}
+              />
+            </label>
             <textarea
               aria-label="Resume text"
               placeholder="Resume highlights, achievements, certifications..."
@@ -1174,6 +1260,11 @@ export function ReadyStateLaunchPanel() {
               }}
             />
           </div>
+          {contextUploadStatus && (
+            <p style={{ color: "#7070A0", fontSize: 11, lineHeight: 1.5, marginTop: 8 }}>
+              {contextUploadStatus}
+            </p>
+          )}
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             {interviewContextDraft.resumeText.trim() && (
               <span style={{ border: "0.5px solid rgba(45,212,191,0.3)", borderRadius: 999, color: "#2DD4BF", fontSize: 10, padding: "4px 8px" }}>

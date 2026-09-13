@@ -1,4 +1,4 @@
-export type LLMProviderName = "openai" | "anthropic";
+export type LLMProviderName = "openai";
 
 export type LLMMessage = {
   role: "system" | "user";
@@ -20,19 +20,14 @@ export type LLMProvider = {
 };
 
 type ProviderEnv = Record<string, string | undefined> & {
-  LLM_PROVIDER?: string;
   OPENAI_API_KEY?: string;
   OPENAI_MODEL?: string;
-  ANTHROPIC_API_KEY?: string;
-  ANTHROPIC_MODEL?: string;
 };
 
 type FetchLike = typeof fetch;
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
-const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-haiku-latest";
 
 function requireBody(response: Response, provider: LLMProviderName): ReadableStream<Uint8Array> {
   if (!response.ok || !response.body) {
@@ -91,34 +86,6 @@ async function* streamOpenAiTokens(responseBody: ReadableStream<Uint8Array>): As
   }
 }
 
-async function* streamAnthropicTokens(responseBody: ReadableStream<Uint8Array>): AsyncIterable<string> {
-  const reader = responseBody.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
-    const parsed = splitSseEvents(buffer);
-    buffer = parsed.buffer;
-
-    for (const event of parsed.events) {
-      for (const dataText of readSseDataLines(event)) {
-        const payload = JSON.parse(dataText) as {
-          type?: string;
-          delta?: { text?: string };
-          error?: { message?: string };
-        };
-        if (payload.type === "error") throw new Error(payload.error?.message || "Anthropic stream error.");
-        const token = payload.delta?.text;
-        if (typeof token === "string" && token) yield token;
-      }
-    }
-
-    if (done) return;
-  }
-}
-
 export function createOpenAiProvider(params: {
   apiKey: string;
   model?: string;
@@ -154,83 +121,16 @@ export function createOpenAiProvider(params: {
   };
 }
 
-export function createAnthropicProvider(params: {
-  apiKey: string;
-  model?: string;
-  fetchImpl?: FetchLike;
-}): LLMProvider {
-  const fetchImpl = params.fetchImpl ?? fetch;
-  const model = params.model?.trim() || DEFAULT_ANTHROPIC_MODEL;
-
-  return {
-    name: "anthropic",
-    model,
-    async *streamText(input) {
-      const systemMessage = input.messages.find((message) => message.role === "system")?.content ?? "";
-      const userMessages = input.messages.filter((message) => message.role !== "system");
-      const response = await fetchImpl(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": params.apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: input.maxTokens,
-          temperature: input.temperature,
-          stream: true,
-          system: systemMessage,
-          messages: userMessages.map((message) => ({
-            role: "user",
-            content: message.content,
-          })),
-        }),
-        cache: "no-store",
-        signal: input.signal,
-      });
-
-      yield* streamAnthropicTokens(requireBody(response, "anthropic"));
-    },
-  };
-}
-
 export function selectConfiguredLLMProvider(
   env: ProviderEnv = process.env,
   fetchImpl?: FetchLike
 ): LLMProvider | null {
-  const preferredProvider = env.LLM_PROVIDER?.trim().toLowerCase();
   const openAiKey = env.OPENAI_API_KEY?.trim() ?? "";
-  const anthropicKey = env.ANTHROPIC_API_KEY?.trim() ?? "";
-
-  if (preferredProvider === "anthropic" && anthropicKey) {
-    return createAnthropicProvider({
-      apiKey: anthropicKey,
-      model: env.ANTHROPIC_MODEL,
-      fetchImpl,
-    });
-  }
-
-  if (preferredProvider === "openai" && openAiKey) {
-    return createOpenAiProvider({
-      apiKey: openAiKey,
-      model: env.OPENAI_MODEL,
-      fetchImpl,
-    });
-  }
 
   if (openAiKey) {
     return createOpenAiProvider({
       apiKey: openAiKey,
       model: env.OPENAI_MODEL,
-      fetchImpl,
-    });
-  }
-
-  if (anthropicKey) {
-    return createAnthropicProvider({
-      apiKey: anthropicKey,
-      model: env.ANTHROPIC_MODEL,
       fetchImpl,
     });
   }

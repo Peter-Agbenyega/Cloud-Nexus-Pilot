@@ -15,10 +15,7 @@
         "^build"
       ],
       "env": [
-        "ANTHROPIC_API_KEY",
-        "ANTHROPIC_MODEL",
         "DEEPGRAM_API_KEY",
-        "LLM_PROVIDER",
         "NEXT_PUBLIC_API_BASE_URL",
         "NEXT_PUBLIC_PILOT_REALTIME_WS_URL",
         "NEXT_PUBLIC_SITE_URL",

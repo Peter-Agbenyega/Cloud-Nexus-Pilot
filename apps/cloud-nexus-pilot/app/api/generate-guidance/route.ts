@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { buildInterviewContext, serializeInterviewContextForPrompt } from "@/lib/interview-intelligence/context";
+import { buildInterviewSystemPrompt, buildInterviewUserPrompt } from "@/lib/interview-intelligence/natural-speaking";
 import { detectStreamingQuestions } from "@/lib/interview-intelligence/question-detector";
 import { extractJobProfile, extractResumeProfile } from "@/lib/interview-intelligence/profile-ingestion";
 import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
@@ -29,16 +30,16 @@ type GuidancePayload = {
 
 const FALLBACK_GUIDANCE: GuidancePayload = {
   headline: "Answer with structure",
-  speakNow: "Let me frame this around the problem, the tradeoffs, and the safest next step.",
-  keyPoints: ["Clarify scope", "Explain tradeoffs", "Close with impact"],
+  speakNow: "I'd start by clarifying the goal and the main constraint. Then I'd explain the trade-off, pick the safest next step, and tie it back to the impact.",
+  keyPoints: ["Clarify the goal", "Name the trade-off", "Pick a safe next step"],
   example: null,
   technicalDetail: null,
   caution: "Do not claim experience you have not provided.",
   followUp: "Ask what constraint matters most: cost, reliability, security, or delivery speed.",
-  gist: "Great question — give me a second to think through that.",
-  key_points: ["Clarify the problem", "Show your process", "End with impact"],
+  gist: "I'll frame the answer around the problem, trade-off, and next step.",
+  key_points: ["Clarify the goal", "Name the trade-off", "Pick a safe next step"],
   full_answer:
-    "That's a great question. Let me take a moment to walk you through my thinking on that. I want to make sure I explain the situation clearly, what I was responsible for, and how I approached the problem step by step. The main thing I focus on in those moments is staying calm, understanding the root issue, communicating clearly with the people involved, and choosing a practical path forward. From there, I would explain the tradeoffs, make the next step clear, and connect the answer back to the result the team needed.",
+    "I'd start by making sure I understand the problem and the constraint that matters most. From there, I'd explain the trade-off, choose a practical next step, and connect it back to the outcome the team needs. If I have direct experience from my background, I'd use that evidence. If I do not, I'd be clear that I'm describing how I'd approach it rather than claiming I've done that exact thing before.",
 };
 
 type GuidanceRequestBody = {
@@ -95,44 +96,6 @@ function normalizeInterviewMode(value: string): InterviewMode {
     "terminal-debugging",
   ];
   return allowed.includes(normalized as InterviewMode) ? (normalized as InterviewMode) : "general";
-}
-
-function buildSystemPrompt() {
-  return [
-    "You are Cloud Nexus Pilot, a fast interview copilot for cloud, DevOps, cybersecurity, IaC, debugging, system design, coding, behavioral, and KSA interviews.",
-    "Return ONLY valid JSON immediately with no preamble. Be concise. No markdown fences. Do not over-explain.",
-    "JSON shape: {headline, speakNow, keyPoints, example, technicalDetail, caution, followUp, gist, key_points, full_answer}",
-    "headline: maximum 8 words.",
-    "speakNow: 1-2 first-person lines the candidate can say immediately.",
-    "keyPoints/key_points: exactly 3 bullets, each under 10 words.",
-    "full_answer: 80 to 130 words maximum, first person conversational tone.",
-    "The user is a real person in a live interview. Write the full_answer as if THEY are speaking — first person, warm, natural, using their actual background if provided. Avoid sounding like a chatbot. Vary sentence length. Start with a human opener, not a textbook definition.",
-    "For system design, lead with requirements, components, security, scale, tradeoffs, and follow-up question.",
-    "For terminal debugging, include likely root cause, next command, risk level, and avoid destructive commands.",
-    "For behavioral/KSA, use STAR talking points only when candidate evidence supports them. Do not invent experience.",
-    "The candidate may be from any country. Do not assume US-specific experience. Accept international education, work experience from any country, and non-US company names as valid credentials. Treat all backgrounds equally.",
-    "Never include anti-proctoring, stealth, evasion, or monitoring circumvention advice.",
-  ].join("\n");
-}
-
-function buildUserPrompt(input: {
-  question: string;
-  packedContext: string;
-  promptRef?: string;
-}) {
-  return [
-    "Question:",
-    input.question,
-    "",
-    "Packed interview context:",
-    input.packedContext,
-    "",
-    input.promptRef ? `Operator prompt reference: ${input.promptRef}` : "",
-    "",
-    "Return ONLY valid JSON with the requested fields. Keep live guidance short enough to scan while speaking.",
-  ]
-    .filter(Boolean)
-    .join("\n");
 }
 
 async function streamFailure(controller: ReadableStreamDefaultController<Uint8Array>, message: string) {
@@ -197,6 +160,16 @@ function limitWords(text: string, maxWords: number): string {
   return text.trim().split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
 }
 
+function limitSentences(text: string, maxSentences: number, maxWords: number): string {
+  const sentences = text
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean)
+    .slice(0, maxSentences)
+    .join(" ");
+  return limitWords(sentences || text, maxWords);
+}
+
 function normalizeGuidancePayload(value: unknown): GuidancePayload {
   if (!value || typeof value !== "object") return FALLBACK_GUIDANCE;
   const record = value as Record<string, unknown>;
@@ -206,9 +179,9 @@ function normalizeGuidancePayload(value: unknown): GuidancePayload {
       : FALLBACK_GUIDANCE.headline;
   const speakNow =
     typeof record.speakNow === "string" && record.speakNow.trim()
-      ? limitWords(record.speakNow, 36)
+      ? limitSentences(record.speakNow, 4, 72)
       : typeof record.gist === "string" && record.gist.trim()
-        ? limitWords(record.gist, 18)
+        ? limitSentences(record.gist, 2, 36)
         : FALLBACK_GUIDANCE.speakNow;
   const gist =
     typeof record.gist === "string" && record.gist.trim()
@@ -221,11 +194,11 @@ function normalizeGuidancePayload(value: unknown): GuidancePayload {
       : [];
   const keyPoints = rawKeyPoints
         .filter((point): point is string => typeof point === "string" && point.trim().length > 0)
-        .slice(0, 3)
+        .slice(0, 5)
         .map((point) => limitWords(point, 9));
   const fullAnswer =
     typeof record.full_answer === "string" && record.full_answer.trim()
-      ? limitWords(record.full_answer, 120)
+      ? limitWords(record.full_answer, 180)
       : FALLBACK_GUIDANCE.full_answer;
 
   while (keyPoints.length < 3) {
@@ -309,6 +282,7 @@ export async function POST(request: Request) {
         const detectedQuestion =
           detectStreamingQuestions({ text: question })[0] ??
           detectStreamingQuestions({ text: `What is your answer to: ${question}?` })[0];
+        const normalizedMode = normalizeInterviewMode(interviewMode);
         const resumeProfile = resumeText ? extractResumeProfile(resumeText) : null;
         const jobProfile = jobDescriptionText ? extractJobProfile(jobDescriptionText, resumeProfile ?? undefined) : null;
         const screenContext = screenText ? createScreenContextFromText(screenText) : null;
@@ -324,7 +298,7 @@ export async function POST(request: Request) {
               buildInterviewContext({
                 question: detectedQuestion,
                 recentTranscript: transcriptContext,
-                mode: normalizeInterviewMode(interviewMode),
+                mode: normalizedMode,
                 resumeProfile,
                 jobProfile,
                 companyContext,
@@ -362,18 +336,23 @@ export async function POST(request: Request) {
             messages: [
               {
                 role: "system",
-                content: buildSystemPrompt(),
+                content: buildInterviewSystemPrompt({
+                  mode: normalizedMode,
+                  category: detectedQuestion?.category ?? "general",
+                }),
               },
               {
                 role: "user",
-                content: buildUserPrompt({
+                content: buildInterviewUserPrompt({
                   question,
                   packedContext,
                   promptRef: promptRef || undefined,
+                  mode: normalizedMode,
+                  category: detectedQuestion?.category ?? "general",
                 }),
               },
             ],
-            maxTokens: 240,
+            maxTokens: 420,
             temperature: 0.3,
             responseFormat: "json",
             signal: guidanceSignal,

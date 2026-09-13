@@ -9,6 +9,12 @@ import {
   getCreateOrResumeSessionEndpointUrl,
 } from "@/lib/contracts/session-execution-client";
 import type { SessionExecutionId } from "@/lib/contracts/session-execution";
+import {
+  createInterviewPersistenceRepository,
+  type InterviewPersistenceInfo,
+  type PersistedInterviewSession,
+} from "@/lib/interview-persistence";
+import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
 import { usePilotRealtimeConnection } from "@/lib/realtime/use-pilot-realtime";
 
 /* ================================================================
@@ -25,6 +31,11 @@ type LaunchCaptureState = {
 };
 
 type GuidanceData = {
+  headline?: string;
+  speakNow?: string;
+  keyPoints?: string[];
+  caution?: string | null;
+  followUp?: string | null;
   gist: string;
   key_points: string[];
   full_answer: string;
@@ -34,11 +45,33 @@ const GUIDANCE_CONTEXT_CHAR_LIMIT = 1_200;
 const FREE_SESSION_LIMIT = 10;
 const SESSION_COUNT_STORAGE_KEY = "cnp_session_count";
 const ONBOARDING_STORAGE_KEY = "cnp_onboarding_done";
+const INTERVIEW_CONTEXT_STORAGE_KEY = "cnp_interview_context_v1";
 const FALLBACK_GIST = "That's a great question. Let me take a moment to walk you through my thinking on that.";
 const FALLBACK_GUIDANCE: GuidanceData = {
+  headline: "Answer with structure",
+  speakNow: "Let me frame this around the problem, tradeoffs, and practical next step.",
+  keyPoints: ["Clarify scope", "Explain tradeoffs", "Close with impact"],
+  caution: null,
+  followUp: null,
   gist: FALLBACK_GIST,
   key_points: [],
   full_answer: "",
+};
+
+type InterviewContextDraft = {
+  resumeText: string;
+  jobDescriptionText: string;
+  companyContext: string;
+  interviewNotes: string;
+  screenContextText: string;
+};
+
+const EMPTY_INTERVIEW_CONTEXT_DRAFT: InterviewContextDraft = {
+  resumeText: "",
+  jobDescriptionText: "",
+  companyContext: "",
+  interviewNotes: "",
+  screenContextText: "",
 };
 
 const INITIAL_CAPTURE_STATE: LaunchCaptureState = {
@@ -158,6 +191,31 @@ function getParsedResumeBackground(): string {
   }
 }
 
+function readStoredInterviewContextDraft(): InterviewContextDraft {
+  if (typeof window === "undefined") return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  const raw = window.localStorage.getItem(INTERVIEW_CONTEXT_STORAGE_KEY);
+  if (!raw) return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  try {
+    const parsed = JSON.parse(raw) as Partial<InterviewContextDraft>;
+    return {
+      resumeText: typeof parsed.resumeText === "string" ? parsed.resumeText : "",
+      jobDescriptionText:
+        typeof parsed.jobDescriptionText === "string" ? parsed.jobDescriptionText : "",
+      companyContext: typeof parsed.companyContext === "string" ? parsed.companyContext : "",
+      interviewNotes: typeof parsed.interviewNotes === "string" ? parsed.interviewNotes : "",
+      screenContextText:
+        typeof parsed.screenContextText === "string" ? parsed.screenContextText : "",
+    };
+  } catch {
+    return EMPTY_INTERVIEW_CONTEXT_DRAFT;
+  }
+}
+
+function writeStoredInterviewContextDraft(draft: InterviewContextDraft) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(INTERVIEW_CONTEXT_STORAGE_KEY, JSON.stringify(draft));
+}
+
 function parseSsePayloads(buffer: string) {
   const payloads: Array<Record<string, unknown>> = [];
   let nextBuffer = buffer;
@@ -186,10 +244,16 @@ function parseGuidanceJson(rawText: string): GuidanceData | null {
     const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
     const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-    if (typeof parsed.gist === "string" && Array.isArray(parsed.key_points) && typeof parsed.full_answer === "string") {
+    const rawKeyPoints = Array.isArray(parsed.keyPoints) ? parsed.keyPoints : parsed.key_points;
+    if (typeof parsed.gist === "string" && Array.isArray(rawKeyPoints) && typeof parsed.full_answer === "string") {
       return {
+        headline: typeof parsed.headline === "string" ? parsed.headline : undefined,
+        speakNow: typeof parsed.speakNow === "string" ? parsed.speakNow : undefined,
+        keyPoints: rawKeyPoints.filter((p): p is string => typeof p === "string"),
+        caution: typeof parsed.caution === "string" ? parsed.caution : null,
+        followUp: typeof parsed.followUp === "string" ? parsed.followUp : null,
         gist: parsed.gist,
-        key_points: parsed.key_points.filter((p): p is string => typeof p === "string"),
+        key_points: rawKeyPoints.filter((p): p is string => typeof p === "string"),
         full_answer: parsed.full_answer,
       };
     }
@@ -287,9 +351,16 @@ export function ReadyStateLaunchPanel() {
   const activeStreamRef = useRef<MediaStream | null>(null);
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
   const lastAutoGuidanceQuestionRef = useRef<string>("");
+  const lastRealtimeTranscriptSegmentIdRef = useRef<string>("");
+  const activeInterviewSessionRef = useRef<PersistedInterviewSession | null>(null);
+  const lastPersistedDetectedQuestionIdRef = useRef<string | null>(null);
+  const captureStartedAtRef = useRef<number | null>(null);
+  const firstTranscriptAtRef = useRef<number | null>(null);
+  const lastGuidanceStartedAtRef = useRef<number | null>(null);
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({ repositoryMode: "local-only" });
   const realtimeConnection = usePilotRealtimeConnection();
+  const interviewPersistenceRepository = useMemo(() => createInterviewPersistenceRepository(), []);
 
   const [guidanceText, setGuidanceText] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
@@ -297,18 +368,67 @@ export function ReadyStateLaunchPanel() {
   const [questionsCoached, setQuestionsCoached] = useState(0);
   const [sessionStartTime] = useState<number>(Date.now());
   const [streamedFullAnswer, setStreamedFullAnswer] = useState("");
+  const [latencySnapshot, setLatencySnapshot] = useState<{
+    sttFirstPartialMs: number | null;
+    totalFirstGuidanceMs: number | null;
+  }>({
+    sttFirstPartialMs: null,
+    totalFirstGuidanceMs: null,
+  });
   const [showCard1, setShowCard1] = useState(false);
   const [showCard2, setShowCard2] = useState(false);
   const [showCard3, setShowCard3] = useState(false);
   const [answerReadyVisible, setAnswerReadyVisible] = useState(false);
   const [freeSessionCount, setFreeSessionCount] = useState(0);
   const [onboardingDone, setOnboardingDone] = useState(true);
+  const [interviewContextDraft, setInterviewContextDraft] =
+    useState<InterviewContextDraft>(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+  const [interviewPersistenceInfo, setInterviewPersistenceInfo] =
+    useState<InterviewPersistenceInfo | null>(null);
+  const [contextUploadStatus, setContextUploadStatus] = useState("");
 
   const stopTranscriptionCapture = transcriptionWorkflow.stopCapture;
   const startTranscriptionCapture = transcriptionWorkflow.startCapture;
   const isFreeLimitReached = freeSessionCount >= FREE_SESSION_LIMIT;
 
-  async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
+  async function handleContextFileUpload(file: File | null, kind: "resume" | "job-description") {
+    if (!file) return;
+    setContextUploadStatus(`Extracting ${file.name}...`);
+    const formData = new FormData();
+    formData.set("file", file);
+    formData.set("kind", kind);
+
+    try {
+      const response = await fetch("/api/ingest-profile", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        extractedText?: unknown;
+        message?: unknown;
+      };
+      if (!response.ok || typeof payload.extractedText !== "string") {
+        throw new Error(
+          typeof payload.message === "string"
+            ? payload.message
+            : "Could not extract readable text from that file."
+        );
+      }
+      const next =
+        kind === "resume"
+          ? { ...interviewContextDraft, resumeText: payload.extractedText }
+          : { ...interviewContextDraft, jobDescriptionText: payload.extractedText };
+      setInterviewContextDraft(next);
+      writeStoredInterviewContextDraft(next);
+      setContextUploadStatus(`${kind === "resume" ? "Resume" : "Job description"} extracted from ${file.name}.`);
+    } catch (error) {
+      setContextUploadStatus(
+        error instanceof Error ? error.message : "File ingestion failed."
+      );
+    }
+  }
+
+  const ensureSessionExecution = useCallback(async function ensureSessionExecution(): Promise<SessionExecutionId | null> {
     if (sessionExecutionIdRef.current) return sessionExecutionIdRef.current;
     const localSessionExecutionId = createStableId("session-execution");
     sessionExecutionIdRef.current = localSessionExecutionId;
@@ -331,7 +451,24 @@ export function ReadyStateLaunchPanel() {
       return localSessionExecutionId;
     }
     return sessionExecutionIdRef.current;
-  }
+  }, []);
+
+  const ensureInterviewSession = useCallback(async function ensureInterviewSession(): Promise<PersistedInterviewSession | null> {
+    if (activeInterviewSessionRef.current) return activeInterviewSessionRef.current;
+
+    const { data: session, persistence } = await interviewPersistenceRepository.createSession({
+      title: "Live interview session",
+      mode: "general",
+      resumeText: interviewContextDraft.resumeText,
+      jobDescriptionText: interviewContextDraft.jobDescriptionText,
+      companyContext: interviewContextDraft.companyContext,
+      notes: interviewContextDraft.interviewNotes,
+    });
+
+    activeInterviewSessionRef.current = session;
+    setInterviewPersistenceInfo(persistence);
+    return session;
+  }, [interviewContextDraft, interviewPersistenceRepository]);
 
   function stopActiveStream() {
     activeStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -358,6 +495,7 @@ export function ReadyStateLaunchPanel() {
   useEffect(() => {
     setFreeSessionCount(readStoredNumber(SESSION_COUNT_STORAGE_KEY));
     setOnboardingDone(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === "true");
+    setInterviewContextDraft(readStoredInterviewContextDraft());
 
     return () => {
       cancelActiveGuidanceRequest();
@@ -402,8 +540,11 @@ export function ReadyStateLaunchPanel() {
       setFreeSessionCount(nextSessionCount);
 
       activeStreamRef.current = stream;
+      captureStartedAtRef.current = performance.now();
+      firstTranscriptAtRef.current = null;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
       setLaunchFlowStep("live");
+      void ensureInterviewSession();
 
       stream.getTracks().forEach((track) => {
         track.addEventListener("ended", () => { void handleEndSession(); }, { once: true });
@@ -428,9 +569,30 @@ export function ReadyStateLaunchPanel() {
   async function handleEndSession() {
     cancelActiveGuidanceRequest();
     realtimeConnection.endSession();
+    const activeInterviewSession = activeInterviewSessionRef.current;
+    if (activeInterviewSession) {
+      interviewPersistenceRepository
+        .endSession(activeInterviewSession.id)
+        .then(({ persistence }) => setInterviewPersistenceInfo(persistence))
+        .catch(() => {
+          setInterviewPersistenceInfo({
+            mode: "local",
+            note: "Interview session end could not be synced. The live workspace has stopped safely.",
+            cloudSyncReady: false,
+            authState: "signed-out-local",
+            userEmail: null,
+          });
+        });
+    }
     stopTranscriptionCapture();
     stopActiveStream();
     lastAutoGuidanceQuestionRef.current = "";
+    lastRealtimeTranscriptSegmentIdRef.current = "";
+    activeInterviewSessionRef.current = null;
+    lastPersistedDetectedQuestionIdRef.current = null;
+    captureStartedAtRef.current = null;
+    firstTranscriptAtRef.current = null;
+    lastGuidanceStartedAtRef.current = null;
     sessionExecutionIdRef.current = null;
     setGuidanceText("");
     setGuidanceData(null);
@@ -463,6 +625,8 @@ export function ReadyStateLaunchPanel() {
     setAnswerReadyVisible(false);
 
     try {
+      const guidanceStartedAt = performance.now();
+      lastGuidanceStartedAtRef.current = guidanceStartedAt;
       void ensureSessionExecution();
       const userBackground = getParsedResumeBackground();
       const response = await fetch("/api/generate-guidance", {
@@ -473,6 +637,12 @@ export function ReadyStateLaunchPanel() {
           transcriptContext: buildTranscriptContext(transcriptionWorkflow.segments),
           interviewMode: inferInterviewIntent(detectedQuestion),
           userBackground,
+          resumeText: interviewContextDraft.resumeText || userBackground,
+          jobDescriptionText: interviewContextDraft.jobDescriptionText,
+          companyContext: [interviewContextDraft.companyContext, interviewContextDraft.interviewNotes]
+            .filter(Boolean)
+            .join("\n\n"),
+          screenText: interviewContextDraft.screenContextText,
         }),
         signal: abortController.signal,
       });
@@ -483,6 +653,7 @@ export function ReadyStateLaunchPanel() {
       const decoder = new TextDecoder();
       let buffer = "";
       let streamedText = "";
+      let finalGuidanceText = "";
       let receivedDone = false;
 
       while (!receivedDone) {
@@ -500,6 +671,10 @@ export function ReadyStateLaunchPanel() {
             streamedText += payload.content;
             setGuidanceText(streamedText);
           }
+          if (payload.type === "final" && typeof payload.content === "string") {
+            finalGuidanceText = payload.content;
+            setGuidanceText(finalGuidanceText);
+          }
           if (payload.type === "error" && typeof payload.message === "string") {
             throw new Error(payload.message);
           }
@@ -508,15 +683,20 @@ export function ReadyStateLaunchPanel() {
         if (done) receivedDone = true;
       }
 
-      if (!streamedText.trim()) throw new Error("Live guidance returned an empty response.");
+      if (!streamedText.trim() && !finalGuidanceText.trim()) {
+        throw new Error("Live guidance returned an empty response.");
+      }
 
       // Try to parse structured JSON
-      const structured = parseGuidanceJson(streamedText);
+      const guidanceParseText = finalGuidanceText || streamedText;
+      const structured = parseGuidanceJson(guidanceParseText);
+      let completedGuidance: GuidanceData;
       if (structured?.gist.trim() === FALLBACK_GIST) {
         showFallbackGuidance();
         return;
       }
       if (structured) {
+        completedGuidance = structured;
         setGuidanceData(structured);
         // Staggered card reveal
         setShowCard1(true);
@@ -538,11 +718,15 @@ export function ReadyStateLaunchPanel() {
         }, 800);
       } else {
         // Fallback: show raw text as full_answer
-        setGuidanceData({
-          gist: streamedText.split(/[.!?]/)[0]?.trim() || streamedText.slice(0, 80),
+        completedGuidance = {
+          headline: "Draft answer",
+          speakNow: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 120),
+          keyPoints: [],
+          gist: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 80),
           key_points: [],
-          full_answer: streamedText,
-        });
+          full_answer: guidanceParseText,
+        };
+        setGuidanceData(completedGuidance);
         setShowCard1(true);
         setTimeout(() => setShowCard3(true), 800);
         setStreamedFullAnswer(streamedText);
@@ -550,6 +734,59 @@ export function ReadyStateLaunchPanel() {
 
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
+      const totalFirstGuidanceMs =
+        captureStartedAtRef.current === null
+          ? null
+          : Math.round(performance.now() - captureStartedAtRef.current);
+      setLatencySnapshot((current) => ({
+        ...current,
+        totalFirstGuidanceMs,
+      }));
+      if (totalFirstGuidanceMs !== null) {
+        realtimeConnection.sendRuntimeEvent({
+          type: "session.metrics",
+          clientEventId: createStableId("metrics"),
+          metrics: {
+            total_first_guidance_ms: totalFirstGuidanceMs,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
+      void ensureInterviewSession()
+        .then((session) => {
+          if (!session) return null;
+          return interviewPersistenceRepository.saveGuidance({
+            sessionId: session.id,
+            detectedQuestionId: lastPersistedDetectedQuestionIdRef.current,
+            guidance: {
+              headline: completedGuidance.headline || completedGuidance.gist || "Live guidance",
+              speakNow:
+                completedGuidance.speakNow ||
+                completedGuidance.gist ||
+                completedGuidance.full_answer.slice(0, 180),
+              keyPoints: completedGuidance.keyPoints ?? completedGuidance.key_points ?? [],
+              example: null,
+              technicalDetail: completedGuidance.full_answer,
+              caution: completedGuidance.caution ?? null,
+              followUp: completedGuidance.followUp ?? null,
+              provider: "configured-llm",
+              model: null,
+              latencyMs: totalFirstGuidanceMs,
+            },
+          });
+        })
+        .then((result) => {
+          if (result?.persistence) setInterviewPersistenceInfo(result.persistence);
+        })
+        .catch(() => {
+          setInterviewPersistenceInfo({
+            mode: "local",
+            note: "Guidance persistence failed. The answer remained available in the live workspace.",
+            cloudSyncReady: false,
+            authState: "signed-out-local",
+            userEmail: null,
+          });
+        });
       setAnswerReadyVisible(true);
       window.setTimeout(() => {
         setAnswerReadyVisible(false);
@@ -566,6 +803,11 @@ export function ReadyStateLaunchPanel() {
     transcriptionWorkflow.aiDetectedQuestion,
     transcriptionWorkflow.latestDetectedQuestion,
     transcriptionWorkflow.segments,
+    interviewContextDraft,
+    interviewPersistenceRepository,
+    ensureInterviewSession,
+    ensureSessionExecution,
+    realtimeConnection,
   ]);
 
   const preferredDetectedQuestion =
@@ -580,6 +822,69 @@ export function ReadyStateLaunchPanel() {
   const latestSegmentId = transcriptSegments.at(-1)?.id ?? null;
 
   useEffect(() => {
+    if (launchFlowStep !== "live") return;
+    const latestSegment = transcriptSegments.at(-1);
+    if (!latestSegment || latestSegment.id === lastRealtimeTranscriptSegmentIdRef.current) return;
+    lastRealtimeTranscriptSegmentIdRef.current = latestSegment.id;
+
+    if (firstTranscriptAtRef.current === null && captureStartedAtRef.current !== null) {
+      const sttFirstPartialMs = Math.round(performance.now() - captureStartedAtRef.current);
+      firstTranscriptAtRef.current = performance.now();
+      setLatencySnapshot((current) => ({
+        ...current,
+        sttFirstPartialMs,
+      }));
+      realtimeConnection.sendRuntimeEvent({
+        type: "session.metrics",
+        clientEventId: createStableId("metrics"),
+        metrics: {
+          stt_first_partial_ms: sttFirstPartialMs,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    realtimeConnection.sendRuntimeEvent({
+      type: "transcript.final",
+      clientEventId: latestSegment.id,
+      text: latestSegment.text,
+      source: latestSegment.source,
+      timestamp: new Date(latestSegment.createdAt).toISOString(),
+    });
+    void ensureInterviewSession()
+      .then((session) => {
+        if (!session) return null;
+        return interviewPersistenceRepository.saveTranscriptSegment({
+          sessionId: session.id,
+          clientEventId: latestSegment.id,
+          text: latestSegment.text,
+          source: latestSegment.source,
+          speakerId: latestSegment.speakerId ?? null,
+          isPartial: false,
+          capturedAt: new Date(latestSegment.createdAt).toISOString(),
+        });
+      })
+      .then((result) => {
+        if (result?.persistence) setInterviewPersistenceInfo(result.persistence);
+      })
+      .catch(() => {
+        setInterviewPersistenceInfo({
+          mode: "local",
+          note: "Transcript segment persistence failed. Capture and local transcript display are continuing.",
+          cloudSyncReady: false,
+          authState: "signed-out-local",
+          userEmail: null,
+        });
+      });
+  }, [
+    ensureInterviewSession,
+    interviewPersistenceRepository,
+    launchFlowStep,
+    realtimeConnection,
+    transcriptSegments,
+  ]);
+
+  useEffect(() => {
     if (launchFlowStep !== "live") lastAutoGuidanceQuestionRef.current = "";
   }, [launchFlowStep]);
 
@@ -592,8 +897,89 @@ export function ReadyStateLaunchPanel() {
       detectedQuestion === lastAutoGuidanceQuestionRef.current
     ) return;
     lastAutoGuidanceQuestionRef.current = detectedQuestion;
+    const questionId = createStableId("question");
+    realtimeConnection.sendRuntimeEvent({
+      type: "question.detected",
+      clientEventId: createStableId("question-event"),
+      questionId,
+      normalizedQuestion: detectedQuestion,
+      category: inferInterviewIntent(detectedQuestion),
+      confidence: 0.72,
+      timestamp: new Date().toISOString(),
+    });
+    void ensureInterviewSession()
+      .then((session) => {
+        if (!session) return null;
+        if (interviewContextDraft.screenContextText.trim()) {
+          const screenContext = createScreenContextFromText(interviewContextDraft.screenContextText);
+          realtimeConnection.sendRuntimeEvent({
+            type: "screen.context",
+            clientEventId: createStableId("screen-context-event"),
+            sourceType: screenContext.sourceType,
+            extractedText: screenContext.extractedText,
+            timestamp: screenContext.timestamp,
+          });
+          void interviewPersistenceRepository.saveScreenContext({
+            sessionId: session.id,
+            context: screenContext,
+          })
+            .then(({ persistence }) => setInterviewPersistenceInfo(persistence))
+            .catch(() => {
+              setInterviewPersistenceInfo({
+                mode: "local",
+                note: "Screen context persistence failed. Live guidance is continuing.",
+                cloudSyncReady: false,
+                authState: "signed-out-local",
+                userEmail: null,
+              });
+            });
+        }
+        return interviewPersistenceRepository.saveDetectedQuestion({
+          sessionId: session.id,
+          questionId,
+          rawText: detectedQuestion,
+          normalizedQuestion: detectedQuestion,
+          category: inferInterviewIntent(detectedQuestion),
+          confidence: 0.72,
+          urgency: /debug|outage|down|accessdenied|failed|incident/i.test(detectedQuestion)
+            ? "high"
+            : "normal",
+          requiresResumeContext: /tell me about|describe a time|leadership|ksa/i.test(
+            detectedQuestion
+          ),
+          requiresCodeContext: /code|debug|terminal|terraform|kubectl|docker|git/i.test(
+            detectedQuestion
+          ),
+          requiresVisualContext: /screen|shown|diagram|this error|this code/i.test(
+            detectedQuestion
+          ),
+          detectedAt: new Date().toISOString(),
+        });
+      })
+      .then((result) => {
+        if (!result) return;
+        lastPersistedDetectedQuestionIdRef.current = result.data;
+        setInterviewPersistenceInfo(result.persistence);
+      })
+      .catch(() => {
+        setInterviewPersistenceInfo({
+          mode: "local",
+          note: "Detected question persistence failed. Live guidance is continuing.",
+          cloudSyncReady: false,
+          authState: "signed-out-local",
+          userEmail: null,
+        });
+      });
     void handleGetGuidance();
-  }, [guidanceStatus, handleGetGuidance, launchFlowStep, preferredDetectedQuestion]);
+  }, [
+    guidanceStatus,
+    handleGetGuidance,
+    ensureInterviewSession,
+    interviewPersistenceRepository,
+    launchFlowStep,
+    preferredDetectedQuestion,
+    realtimeConnection,
+  ]);
 
   const questionSegmentIds = useMemo(() => {
     const detectedQuestion = preferredDetectedQuestion.trim();
@@ -701,6 +1087,215 @@ export function ReadyStateLaunchPanel() {
           </div>
         ) : (
           <>
+        <div style={{
+          background: "#13131F",
+          border: "0.5px solid rgba(255,255,255,0.08)",
+          borderRadius: 12,
+          marginBottom: 14,
+          padding: 14,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#E0E0FF" }}>Session Context</p>
+              <p style={{ fontSize: 11, color: "#7070A0", lineHeight: 1.5 }}>
+                Paste resume, role, and notes before capture. Local-first, with cloud persistence when signed in.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setInterviewContextDraft(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+                writeStoredInterviewContextDraft(EMPTY_INTERVIEW_CONTEXT_DRAFT);
+              }}
+              style={{
+                background: "transparent",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 6,
+                color: "#7070A0",
+                cursor: "pointer",
+                fontSize: 11,
+                padding: "5px 9px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
+            <label style={{
+              alignItems: "center",
+              background: "#0D0D1A",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+              borderRadius: 8,
+              color: "#A0A0C0",
+              cursor: "pointer",
+              display: "flex",
+              fontSize: 11,
+              justifyContent: "space-between",
+              padding: "8px 10px",
+            }}>
+              Upload resume PDF/DOCX/TXT
+              <input
+                aria-label="Upload resume file"
+                type="file"
+                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                onChange={(event) => {
+                  void handleContextFileUpload(event.target.files?.[0] ?? null, "resume");
+                  event.currentTarget.value = "";
+                }}
+                style={{ display: "none" }}
+              />
+            </label>
+            <label style={{
+              alignItems: "center",
+              background: "#0D0D1A",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+              borderRadius: 8,
+              color: "#A0A0C0",
+              cursor: "pointer",
+              display: "flex",
+              fontSize: 11,
+              justifyContent: "space-between",
+              padding: "8px 10px",
+            }}>
+              Upload job PDF/DOCX/TXT
+              <input
+                aria-label="Upload job description file"
+                type="file"
+                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                onChange={(event) => {
+                  void handleContextFileUpload(event.target.files?.[0] ?? null, "job-description");
+                  event.currentTarget.value = "";
+                }}
+                style={{ display: "none" }}
+              />
+            </label>
+            <textarea
+              aria-label="Resume text"
+              placeholder="Resume highlights, achievements, certifications..."
+              value={interviewContextDraft.resumeText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, resumeText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                minHeight: 86,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
+            <textarea
+              aria-label="Job description"
+              placeholder="Job description, required skills, interview focus..."
+              value={interviewContextDraft.jobDescriptionText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, jobDescriptionText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                minHeight: 86,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
+            <input
+              aria-label="Company context"
+              placeholder="Company, team, cloud stack"
+              value={interviewContextDraft.companyContext}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, companyContext: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                padding: "9px 10px",
+              }}
+            />
+            <input
+              aria-label="Interview notes"
+              placeholder="Interviewer notes, constraints, topics"
+              value={interviewContextDraft.interviewNotes}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, interviewNotes: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                padding: "9px 10px",
+              }}
+            />
+            <textarea
+              aria-label="Screen or terminal context"
+              placeholder="Optional visible terminal output, code, error, diagram notes..."
+              value={interviewContextDraft.screenContextText}
+              onChange={(event) => {
+                const next = { ...interviewContextDraft, screenContextText: event.target.value };
+                setInterviewContextDraft(next);
+                writeStoredInterviewContextDraft(next);
+              }}
+              style={{
+                background: "#0D0D1A",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 8,
+                color: "#DCDCFF",
+                fontSize: 12,
+                gridColumn: "1 / -1",
+                minHeight: 74,
+                padding: 10,
+                resize: "vertical",
+              }}
+            />
+          </div>
+          {contextUploadStatus && (
+            <p style={{ color: "#7070A0", fontSize: 11, lineHeight: 1.5, marginTop: 8 }}>
+              {contextUploadStatus}
+            </p>
+          )}
+          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+            {interviewContextDraft.resumeText.trim() && (
+              <span style={{ border: "0.5px solid rgba(45,212,191,0.3)", borderRadius: 999, color: "#2DD4BF", fontSize: 10, padding: "4px 8px" }}>
+                Resume loaded
+              </span>
+            )}
+            {interviewContextDraft.jobDescriptionText.trim() && (
+              <span style={{ border: "0.5px solid rgba(251,191,36,0.3)", borderRadius: 999, color: "#FBBF24", fontSize: 10, padding: "4px 8px" }}>
+                Job loaded
+              </span>
+            )}
+            {interviewContextDraft.companyContext.trim() && (
+              <span style={{ border: "0.5px solid rgba(124,108,255,0.3)", borderRadius: 999, color: "#7C6CFF", fontSize: 10, padding: "4px 8px" }}>
+                Company loaded
+              </span>
+            )}
+            {interviewContextDraft.screenContextText.trim() && (
+              <span style={{ border: "0.5px solid rgba(248,113,113,0.3)", borderRadius: 999, color: "#F87171", fontSize: 10, padding: "4px 8px" }}>
+                Screen context loaded
+              </span>
+            )}
+          </div>
+        </div>
         {/* Mode selection cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {/* Microphone card */}
@@ -846,6 +1441,15 @@ export function ReadyStateLaunchPanel() {
             }} />
             {realtimeStatusLabel}
           </div>
+          <div style={{
+            color: interviewPersistenceInfo?.mode === "supabase-active" ? "#2DD4BF" : "#7070A0",
+            fontSize: 11,
+            marginTop: 4,
+          }}>
+            {interviewPersistenceInfo?.mode === "supabase-active"
+              ? "Cloud interview persistence active"
+              : "Local interview persistence active"}
+          </div>
         </div>
         <button
           type="button"
@@ -940,13 +1544,13 @@ export function ReadyStateLaunchPanel() {
                 Say This Now
               </p>
               <p style={{ fontSize: 13, lineHeight: 1.6, color: "#D4A820" }}>
-                {guidanceData.gist}
+                {guidanceData.speakNow || guidanceData.gist}
               </p>
             </div>
           )}
 
           {/* Card 2 — HIT THESE POINTS (teal) */}
-          {showCard2 && guidanceData.key_points.length > 0 && (
+          {showCard2 && (guidanceData.keyPoints ?? guidanceData.key_points).length > 0 && (
             <div style={{
               background: "rgba(45,212,191,0.07)",
               borderLeft: "3px solid #2DD4BF",
@@ -961,7 +1565,7 @@ export function ReadyStateLaunchPanel() {
                 Hit These Points
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {guidanceData.key_points.map((point, i) => (
+                {(guidanceData.keyPoints ?? guidanceData.key_points).map((point, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                     <span style={{
                       width: 5, height: 5, borderRadius: "50%", background: "#2DD4BF",
@@ -1003,6 +1607,20 @@ export function ReadyStateLaunchPanel() {
                   }} />
                 )}
               </p>
+              {(guidanceData.caution || guidanceData.followUp) && (
+                <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                  {guidanceData.caution && (
+                    <p style={{ color: "#FBBF24", fontSize: 11, lineHeight: 1.5 }}>
+                      Caution: {guidanceData.caution}
+                    </p>
+                  )}
+                  {guidanceData.followUp && (
+                    <p style={{ color: "#2DD4BF", fontSize: 11, lineHeight: 1.5 }}>
+                      Follow-up: {guidanceData.followUp}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1079,6 +1697,24 @@ export function ReadyStateLaunchPanel() {
               Remaining
             </p>
           </div>
+        </div>
+      )}
+
+      {launchFlowStep === "live" && (
+        <div style={{
+          background: "#13131F",
+          border: "0.5px solid rgba(255,255,255,0.06)",
+          borderRadius: 8,
+          color: "#7070A0",
+          display: "flex",
+          flexWrap: "wrap",
+          fontSize: 11,
+          gap: 10,
+          marginTop: 8,
+          padding: "8px 10px",
+        }}>
+          <span>STT first partial: {latencySnapshot.sttFirstPartialMs === null ? "--" : `${latencySnapshot.sttFirstPartialMs}ms`}</span>
+          <span>First guidance: {latencySnapshot.totalFirstGuidanceMs === null ? "--" : `${latencySnapshot.totalFirstGuidanceMs}ms`}</span>
         </div>
       )}
 

@@ -8,7 +8,10 @@ import {
   type PilotRealtimeSocket,
   type PilotRealtimeStateSnapshot,
 } from "../../lib/realtime/pilot-realtime-client";
-import { serializePilotRealtimeClientMessage } from "../../lib/realtime/session-protocol";
+import {
+  parsePilotRealtimeServerMessage,
+  serializePilotRealtimeClientMessage,
+} from "../../lib/realtime/session-protocol";
 
 type ListenerType = "open" | "message" | "close" | "error";
 
@@ -466,6 +469,38 @@ test("ping, session.end, and clean disconnect use protocol messages safely", () 
   assert.equal((JSON.parse(socket.sent[0]!) as { type: string }).type, "ping");
   assert.equal(socket.sent[1], serializePilotRealtimeClientMessage({ type: "session.end", reason: "done" }));
   assert.equal(client.snapshot.state, "closed");
+});
+
+test("runtime event acknowledgements parse and runtime events serialize without URL tokens", () => {
+  const parsed = parsePilotRealtimeServerMessage(
+    JSON.stringify({
+      type: "event.ack",
+      sessionId: "session-123",
+      clientEventId: "segment-1",
+      receivedType: "transcript.final",
+      receivedAt: "2026-09-10T12:00:00.000Z",
+    })
+  );
+
+  assert.deepEqual(parsed, {
+    type: "event.ack",
+    sessionId: "session-123",
+    clientEventId: "segment-1",
+    receivedType: "transcript.final",
+    receivedAt: "2026-09-10T12:00:00.000Z",
+  });
+
+  const serialized = serializePilotRealtimeClientMessage({
+    type: "question.detected",
+    clientEventId: "question-event-1",
+    questionId: "question-1",
+    normalizedQuestion: "How would you debug a failed Kubernetes deployment?",
+    category: "kubernetes",
+    confidence: 0.91,
+  });
+
+  assert.match(serialized, /question\.detected/);
+  assert.doesNotMatch(serialized, /accessToken|Bearer|token=/i);
 });
 
 test("session.end prevents reconnect when the server close arrives first", () => {

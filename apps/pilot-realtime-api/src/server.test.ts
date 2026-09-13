@@ -1183,6 +1183,31 @@ test("authenticated session.end still works", async (t) => {
   }
 });
 
+test("authenticated runtime events are acknowledged without echoing content", async (t) => {
+  const { wsUrl } = await startTestServer(t, ALLOWED_PRODUCTION_ORIGIN);
+  const { ws } = await connectWebSocket(wsUrl, ALLOWED_PRODUCTION_ORIGIN);
+
+  try {
+    await authenticateWebSocket(ws);
+    ws.send(
+      JSON.stringify({
+        type: "transcript.final",
+        clientEventId: "segment-123",
+        text: "How would you debug a Terraform AccessDenied error?",
+        source: "system-audio",
+        timestamp: new Date().toISOString(),
+      })
+    );
+    const ackMessage = await receiveJson(ws);
+    assert.equal(ackMessage.type, "event.ack");
+    assert.equal(ackMessage.clientEventId, "segment-123");
+    assert.equal(ackMessage.receivedType, "transcript.final");
+    assert.equal(JSON.stringify(ackMessage).includes("AccessDenied"), false);
+  } finally {
+    await closeWebSocket(ws);
+  }
+});
+
 test("token expiration closes the socket", async (t) => {
   const verifier = createFakeAuthVerifier({
     [VALID_TOKEN]: makeVerifiedToken(TEST_USER_ID, 1),

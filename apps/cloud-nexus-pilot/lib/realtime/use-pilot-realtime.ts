@@ -8,6 +8,7 @@ import {
   PilotRealtimeClient,
   type PilotRealtimeStateSnapshot,
 } from "@/lib/realtime/pilot-realtime-client";
+import type { PilotRealtimeClientMessage } from "@/lib/realtime/session-protocol";
 import { supabase } from "@/lib/supabase";
 
 const INITIAL_SNAPSHOT: PilotRealtimeStateSnapshot = {
@@ -18,6 +19,17 @@ const INITIAL_SNAPSHOT: PilotRealtimeStateSnapshot = {
 };
 
 type PilotRealtimeAuthClient = Pick<PilotRealtimeClient, "disconnect" | "reauthenticate">;
+type PilotRuntimeEvent = Extract<
+  PilotRealtimeClientMessage,
+  {
+    type:
+      | "transcript.partial"
+      | "transcript.final"
+      | "question.detected"
+      | "screen.context"
+      | "session.metrics";
+  }
+>;
 type PilotRealtimeAuthSession = {
   access_token?: string | null;
 } | null;
@@ -110,11 +122,16 @@ export function usePilotRealtimeConnection() {
     clientRef.current?.ping();
   }, []);
 
+  const sendRuntimeEvent = useCallback((message: PilotRuntimeEvent) => {
+    return clientRef.current?.sendRuntimeEvent(message) ?? false;
+  }, []);
+
   return {
     ...snapshot,
     connect,
     disconnect,
     endSession,
     ping,
+    sendRuntimeEvent,
   };
 }

@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:realtime",
+    "test": "npm run test:realtime && npm run test:intelligence",
     "test:realtime": "tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/realtime/*.test.js",
+    "test:intelligence": "tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js",
     "test:transcribe": "node ./scripts/test-transcribe.mjs",
     "test:streaming": "node ./scripts/test-streaming-session.mjs"
   },
@@ -17,7 +18,9 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.99.0",
     "@tabler/icons-react": "^3.44.0",
+    "mammoth": "^1.12.2",
     "next": "^15.2.6",
+    "pdf-parse": "^2.4.5",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },

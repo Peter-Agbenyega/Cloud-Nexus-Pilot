@@ -9,5 +9,10 @@
     "types": ["node"],
     "verbatimModuleSyntax": false
   },
-  "include": ["lib/realtime/**/*.ts", "tests/realtime/**/*.test.ts"]
+  "include": [
+    "lib/realtime/**/*.ts",
+    "lib/interview-intelligence/**/*.ts",
+    "tests/realtime/**/*.test.ts",
+    "tests/intelligence/**/*.test.ts"
+  ]
 }

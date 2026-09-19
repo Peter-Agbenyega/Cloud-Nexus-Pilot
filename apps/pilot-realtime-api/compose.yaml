@@ -3,24 +3,25 @@ services:
     build:
       context: ../..
       dockerfile: apps/pilot-realtime-api/Dockerfile
-    image: cloud-nexus-pilot-realtime:foundation
+    image: cloud-nexus-pilot-realtime:${REALTIME_RELEASE:?Set REALTIME_RELEASE to the deployed Git SHA}
     container_name: cloud-nexus-pilot-realtime
     restart: unless-stopped
     init: true
 
     env_file:
-      - .env
+      - ${REALTIME_ENV_FILE:-.env}
 
     # Keep the container port aligned with the Docker health check.
     environment:
       PORT: "3010"
-      # Leave WS_TRUSTED_PROXY_CIDRS unset unless the only inbound path is a
-      # deliberately configured local reverse proxy that overwrites
-      # X-Forwarded-* headers before proxying to this loopback-bound port.
-      # Example for a same-host proxy: WS_TRUSTED_PROXY_CIDRS: "127.0.0.1/32"
+      HOST: "127.0.0.1"
+      # Caddy connects from the host loopback interface. Host networking makes
+      # that peer address deterministic and avoids trusting a Docker subnet.
+      WS_TRUSTED_PROXY_CIDRS: "127.0.0.1/32"
 
-    ports:
-      - "127.0.0.1:3010:3010"
+    # Production is Linux. The process itself binds only to loopback, so host
+    # networking does not expose 3010 on a public interface.
+    network_mode: host
 
     security_opt:
       - no-new-privileges:true

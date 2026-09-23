@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { InterviewReport } from "@/lib/interview-intelligence/types";
 
@@ -36,7 +36,11 @@ export function InterviewReportWorkbench() {
   const [report, setReport] = useState<InterviewReport | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [error, setError] = useState("");
-  const localTranscripts = useMemo(readLocalTranscripts, []);
+  const [localTranscripts, setLocalTranscripts] = useState<StoredTranscript[]>([]);
+
+  useEffect(() => {
+    setLocalTranscripts(readLocalTranscripts());
+  }, []);
 
   async function generateReport() {
     if (!transcriptText.trim()) {
@@ -75,7 +79,7 @@ export function InterviewReportWorkbench() {
         <div className="panel p-6">
           <h2 className="text-xl font-semibold text-slate-950">Interview Debrief</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Generate a local-first report from a saved or pasted transcript.
+            Generate a rule-based report from a saved or pasted transcript. The text is sent to this app’s server for analysis; no AI provider is used. Scores are practice indicators, not an assessment of hiring outcomes.
           </p>
 
           {localTranscripts.length > 0 ? (

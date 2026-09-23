@@ -1,5 +1,6 @@
 "use client";
 
+import { CaptureOwnership } from "@/lib/realtime/capture-ownership";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -106,7 +107,7 @@ export type UseTranscriptionWorkflowResult = {
   importStatus: TranscriptImportStatus;
   isImporting: boolean;
   setSource: (source: LiveTranscriptionSource) => void;
-  startCapture: (options?: StartCaptureOptions) => Promise<void>;
+  startCapture: (options?: StartCaptureOptions) => Promise<boolean>;
   stopCapture: () => void;
   clearTranscript: () => void;
   uploadFile: (file: File) => Promise<void>;
@@ -287,6 +288,8 @@ export function useTranscriptionWorkflow(
   const [isImporting, setIsImporting] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const captureOwnershipRef = useRef(new CaptureOwnership());
+  const streamingGenerationRef = useRef(0);
   const audioPipelineRef = useRef<LiveAudioPipelineHandle | null>(null);
   const streamingClientRef = useRef<StreamingTranscriptClient | null>(null);
   const streamingConnectPromiseRef = useRef<Promise<StreamingTranscriptClient | null> | null>(null);
@@ -594,8 +597,10 @@ export function useTranscriptionWorkflow(
       if (streamingClientRef.current) return streamingClientRef.current;
       if (streamingConnectPromiseRef.current) return streamingConnectPromiseRef.current;
 
+      const generation = streamingGenerationRef.current;
       const connectPromise = createStreamingTranscriptClient({
         onLog: (entry) => {
+          if (generation !== streamingGenerationRef.current) return;
           if (shouldDebugLogs) {
             console.log("[transcription][streaming]", entry);
           }
@@ -620,6 +625,7 @@ export function useTranscriptionWorkflow(
           }
         },
         onTranscript: (response) => {
+          if (generation !== streamingGenerationRef.current) return;
           if (!response?.text?.trim()) return;
 
           startTransition(() => {
@@ -629,6 +635,10 @@ export function useTranscriptionWorkflow(
         },
       })
         .then((client) => {
+          if (generation !== streamingGenerationRef.current) {
+            void client.stop().catch(() => undefined);
+            return null;
+          }
           streamingClientRef.current = client;
           streamingFallbackReasonRef.current = "";
           setTransportStatus("streaming-session-connected");
@@ -641,6 +651,7 @@ export function useTranscriptionWorkflow(
           return client;
         })
         .catch((error) => {
+          if (generation !== streamingGenerationRef.current) return null;
           const message =
             error instanceof Error ? error.message : "Unable to initialize streaming transcript session.";
           streamingFallbackReasonRef.current = `streaming-connect-failed: ${message}`;
@@ -650,7 +661,9 @@ export function useTranscriptionWorkflow(
           return null;
         })
         .finally(() => {
-          streamingConnectPromiseRef.current = null;
+          if (streamingConnectPromiseRef.current === connectPromise) {
+            streamingConnectPromiseRef.current = null;
+          }
         });
 
       streamingConnectPromiseRef.current = connectPromise;
@@ -840,9 +853,11 @@ export function useTranscriptionWorkflow(
   }, []);
 
   const stopInternal = useCallback(() => {
+    captureOwnershipRef.current.cancel();
+    streamingGenerationRef.current += 1;
     audioPipelineRef.current?.stop();
     audioPipelineRef.current = null;
-    recorderRef.current?.stop();
+    if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
     recorderRef.current = null;
     flushPendingLiveSegment(chunkIndexRef.current, sourceRef.current);
     aiQuestionAbortRef.current?.abort();
@@ -1128,16 +1143,20 @@ export function useTranscriptionWorkflow(
   );
 
   const startCapture = useCallback(
-    async (options?: StartCaptureOptions) => {
+    async (options?: StartCaptureOptions): Promise<boolean> => {
       if (!isAudioCaptureSupported()) {
         setStatus("unsupported");
         setError("Audio capture is unsupported in this browser.");
-        return;
+        return false;
       }
 
       if (recorderRef.current?.state === "recording" || audioPipelineRef.current) {
-        return;
+        return true;
       }
+
+      const ownership = captureOwnershipRef.current;
+      const token = ownership.begin();
+      if (token === null) return false;
 
       setError("");
       setFeedback("");
@@ -1176,6 +1195,7 @@ export function useTranscriptionWorkflow(
 
       try {
         const initialStreamingClient = await ensureStreamingClient("session-start");
+        if (!ownership.isCurrent(token)) return false;
         if (!initialStreamingClient) {
           throw new Error(
             streamingFallbackReasonRef.current || "Streaming session create failed."
@@ -1186,6 +1206,11 @@ export function useTranscriptionWorkflow(
         logStreamingSeam("fallback-cleared", "streaming-session-active");
 
         const sourceStream = options?.existingStream ?? (await createCaptureStream(nextSource));
+        if (!options?.existingStream) {
+          if (!ownership.adopt(token, sourceStream)) return false;
+        } else if (!ownership.isCurrent(token)) {
+          return false;
+        }
         const audioTracks = sourceStream.getAudioTracks();
         if (audioTracks.length === 0) {
           throw new Error("No live audio track was found for this capture source.");
@@ -1200,7 +1225,7 @@ export function useTranscriptionWorkflow(
         // MediaRecorder remains only as an alternate capture mechanism into the same streaming path.
         if (isPcmAudioPipelineSupported()) {
           try {
-            audioPipelineRef.current = await createLiveAudioPipeline({
+            const pipeline = await createLiveAudioPipeline({
               stream,
               flushIntervalMs: PCM_CHUNK_FLUSH_INTERVAL_MS,
               minFramesPerChunk: PCM_MIN_FRAMES_PER_CHUNK,
@@ -1214,6 +1239,7 @@ export function useTranscriptionWorkflow(
                 setStatus("failed");
               },
               onChunk: (chunk) => {
+                if (!ownership.isCurrent(token)) return;
                 const chunkIndex = chunkIndexRef.current;
                 chunkIndexRef.current += 1;
                 if (shouldDebugLogs) {
@@ -1229,12 +1255,18 @@ export function useTranscriptionWorkflow(
               },
             });
 
+            if (!ownership.isCurrent(token)) {
+              pipeline.stop();
+              return false;
+            }
+            audioPipelineRef.current = pipeline;
             setStatus("listening");
             setFeedback(
               "Live PCM audio pipeline connected. Waiting for speech for near real-time transcription."
             );
-            return;
+            return true;
           } catch (pipelineStartError) {
+            if (!ownership.isCurrent(token)) return false;
             console.warn("[transcription] PCM pipeline failed, falling back to MediaRecorder", {
               error:
                 pipelineStartError instanceof Error
@@ -1251,6 +1283,7 @@ export function useTranscriptionWorkflow(
           : new MediaRecorder(stream);
 
         recorder.ondataavailable = (event) => {
+          if (!ownership.isCurrent(token)) return;
           if (!event.data || event.data.size === 0) return;
 
           const blob = event.data;
@@ -1350,7 +1383,9 @@ export function useTranscriptionWorkflow(
         setFeedback(
           "Live audio stream and transcription runtime are connected. Waiting for speech."
         );
+        return true;
       } catch (startError) {
+        if (!ownership.isCurrent(token)) return false;
         const message =
           startError instanceof DOMException && startError.name === "NotAllowedError"
             ? "Audio permission denied. Allow microphone or tab audio access to continue."
@@ -1368,6 +1403,9 @@ export function useTranscriptionWorkflow(
           setTransportStatus("streaming-session-failed");
           setTransportFallbackReason(streamingFallbackReasonRef.current);
         }
+        return false;
+      } finally {
+        ownership.finish(token);
       }
     },
     [clearIncompleteQuestionWait, ensureStreamingClient, logStreamingSeam, processAudioChunk, stopInternal]

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { resolveSafeReturnPath } from "@/lib/auth-return-path";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -17,18 +18,11 @@ type AuthFormProps = {
   mode: AuthFormMode;
 };
 
-function resolveSafeReturnPath(rawNext: string | null): string {
-  if (!rawNext) return "/prompt-library";
-  if (!rawNext.startsWith("/")) return "/prompt-library";
-  if (rawNext.startsWith("//")) return "/prompt-library";
-  return rawNext;
-}
-
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnPath = useMemo(
-    () => resolveSafeReturnPath(searchParams.get("next")),
+    () => resolveSafeReturnPath(searchParams.get("next") ?? searchParams.get("returnTo")),
     [searchParams]
   );
   const [email, setEmail] = useState("");
@@ -98,7 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       const origin =
         typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-      const emailRedirectTo = `${origin}${returnPath}`;
+      const emailRedirectTo = `${origin}/auth/login?next=${encodeURIComponent(returnPath)}`;
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,

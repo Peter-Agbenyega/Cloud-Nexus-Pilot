@@ -1,22 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr/dist/module/createServerClient";
 
-const protectedPathPrefixes = [
-  "/workspace",
-  "/transcripts",
-  "/summary",
-  "/prompt-library",
-  "/billing",
-] as const;
-
-function isProtectedPath(pathname: string) {
-  return protectedPathPrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
+import { isLocalFallbackPath, isProtectedPilotPath } from "./lib/auth-return-path";
 
 export async function middleware(request: NextRequest) {
-  if (!isProtectedPath(request.nextUrl.pathname)) {
+  if (!isProtectedPilotPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
@@ -24,12 +12,13 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    if (isLocalFallbackPath(request.nextUrl.pathname)) return NextResponse.next();
     console.error("[middleware] Supabase env vars missing; denying protected route access.");
 
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set(
-      "returnTo",
+      "next",
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     );
 
@@ -74,7 +63,7 @@ export async function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set(
-      "returnTo",
+      "next",
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     );
 
@@ -85,7 +74,7 @@ export async function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set(
-      "returnTo",
+      "next",
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     );
     return NextResponse.redirect(loginUrl);

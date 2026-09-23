@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -26,20 +27,6 @@ type GuidancePayload = {
   gist: string;
   key_points: string[];
   full_answer: string;
-};
-
-const FALLBACK_GUIDANCE: GuidancePayload = {
-  headline: "Answer with structure",
-  speakNow: "I'd start by clarifying the goal and the main constraint. Then I'd explain the trade-off, pick the safest next step, and tie it back to the impact.",
-  keyPoints: ["Clarify the goal", "Name the trade-off", "Pick a safe next step"],
-  example: null,
-  technicalDetail: null,
-  caution: "Do not claim experience you have not provided.",
-  followUp: "Ask what constraint matters most: cost, reliability, security, or delivery speed.",
-  gist: "I'll frame the answer around the problem, trade-off, and next step.",
-  key_points: ["Clarify the goal", "Name the trade-off", "Pick a safe next step"],
-  full_answer:
-    "I'd start by making sure I understand the problem and the constraint that matters most. From there, I'd explain the trade-off, choose a practical next step, and connect it back to the outcome the team needs. If I have direct experience from my background, I'd use that evidence. If I do not, I'd be clear that I'm describing how I'd approach it rather than claiming I've done that exact thing before.",
 };
 
 type GuidanceRequestBody = {
@@ -104,21 +91,6 @@ async function streamFailure(controller: ReadableStreamDefaultController<Uint8Ar
   controller.close();
 }
 
-async function streamFallbackGuidance(controller: ReadableStreamDefaultController<Uint8Array>) {
-  controller.enqueue(toSseChunk({ type: "chunk", content: JSON.stringify(FALLBACK_GUIDANCE) }));
-  controller.enqueue(toSseChunk({ type: "done" }));
-  controller.close();
-}
-
-async function streamGuidancePayload(
-  controller: ReadableStreamDefaultController<Uint8Array>,
-  payload: GuidancePayload
-) {
-  controller.enqueue(toSseChunk({ type: "chunk", content: JSON.stringify(payload) }));
-  controller.enqueue(toSseChunk({ type: "done" }));
-  controller.close();
-}
-
 async function streamFinalGuidancePayload(
   controller: ReadableStreamDefaultController<Uint8Array>,
   payload: GuidancePayload
@@ -171,18 +143,18 @@ function limitSentences(text: string, maxSentences: number, maxWords: number): s
 }
 
 function normalizeGuidancePayload(value: unknown): GuidancePayload {
-  if (!value || typeof value !== "object") return FALLBACK_GUIDANCE;
+  if (!value || typeof value !== "object") throw new Error("Invalid guidance payload");
   const record = value as Record<string, unknown>;
   const headline =
     typeof record.headline === "string" && record.headline.trim()
       ? limitWords(record.headline, 8)
-      : FALLBACK_GUIDANCE.headline;
+      : "Guidance";
   const speakNow =
     typeof record.speakNow === "string" && record.speakNow.trim()
       ? limitSentences(record.speakNow, 4, 72)
       : typeof record.gist === "string" && record.gist.trim()
         ? limitSentences(record.gist, 2, 36)
-        : FALLBACK_GUIDANCE.speakNow;
+        : "";
   const gist =
     typeof record.gist === "string" && record.gist.trim()
       ? limitWords(record.gist, 18)
@@ -199,11 +171,9 @@ function normalizeGuidancePayload(value: unknown): GuidancePayload {
   const fullAnswer =
     typeof record.full_answer === "string" && record.full_answer.trim()
       ? limitWords(record.full_answer, 180)
-      : FALLBACK_GUIDANCE.full_answer;
+      : speakNow;
 
-  while (keyPoints.length < 3) {
-    keyPoints.push(FALLBACK_GUIDANCE.key_points[keyPoints.length]);
-  }
+  if (!speakNow) throw new Error("Provider returned empty guidance.");
 
   return {
     headline,
@@ -234,22 +204,19 @@ function parseGuidancePayload(rawText: string): GuidancePayload {
     try {
       return normalizeGuidancePayload(JSON.parse(jsonMatch[0]));
     } catch {
-      // Fall through to regex extraction below.
+      // Malformed or empty provider output must not become a synthetic answer.
     }
   }
 
-  const gistMatch = stripped.match(/"gist"\s*:\s*"([^"]+)"/i) ?? stripped.match(/gist\s*[:\-]\s*([^\n.?!]+[.?!]?)/i);
-  if (gistMatch?.[1]) {
-    return {
-      ...FALLBACK_GUIDANCE,
-      gist: limitWords(gistMatch[1], 18),
-    };
-  }
-
-  return FALLBACK_GUIDANCE;
+  throw new Error("Provider returned unreadable guidance.");
 }
 
 export async function POST(request: Request) {
+  const provider = selectConfiguredLLMProvider();
+  if (provider) {
+    const auth = await requireProviderUser();
+    if (auth.response) return auth.response;
+  }
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const body = (await request.json().catch(() => ({}))) as GuidanceRequestBody;
@@ -271,9 +238,8 @@ export async function POST(request: Request) {
         return;
       }
 
-      const provider = selectConfiguredLLMProvider();
       if (!provider) {
-        await streamFallbackGuidance(controller);
+        await streamFailure(controller, "No guidance provider is configured. No AI guidance was generated.");
         return;
       }
 
@@ -361,14 +327,14 @@ export async function POST(request: Request) {
             controller.enqueue(toSseChunk({ type: "token", token }));
           }
         } catch {
-          await streamFallbackGuidance(controller);
+          await streamFailure(controller, "The guidance provider failed. No AI guidance was generated.");
           return;
         }
 
         await streamFinalGuidancePayload(controller, parseGuidancePayload(modelContent));
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
-          await streamFallbackGuidance(controller);
+          await streamFailure(controller, "The guidance provider failed. No AI guidance was generated.");
           return;
         }
         await streamFailure(controller, "Unable to generate guidance right now.");

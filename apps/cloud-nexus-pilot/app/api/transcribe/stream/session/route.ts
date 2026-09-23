@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 
 import {
@@ -9,7 +10,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  const session = createStreamingSession();
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
+  const session = createStreamingSession(auth.userId);
   console.info("[transcription][stream-session] created", {
     sessionId: session.id,
     createdAt: session.createdAt,
@@ -28,6 +31,8 @@ export async function POST() {
 }
 
 export async function DELETE(request: Request) {
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
   const url = new URL(request.url);
   const sessionId = url.searchParams.get("sessionId")?.trim();
   if (!sessionId) {
@@ -42,7 +47,7 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const stopped = stopStreamingSession(sessionId);
+  const stopped = stopStreamingSession(sessionId, auth.userId);
   if (!stopped) {
     console.warn("[transcription][stream-session] stop-missing", { sessionId });
     return NextResponse.json(

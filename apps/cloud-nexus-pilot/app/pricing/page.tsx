@@ -9,6 +9,7 @@ export default function PricingPage() {
     <>
       <PageHero eyebrow={page.eyebrow} title={page.title} description={page.description} />
       <section className="section-shell pb-16">
+        <p className="mb-6 text-sm text-slate-500">Proposed pricing only. Checkout, subscriptions, and paid entitlements are not available yet.</p>
         <ContentGrid items={page.items} />
       </section>
     </>

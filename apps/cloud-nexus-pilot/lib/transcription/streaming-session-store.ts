@@ -1,9 +1,4 @@
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
-import {
-  isDeepgramTranscriptionConfigured,
-  transcribeWithDeepgram,
-} from "@/lib/transcription/deepgram-transcribe";
-import { transcribeWithOpenAi } from "@/lib/transcription/openai-transcribe";
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type SessionEvent =
@@ -24,6 +19,7 @@ type SessionEvent =
 type SessionListener = (event: SessionEvent) => void;
 
 type StreamingSession = {
+  ownerId: string;
   id: string;
   createdAt: number;
   lastActivityAt: number;
@@ -80,10 +76,12 @@ function emit(session: StreamingSession, event: SessionEvent) {
   }
 }
 
-export function createStreamingSession() {
+export function createStreamingSession(ownerId: string) {
+  if (!ownerId) throw new Error("A session owner is required.");
   const id = crypto.randomUUID();
   const now = Date.now();
   const session: StreamingSession = {
+    ownerId,
     id,
     createdAt: now,
     lastActivityAt: now,
@@ -96,12 +94,13 @@ export function createStreamingSession() {
   return session;
 }
 
-export function getStreamingSession(sessionId: string): StreamingSession | null {
-  return getStore().sessions.get(sessionId) ?? null;
+export function getStreamingSession(sessionId: string, ownerId: string): StreamingSession | null {
+  const session = getStore().sessions.get(sessionId);
+  return ownerId && session?.ownerId === ownerId ? session : null;
 }
 
-export function stopStreamingSession(sessionId: string): boolean {
-  const session = getStreamingSession(sessionId);
+export function stopStreamingSession(sessionId: string, ownerId: string): boolean {
+  const session = getStreamingSession(sessionId, ownerId);
   if (!session) return false;
   session.stopped = true;
   session.lastActivityAt = Date.now();
@@ -113,9 +112,10 @@ export function stopStreamingSession(sessionId: string): boolean {
 
 export function subscribeToStreamingSession(
   sessionId: string,
+  ownerId: string,
   listener: SessionListener
 ): (() => void) | null {
-  const session = getStreamingSession(sessionId);
+  const session = getStreamingSession(sessionId, ownerId);
   if (!session || session.stopped) return null;
 
   session.listeners.add(listener);
@@ -126,13 +126,14 @@ export function subscribeToStreamingSession(
 }
 
 export async function processStreamingSessionChunk(params: {
+  ownerId: string;
   sessionId: string;
   chunkIndex: number;
   source: TranscriptSource;
   contentType: string;
   arrayBuffer: ArrayBuffer;
 }): Promise<{ ok: true } | { ok: false; code: string; message: string; detail?: string }> {
-  const session = getStreamingSession(params.sessionId);
+  const session = getStreamingSession(params.sessionId, params.ownerId);
   if (!session || session.stopped) {
     return {
       ok: false,
@@ -153,6 +154,8 @@ export async function processStreamingSessionChunk(params: {
   }
 
   try {
+    const { isDeepgramTranscriptionConfigured, transcribeWithDeepgram } = await import("@/lib/transcription/deepgram-transcribe");
+    const { transcribeWithOpenAi } = await import("@/lib/transcription/openai-transcribe");
     const transcribe = isDeepgramTranscriptionConfigured()
       ? transcribeWithDeepgram
       : transcribeWithOpenAi;

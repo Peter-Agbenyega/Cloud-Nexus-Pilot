@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 
 import {
@@ -14,6 +15,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
   try {
     const arrayBuffer = await request.arrayBuffer();
     const transcribe = isDeepgramTranscriptionConfigured()

@@ -53,15 +53,15 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="mt-5 max-w-xl text-sm leading-6 text-[#6060A0]">
-              Built for interviews, recruiter screens, consulting calls, and high-pressure conversations.
+              Live transcription and guidance require a signed-in account, configured providers, and browser audio permission. Demo practice uses fixed rules and does not capture audio.
             </p>
           </div>
 
           <div className="rounded-[20px] border border-white/[0.08] bg-[#13131F] p-4 shadow-2xl shadow-black/30 sm:p-6">
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
               <div>
-                <p className="text-sm font-medium text-[#F0F0FF]">Session ready</p>
-                <p className="mt-1 text-xs text-[#6060A0]">Choose an audio source to begin</p>
+                <p className="text-sm font-medium text-[#F0F0FF]">Illustrative session preview</p>
+                <p className="mt-1 text-xs text-[#6060A0]">Sample guidance — no active session</p>
               </div>
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.65)]" />
             </div>
@@ -73,7 +73,7 @@ export default function HomePage() {
                     <span className="h-2.5 w-2.5 rounded-full bg-[#7C6CFF]" />
                   </div>
                   <p className="text-sm font-medium text-[#F0F0FF]">{item}</p>
-                  <p className="mt-1 text-xs leading-5 text-[#6060A0]">Ready for live capture</p>
+                  <p className="mt-1 text-xs leading-5 text-[#6060A0]">Requires permission in the workspace</p>
                 </div>
               ))}
             </div>

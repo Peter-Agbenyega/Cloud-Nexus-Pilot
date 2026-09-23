@@ -294,6 +294,7 @@ function mapTranscriptToSupabaseInsert(
 
 async function getAuthenticatedSupabaseUser(): Promise<{
   user: User | null;
+  authLookupFailed?: boolean;
   persistence: TranscriptionPersistenceInfo;
 }> {
   if (!supabase) {
@@ -314,6 +315,7 @@ async function getAuthenticatedSupabaseUser(): Promise<{
   if (error) {
     return {
       user: null,
+      authLookupFailed: error.name !== "AuthSessionMissingError",
       persistence: createLocalPersistenceInfo(
         "Supabase auth check failed, so transcript persistence is using local fallback mode."
       ),
@@ -563,13 +565,20 @@ export function createLocalTranscriptionRepository(): TranscriptionRepository {
 }
 
 export function createTranscriptionRepository(): TranscriptionRepository {
+  // Retain cloud provenance across auth loss; a cloud row must never become a local delete.
+  const cloudRecordIds = new Set<string>();
   async function runWithFallback<T>(
     action: (user: User) => Promise<T>,
-    fallback: () => Promise<TranscriptionRepositoryResult<T>>
+    fallback: () => Promise<TranscriptionRepositoryResult<T>>,
+    allowCloudErrorFallback = true,
+    requiresCloud = false
   ): Promise<TranscriptionRepositoryResult<T>> {
-    const { user, persistence } = await getAuthenticatedSupabaseUser();
+    const { user, persistence, authLookupFailed } = await getAuthenticatedSupabaseUser();
 
     if (!user) {
+      if (requiresCloud || (!allowCloudErrorFallback && authLookupFailed)) {
+        throw new Error("Deletion was not performed because cloud authentication could not be verified. Sign in or retry when authentication is available.");
+      }
       const result = await fallback();
       return {
         ...result,
@@ -584,6 +593,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
         persistence,
       };
     } catch (error) {
+      if (!allowCloudErrorFallback) throw error;
       const fallbackResult = await fallback();
       const message =
         error instanceof Error ? error.message : "Supabase transcript sync failed unexpectedly.";
@@ -600,6 +610,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
       return runWithFallback(
         async (user) => {
           const { transcripts, importStatus } = await listCloudTranscriptsWithImportState(user);
+          transcripts.forEach((transcript) => cloudRecordIds.add(transcript.id));
           return {
             transcripts,
             source: "remote",
@@ -614,6 +625,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
       return runWithFallback(
         async (user) => {
           const transcript = await getSupabaseTranscriptById(user, id);
+          if (transcript) cloudRecordIds.add(transcript.id);
           return {
             transcript,
             source: "remote",
@@ -633,6 +645,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
             options.status ?? "uploaded"
           );
           const transcript = await createSupabaseTranscript(user, localTranscript);
+          cloudRecordIds.add(transcript.id);
           return {
             transcript,
             source: "remote",
@@ -654,6 +667,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
             user,
             updateTranscriptRecord(existingTranscript, updates)
           );
+          cloudRecordIds.add(transcript.id);
           return {
             transcript,
             source: "remote",
@@ -666,6 +680,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
     async deleteTranscript(id) {
       return runWithFallback(
         async (user) => {
+          cloudRecordIds.add(id);
           await deleteSupabaseTranscript(user, id);
           return {
             id,
@@ -673,7 +688,9 @@ export function createTranscriptionRepository(): TranscriptionRepository {
             source: "remote" as const,
           };
         },
-        () => localTranscriptionRepository.deleteTranscript(id)
+        () => localTranscriptionRepository.deleteTranscript(id),
+        false,
+        cloudRecordIds.has(id)
       );
     },
 
@@ -697,6 +714,7 @@ export function createTranscriptionRepository(): TranscriptionRepository {
 
           writeTranscriptImportMarker(user.id);
           const { transcripts, importStatus } = await listCloudTranscriptsWithImportState(user);
+          transcripts.forEach((transcript) => cloudRecordIds.add(transcript.id));
 
           return {
             transcripts,

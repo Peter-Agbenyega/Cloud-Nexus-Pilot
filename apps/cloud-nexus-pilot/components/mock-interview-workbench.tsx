@@ -117,6 +117,9 @@ export function MockInterviewWorkbench() {
   return (
     <div style={{ display: "grid", gap: 16, gridTemplateColumns: "320px minmax(0, 1fr)" }}>
       <section style={{ background: "#13131F", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 14 }}>
+        <p style={{ color: "#A0A0C0", fontSize: 12, marginBottom: 12 }}>
+          Rule-based practice: fixed question templates and heuristic scores, with no live audio or AI provider. Submitted text is processed by this app’s server.
+        </p>
         <div style={{ display: "grid", gap: 10 }}>
           <input
             aria-label="Target role"

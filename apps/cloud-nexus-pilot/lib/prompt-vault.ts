@@ -181,3 +181,16 @@ export function parsePromptVaultItems(rawValue: string | null): PromptVaultItem[
     return [];
   }
 }
+
+/** An explicit empty array is a saved empty vault, not a request to reseed examples. */
+export function resolveStoredPromptVaultItems(rawValue: string | null): PromptVaultItem[] {
+  const items = sortPromptVaultItems(parsePromptVaultItems(rawValue));
+  if (items.length > 0) return items;
+  try {
+    const parsed: unknown = rawValue === null ? null : JSON.parse(rawValue);
+    if (Array.isArray(parsed) && parsed.length === 0) return [];
+  } catch {
+    // Preserve the existing starter fallback for malformed storage.
+  }
+  return [...PROMPT_VAULT_STARTERS];
+}

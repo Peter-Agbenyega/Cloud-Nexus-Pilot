@@ -15,6 +15,7 @@ import {
   type PersistedInterviewSession,
 } from "@/lib/interview-persistence";
 import { createScreenContextFromText } from "@/lib/interview-intelligence/screen-context";
+import { CaptureOwnership } from "@/lib/realtime/capture-ownership";
 import { usePilotRealtimeConnection } from "@/lib/realtime/use-pilot-realtime";
 
 /* ================================================================
@@ -275,14 +276,21 @@ function getLiveIndicatorState(params: {
       label: "Question detected — generating answer...",
     };
   }
-  if (params.answerReadyVisible && (params.guidanceStatus === "ready" || params.guidanceStatus === "failed")) {
+  if (params.guidanceStatus === "failed") {
+    return {
+      color: "#FBBF24",
+      shadow: "rgba(251,191,36,0.5)",
+      label: "Guidance unavailable — local fallback tip",
+    };
+  }
+  if (params.answerReadyVisible && params.guidanceStatus === "ready") {
     return {
       color: "#7C6CFF",
       shadow: "rgba(124,108,255,0.5)",
       label: "Answer ready",
     };
   }
-  if (params.guidanceStatus === "ready" || params.guidanceStatus === "failed") {
+  if (params.guidanceStatus === "ready") {
     return {
       color: "#10B981",
       shadow: "rgba(16,185,129,0.5)",
@@ -349,10 +357,14 @@ export function ReadyStateLaunchPanel() {
   const [audioMode, setAudioMode] = useState<AudioMode>("tab-audio");
   const [captureState, setCaptureState] = useState<LaunchCaptureState>(INITIAL_CAPTURE_STATE);
   const activeStreamRef = useRef<MediaStream | null>(null);
+  const captureOwnershipRef = useRef(new CaptureOwnership());
+  const mountedRef = useRef(false);
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
   const lastAutoGuidanceQuestionRef = useRef<string>("");
   const lastRealtimeTranscriptSegmentIdRef = useRef<string>("");
   const activeInterviewSessionRef = useRef<PersistedInterviewSession | null>(null);
+  const interviewSessionGenerationRef = useRef(0);
+  const interviewSessionPromiseRef = useRef<Promise<PersistedInterviewSession | null> | null>(null);
   const lastPersistedDetectedQuestionIdRef = useRef<string | null>(null);
   const captureStartedAtRef = useRef<number | null>(null);
   const firstTranscriptAtRef = useRef<number | null>(null);
@@ -363,6 +375,7 @@ export function ReadyStateLaunchPanel() {
   const interviewPersistenceRepository = useMemo(() => createInterviewPersistenceRepository(), []);
 
   const [guidanceText, setGuidanceText] = useState("");
+  const [guidanceError, setGuidanceError] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
   const [guidanceStatus, setGuidanceStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [questionsCoached, setQuestionsCoached] = useState(0);
@@ -456,18 +469,28 @@ export function ReadyStateLaunchPanel() {
   const ensureInterviewSession = useCallback(async function ensureInterviewSession(): Promise<PersistedInterviewSession | null> {
     if (activeInterviewSessionRef.current) return activeInterviewSessionRef.current;
 
-    const { data: session, persistence } = await interviewPersistenceRepository.createSession({
+    if (interviewSessionPromiseRef.current) return interviewSessionPromiseRef.current;
+    const generation = interviewSessionGenerationRef.current;
+    const pending = interviewPersistenceRepository.createSession({
       title: "Live interview session",
       mode: "general",
       resumeText: interviewContextDraft.resumeText,
       jobDescriptionText: interviewContextDraft.jobDescriptionText,
       companyContext: interviewContextDraft.companyContext,
       notes: interviewContextDraft.interviewNotes,
+    }).then(async ({ data: session, persistence }) => {
+      if (generation !== interviewSessionGenerationRef.current || !mountedRef.current) {
+        await interviewPersistenceRepository.endSession(session.id);
+        return null;
+      }
+      activeInterviewSessionRef.current = session;
+      setInterviewPersistenceInfo(persistence);
+      return session;
+    }).finally(() => {
+      if (interviewSessionPromiseRef.current === pending) interviewSessionPromiseRef.current = null;
     });
-
-    activeInterviewSessionRef.current = session;
-    setInterviewPersistenceInfo(persistence);
-    return session;
+    interviewSessionPromiseRef.current = pending;
+    return pending;
   }, [interviewContextDraft, interviewPersistenceRepository]);
 
   function stopActiveStream() {
@@ -493,11 +516,16 @@ export function ReadyStateLaunchPanel() {
   }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
     setFreeSessionCount(readStoredNumber(SESSION_COUNT_STORAGE_KEY));
     setOnboardingDone(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === "true");
     setInterviewContextDraft(readStoredInterviewContextDraft());
 
     return () => {
+      mountedRef.current = false;
+      interviewSessionGenerationRef.current += 1;
+      interviewSessionPromiseRef.current = null;
+      captureOwnershipRef.current.cancel();
       cancelActiveGuidanceRequest();
       stopActiveStream();
       stopTranscriptionCapture();
@@ -505,12 +533,16 @@ export function ReadyStateLaunchPanel() {
   }, [stopTranscriptionCapture]);
 
   async function handleStartLiveCopilot() {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !mountedRef.current) return;
     const currentSessionCount = readStoredNumber(SESSION_COUNT_STORAGE_KEY);
     if (currentSessionCount >= FREE_SESSION_LIMIT) {
       setFreeSessionCount(currentSessionCount);
       return;
     }
+
+    const ownership = captureOwnershipRef.current;
+    const token = ownership.begin();
+    if (token === null) return;
 
     setLaunchFlowStep("requesting");
     setCaptureState({ status: "requesting", detail: "Choose a browser tab and enable tab audio to continue.", streamId: null });
@@ -524,38 +556,58 @@ export function ReadyStateLaunchPanel() {
 
       if (audioMode === "tab-audio") {
         stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+        if (!ownership.adopt(token, stream)) return;
         const audioTracks = stream.getAudioTracks();
         if (audioTracks.length === 0) {
-          stream.getTracks().forEach((track) => track.stop());
+          await handleEndSession();
           setCaptureState({ status: "failed", detail: "Please select a tab and enable audio to start.", streamId: null });
           setLaunchFlowStep("ready");
           return;
         }
       } else {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!ownership.adopt(token, stream)) return;
       }
-
-      const nextSessionCount = Math.min(FREE_SESSION_LIMIT, currentSessionCount + 1);
-      window.localStorage.setItem(SESSION_COUNT_STORAGE_KEY, String(nextSessionCount));
-      setFreeSessionCount(nextSessionCount);
 
       activeStreamRef.current = stream;
       captureStartedAtRef.current = performance.now();
       firstTranscriptAtRef.current = null;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
       setLaunchFlowStep("live");
-      void ensureInterviewSession();
+      void ensureInterviewSession().catch(() => {
+        if (!mountedRef.current || !ownership.isCurrent(token)) return;
+        setInterviewPersistenceInfo({
+          mode: "local",
+          note: "Interview session could not be saved. Live capture remains available.",
+          cloudSyncReady: false,
+          authState: "signed-out-local",
+          userEmail: null,
+        });
+      });
 
       stream.getTracks().forEach((track) => {
         track.addEventListener("ended", () => { void handleEndSession(); }, { once: true });
       });
 
-      await startTranscriptionCapture({
+      const started = await startTranscriptionCapture({
         existingStream: stream,
         source: audioMode === "tab-audio" ? "system-audio" : "microphone",
       });
+      if (!ownership.isCurrent(token)) {
+        stopTranscriptionCapture();
+        return;
+      }
+      if (!started) {
+        throw new Error("Transcription could not start.");
+      }
+      const nextSessionCount = Math.min(FREE_SESSION_LIMIT, currentSessionCount + 1);
+      window.localStorage.setItem(SESSION_COUNT_STORAGE_KEY, String(nextSessionCount));
+      setFreeSessionCount(nextSessionCount);
+
       void ensureSessionExecution();
     } catch (error) {
+      if (!ownership.isCurrent(token)) return;
+      await handleEndSession();
       const denied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "AbortError");
       setCaptureState({
         status: "failed",
@@ -563,10 +615,15 @@ export function ReadyStateLaunchPanel() {
         streamId: null,
       });
       setLaunchFlowStep("ready");
+    } finally {
+      ownership.finish(token);
     }
   }
 
   async function handleEndSession() {
+    interviewSessionGenerationRef.current += 1;
+    interviewSessionPromiseRef.current = null;
+    captureOwnershipRef.current.cancel();
     cancelActiveGuidanceRequest();
     realtimeConnection.endSession();
     const activeInterviewSession = activeInterviewSessionRef.current;
@@ -616,6 +673,7 @@ export function ReadyStateLaunchPanel() {
     guidanceAbortControllerRef.current = abortController;
 
     setGuidanceStatus("loading");
+    setGuidanceError("");
     setGuidanceText("");
     setGuidanceData(null);
     setStreamedFullAnswer("");
@@ -647,7 +705,11 @@ export function ReadyStateLaunchPanel() {
         signal: abortController.signal,
       });
 
-      if (!response.ok || !response.body) throw new Error("Live guidance is unavailable right now.");
+      if (!response.ok) {
+        const failure = await response.json().catch(() => null) as { error?: { message?: string } } | null;
+        throw new Error(failure?.error?.message || "Live guidance is unavailable right now.");
+      }
+      if (!response.body) throw new Error("Live guidance is unavailable right now.");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -794,6 +856,7 @@ export function ReadyStateLaunchPanel() {
       }, 2_000);
     } catch (error) {
       if (abortController.signal.aborted) return;
+      setGuidanceError(error instanceof Error ? error.message : "Live guidance is unavailable right now.");
       showFallbackGuidance();
     } finally {
       if (guidanceAbortControllerRef.current === abortController) guidanceAbortControllerRef.current = null;
@@ -1064,10 +1127,10 @@ export function ReadyStateLaunchPanel() {
             padding: 18,
           }}>
             <p style={{ fontSize: 16, fontWeight: 500, color: "#F0F0FF", marginBottom: 6 }}>
-              You've used all 10 free sessions
+              This browser has reached its 10-session preview limit
             </p>
             <p style={{ fontSize: 13, lineHeight: 1.6, color: "#A0A0C0", marginBottom: 14 }}>
-              Upgrade to keep using live interview guidance. Your past transcripts stay available.
+              This counter is stored only in this browser; it is not an account entitlement. Billing and paid upgrades are not connected. Your past transcripts stay available.
             </p>
             <a
               href="/pricing"
@@ -1082,7 +1145,7 @@ export function ReadyStateLaunchPanel() {
                 textDecoration: "none",
               }}
             >
-              View pricing
+              View planned pricing
             </a>
           </div>
         ) : (
@@ -1627,6 +1690,10 @@ export function ReadyStateLaunchPanel() {
       )}
 
       {guidanceStatus === "failed" && guidanceData && (
+        <div role="status">
+          <p style={{ color: "#FBBF24", fontSize: 12 }}>
+            {guidanceError || "AI guidance is unavailable."} The suggestion above is a general local tip, not an answer generated from your question.
+          </p>
         <button
           type="button"
           onClick={() => void handleGetGuidance()}
@@ -1643,6 +1710,7 @@ export function ReadyStateLaunchPanel() {
         >
           Try again
         </button>
+        </div>
       )}
 
       {/* Loading state */}
@@ -1694,7 +1762,7 @@ export function ReadyStateLaunchPanel() {
           }}>
             <p style={{ fontSize: 22, fontWeight: 500, color: "#FBBF24" }}>{Math.max(0, FREE_SESSION_LIMIT - freeSessionCount)}</p>
             <p style={{ fontSize: 10, color: "#4A4A6A", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
-              Remaining
+              Local preview sessions remaining
             </p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 
 import { processStreamingSessionChunk } from "@/lib/transcription/streaming-session-store";
@@ -37,6 +38,8 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ sessionId: string }> }
 ) {
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
   const { sessionId } = await context.params;
   const contentTypeHeader = request.headers.get("content-type")?.trim() || "";
   const chunkIndexHeader = request.headers.get("X-Chunk-Index");
@@ -93,6 +96,7 @@ export async function POST(
   // Await chunk processing so the route only returns 202 after the session store has
   // finished transcription dispatch and SSE emission for this chunk.
   const result = await processStreamingSessionChunk({
+    ownerId: auth.userId,
     sessionId,
     chunkIndex,
     source,

@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { getStreamingSession, subscribeToStreamingSession } from "@/lib/transcription/streaming-session-store";
 
 export const runtime = "nodejs";
@@ -11,8 +12,10 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ sessionId: string }> }
 ) {
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
   const { sessionId } = await context.params;
-  const session = getStreamingSession(sessionId);
+  const session = getStreamingSession(sessionId, auth.userId);
 
   if (!session || session.stopped) {
     console.warn("[transcription][stream-session] events-missing", { sessionId });
@@ -45,7 +48,7 @@ export async function GET(
         )
       );
 
-      unsubscribe = subscribeToStreamingSession(sessionId, (event) => {
+      unsubscribe = subscribeToStreamingSession(sessionId, auth.userId, (event) => {
         console.info("[transcription][stream-session] events-push", {
           sessionId,
           type: event.type,

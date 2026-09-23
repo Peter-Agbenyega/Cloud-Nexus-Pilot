@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 
 import { stopStreamingSession } from "@/lib/transcription/streaming-session-store";
@@ -9,8 +10,10 @@ export async function POST(
   _request: Request,
   context: { params: Promise<{ sessionId: string }> }
 ) {
+  const auth = await requireProviderUser();
+  if (auth.response) return auth.response;
   const { sessionId } = await context.params;
-  const stopped = stopStreamingSession(sessionId);
+  const stopped = stopStreamingSession(sessionId, auth.userId);
 
   if (!stopped) {
     console.warn("[transcription][stream-session] stop-missing", { sessionId });

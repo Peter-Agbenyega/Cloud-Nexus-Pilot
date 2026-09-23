@@ -1,3 +1,4 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 import { createQuestionDedupeKey, detectStreamingQuestions } from "@/lib/interview-intelligence/question-detector";
 
@@ -36,7 +37,9 @@ export async function POST(request: Request) {
     }
 
     const openAiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
-    if (!openAiApiKey) {
+    const auth = openAiApiKey ? await requireProviderUser() : null;
+    // Keep deterministic question detection available without provider authorization.
+    if (!openAiApiKey || auth?.response) {
       return NextResponse.json(
         {
           question: firstDetectedQuestion.normalizedQuestion,

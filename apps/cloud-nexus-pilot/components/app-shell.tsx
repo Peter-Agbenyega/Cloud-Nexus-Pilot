@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   IconMicrophone,
   IconMessages,
@@ -18,12 +18,12 @@ type AppShellProps = {
 const NAV_MAIN = [
   { label: "Interview Copilot", href: "/workspace", icon: IconMicrophone },
   { label: "Mock Interview", href: "/workspace?demo=true", icon: IconMessages },
-  { label: "Resume Studio", href: "/transcripts", icon: IconFileText },
+  { label: "Transcripts", href: "/transcripts", icon: IconFileText },
 ];
 
 const NAV_TOOLS = [
-  { label: "Culture Scanner", href: "/prompt-library", icon: IconSearch },
-  { label: "Session History", href: "/summary", icon: IconHistory },
+  { label: "Prompt Vault", href: "/prompt-library", icon: IconSearch },
+  { label: "Interview Reports", href: "/summary", icon: IconHistory },
 ];
 
 function NavItem({
@@ -37,6 +37,7 @@ function NavItem({
   return (
     <Link
       href={item.href}
+      aria-current={active ? "page" : undefined}
       style={{
         display: "flex",
         alignItems: "center",
@@ -72,6 +73,7 @@ function NavItem({
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const isMockInterview = useSearchParams().get("demo") === "true";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -121,7 +123,7 @@ export function AppShell({ children }: AppShellProps) {
               border: "0.5px solid rgba(124,108,255,0.3)",
             }}
           >
-            Free plan
+            Preview workspace
           </span>
           <span
             style={{
@@ -137,7 +139,7 @@ export function AppShell({ children }: AppShellProps) {
               fontWeight: 600,
             }}
           >
-            PA
+            CN
           </span>
         </div>
       </header>
@@ -172,7 +174,9 @@ export function AppShell({ children }: AppShellProps) {
             <NavItem
               key={item.href}
               item={item}
-              active={pathname === item.href || (item.href === "/workspace" && pathname === "/workspace" && !item.href.includes("?"))}
+              active={item.href.startsWith("/workspace")
+                ? pathname === "/workspace" && (item.href.includes("?demo=true") === isMockInterview)
+                : pathname === item.href}
             />
           ))}
 
@@ -218,7 +222,7 @@ export function AppShell({ children }: AppShellProps) {
 
           {/* Settings */}
           <NavItem
-            item={{ label: "Settings", href: "/billing", icon: IconSettings }}
+            item={{ label: "Billing (planned)", href: "/billing", icon: IconSettings }}
             active={pathname === "/billing"}
           />
         </aside>

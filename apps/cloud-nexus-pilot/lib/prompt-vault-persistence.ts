@@ -8,6 +8,7 @@ import {
   createPromptVaultItem,
   createEmptyPromptDraft,
   parsePromptVaultItems,
+  resolveStoredPromptVaultItems,
   PROMPT_VAULT_STARTERS,
   PROMPT_VAULT_STORAGE_KEY,
   sortPromptVaultItems,
@@ -86,8 +87,8 @@ type PromptVaultSupabaseRow = {
 };
 
 function readStoredPrompts(): PromptVaultItem[] {
-  const persisted = readRawStoredPrompts();
-  return persisted.length > 0 ? persisted : [...PROMPT_VAULT_STARTERS];
+  if (typeof window === "undefined") return [...PROMPT_VAULT_STARTERS];
+  return resolveStoredPromptVaultItems(window.localStorage.getItem(PROMPT_VAULT_STORAGE_KEY));
 }
 
 function readRawStoredPrompts(): PromptVaultItem[] {
@@ -203,6 +204,7 @@ function createImportStatus(
 
 async function getAuthenticatedSupabaseUser(): Promise<{
   user: User | null;
+  authLookupFailed?: boolean;
   persistence: PromptVaultPersistenceInfo;
 }> {
   if (!supabase) {
@@ -223,6 +225,7 @@ async function getAuthenticatedSupabaseUser(): Promise<{
   if (error) {
     return {
       user: null,
+      authLookupFailed: error.name !== "AuthSessionMissingError",
       persistence: createLocalPersistenceInfo(
         "Supabase auth check failed, so Prompt Vault is using local fallback mode."
       ),
@@ -449,13 +452,20 @@ const localPromptVaultRepository: PromptVaultRepository = {
 };
 
 export function createPromptVaultRepository(): PromptVaultRepository {
+  // Retain cloud provenance across auth loss; a cloud row must never become a local delete.
+  const cloudRecordIds = new Set<string>();
   async function runWithFallback<T>(
     action: (user: User) => Promise<T>,
-    fallback: () => Promise<PromptVaultRepositoryResult<T>>
+    fallback: () => Promise<PromptVaultRepositoryResult<T>>,
+    allowCloudErrorFallback = true,
+    requiresCloud = false
   ): Promise<PromptVaultRepositoryResult<T>> {
-    const { user, persistence } = await getAuthenticatedSupabaseUser();
+    const { user, persistence, authLookupFailed } = await getAuthenticatedSupabaseUser();
 
     if (!user) {
+      if (requiresCloud || (!allowCloudErrorFallback && authLookupFailed)) {
+        throw new Error("Deletion was not performed because cloud authentication could not be verified. Sign in or retry when authentication is available.");
+      }
       const result = await fallback();
       return {
         ...result,
@@ -470,6 +480,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
         persistence,
       };
     } catch (error) {
+      if (!allowCloudErrorFallback) throw error;
       const fallbackResult = await fallback();
       const message =
         error instanceof Error ? error.message : "Supabase prompt sync failed unexpectedly.";
@@ -486,6 +497,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
       return runWithFallback(
         async (user) => {
           const { prompts, importStatus } = await listCloudPromptsWithImportState(user);
+          prompts.forEach((prompt) => cloudRecordIds.add(prompt.id));
           return {
             prompts,
             source: "remote",
@@ -500,6 +512,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
       return runWithFallback(
         async (user) => {
           const prompt = await createSupabasePrompt(user, input);
+          cloudRecordIds.add(prompt.id);
           return {
             prompt,
             source: "remote",
@@ -513,6 +526,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
       return runWithFallback(
         async (user) => {
           const prompt = await updateSupabasePrompt(user, input);
+          cloudRecordIds.add(prompt.id);
           return {
             prompt,
             source: "remote",
@@ -525,6 +539,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
     async deletePrompt(id) {
       return runWithFallback(
         async (user) => {
+          cloudRecordIds.add(id);
           await deleteSupabasePrompt(user, id);
           return {
             id,
@@ -532,7 +547,9 @@ export function createPromptVaultRepository(): PromptVaultRepository {
             source: "remote" as const,
           };
         },
-        () => localPromptVaultRepository.deletePrompt(id)
+        () => localPromptVaultRepository.deletePrompt(id),
+        false,
+        cloudRecordIds.has(id)
       );
     },
 
@@ -555,6 +572,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
             description: clonedPrompt.description,
           });
 
+          cloudRecordIds.add(prompt.id);
           return {
             prompt,
             clonedFromId: item.id,
@@ -590,6 +608,7 @@ export function createPromptVaultRepository(): PromptVaultRepository {
           }
 
           const { prompts, importStatus } = await listCloudPromptsWithImportState(user);
+          prompts.forEach((prompt) => cloudRecordIds.add(prompt.id));
 
           return {
             prompts,

@@ -38,3 +38,6 @@ jobs:
       - name: Test realtime API
         if: matrix.project == 'apps/pilot-realtime-api'
         run: npm run test:run --workspace ${{ matrix.project }}
+      - name: Test realtime release operations
+        if: matrix.project == 'apps/pilot-realtime-api'
+        run: npm run test:realtime-ops

@@ -14,7 +14,8 @@
     "seed:db": "npm run seed --workspace packages/db",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "test:realtime-ops": "node --test ops/realtime/tests/*.test.mjs"
   },
   "devDependencies": {
     "turbo": "^2.5.6"

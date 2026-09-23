@@ -419,6 +419,18 @@ test("uses forwarded client IP only from configured trusted proxy addresses", as
   assert.equal(ip, "203.0.113.10");
 });
 
+test("does not accept a spoofed forwarded client IP from an untrusted peer", async () => {
+  const ip = await resolveFastifyRequestIp(
+    {
+      WS_TRUSTED_PROXY_CIDRS: "127.0.0.1/32",
+    },
+    { "x-forwarded-for": "203.0.113.10" },
+    "198.51.100.20"
+  );
+
+  assert.equal(ip, "198.51.100.20");
+});
+
 test("production Supabase auth configuration fails closed when invalid", async () => {
   assert.throws(
     () =>

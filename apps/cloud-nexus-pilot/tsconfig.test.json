@@ -6,13 +6,16 @@
     "noEmit": false,
     "outDir": "dist/realtime-tests",
     "rootDir": ".",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "verbatimModuleSyntax": false
   },
   "include": [
     "lib/realtime/**/*.ts",
     "lib/interview-intelligence/**/*.ts",
     "tests/realtime/**/*.test.ts",
-    "tests/intelligence/**/*.test.ts"
+    "tests/intelligence/**/*.test.ts",
+    "tests/routes/**/*.test.ts"
   ]
 }

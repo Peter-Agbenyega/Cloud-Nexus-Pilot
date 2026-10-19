@@ -2,6 +2,7 @@ import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 
 import { processStreamingSessionChunk } from "@/lib/transcription/streaming-session-store";
+import { toPublicTranscriptionError } from "@/lib/transcription/public-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,39 +50,25 @@ export async function POST(
   // Route-level validation — returns structured errors before hitting the session store.
   const mimeType = contentTypeHeader.split(";")[0]?.trim().toLowerCase() || "";
   if (!mimeType || !ACCEPTED_CONTENT_TYPES.has(mimeType)) {
+    const safe = toPublicTranscriptionError({ code: "invalid_content_type" });
     console.warn("[transcription][stream-session] chunk-rejected: invalid_content_type", {
       sessionId,
       chunkIndex,
-      contentType: contentTypeHeader,
+      code: safe.error.code,
     });
-    return NextResponse.json(
-      {
-        error: {
-          code: "invalid_content_type",
-          message: `Unsupported audio content-type: "${contentTypeHeader}". Expected one of: ${[...ACCEPTED_CONTENT_TYPES].join(", ")}.`,
-        },
-      },
-      { status: 415 }
-    );
+    return NextResponse.json({ error: safe.error }, { status: safe.status });
   }
 
   const arrayBuffer = await request.arrayBuffer();
 
   if (arrayBuffer.byteLength === 0) {
+    const safe = toPublicTranscriptionError({ code: "empty_payload" });
     console.warn("[transcription][stream-session] chunk-rejected: empty_payload", {
       sessionId,
       chunkIndex,
-      contentType: contentTypeHeader,
+      code: safe.error.code,
     });
-    return NextResponse.json(
-      {
-        error: {
-          code: "empty_payload",
-          message: "Audio chunk body is empty.",
-        },
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: safe.error }, { status: safe.status });
   }
 
   const contentType = contentTypeHeader || "audio/webm";
@@ -105,25 +92,15 @@ export async function POST(
   });
 
   if (!result.ok) {
-    const status = toHttpStatus(result.code);
+    const { error: publicError } = toPublicTranscriptionError(result);
+    const status = toHttpStatus(publicError.code);
     console.warn("[transcription][stream-session] chunk-failed", {
       sessionId,
       chunkIndex,
-      code: result.code,
-      message: result.message,
-      detail: result.detail,
+      code: publicError.code,
       status,
     });
-    return NextResponse.json(
-      {
-        error: {
-          code: result.code,
-          message: result.message,
-          detail: result.detail,
-        },
-      },
-      { status }
-    );
+    return NextResponse.json({ error: publicError }, { status });
   }
 
   console.info("[transcription][stream-session] chunk-accepted", {

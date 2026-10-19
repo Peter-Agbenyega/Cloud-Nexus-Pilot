@@ -1,5 +1,6 @@
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
+import { toPublicTranscriptionError } from "./public-error";
 
 const OPENAI_TRANSCRIPTION_URL = "https://api.openai.com/v1/audio/transcriptions";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
@@ -16,12 +17,13 @@ export class OpenAiTranscriptionError extends Error {
   code: string;
   detail: string;
 
-  constructor(params: { status: number; code: string; message: string; detail?: string }) {
-    super(params.message);
+  constructor(params: { status: number; code: string; message?: string; detail?: string }) {
+    const safe = toPublicTranscriptionError(params);
+    super(safe.error.message);
     this.name = "OpenAiTranscriptionError";
-    this.status = params.status;
-    this.code = params.code;
-    this.detail = params.detail ?? "";
+    this.status = safe.status;
+    this.code = safe.error.code;
+    this.detail = "";
   }
 }
 
@@ -58,33 +60,6 @@ function toOpenAiFileName(contentType: string): string {
   return "audio-chunk.webm";
 }
 
-async function readOpenAiError(response: Response): Promise<{ message: string; detail: string }> {
-  const bodyText = await response.text();
-  if (!bodyText.trim()) {
-    return {
-      message: `OpenAI transcription request failed with status ${response.status}.`,
-      detail: "",
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(bodyText) as {
-      error?: { message?: string; code?: string; type?: string };
-    };
-    return {
-      message:
-        parsed.error?.message?.trim() ||
-        `OpenAI transcription request failed with status ${response.status}.`,
-      detail: [parsed.error?.type, parsed.error?.code].filter(Boolean).join(" | "),
-    };
-  } catch {
-    return {
-      message: bodyText.trim(),
-      detail: "",
-    };
-  }
-}
-
 export async function transcribeWithOpenAi(params: {
   arrayBuffer: ArrayBuffer;
   requestContentType: string;
@@ -96,9 +71,6 @@ export async function transcribeWithOpenAi(params: {
     throw new OpenAiTranscriptionError({
       status: 503,
       code: "transcript_backend_unavailable",
-      message:
-        "OpenAI transcription is not configured. Set OPENAI_API_KEY on the server to enable transcription.",
-      detail: "The server received this request but OPENAI_API_KEY was empty at request time.",
     });
   }
 
@@ -106,7 +78,6 @@ export async function transcribeWithOpenAi(params: {
     throw new OpenAiTranscriptionError({
       status: 400,
       code: "transcript_validation_failed",
-      message: "Audio chunk is empty.",
     });
   }
 
@@ -145,20 +116,10 @@ export async function transcribeWithOpenAi(params: {
   });
 
   if (!openAiResponse.ok) {
-    const upstream = await readOpenAiError(openAiResponse);
+    await openAiResponse.body?.cancel().catch(() => {});
     throw new OpenAiTranscriptionError({
       status: openAiResponse.status,
       code: "transcript_processing_failed",
-      message: upstream.message,
-      detail: [
-        upstream.detail,
-        `OpenAI status: ${openAiResponse.status}`,
-        `Request chunk bytes: ${params.arrayBuffer.byteLength}`,
-        `Request content-type: ${requestContentType}`,
-        `Model: ${model}`,
-      ]
-        .filter(Boolean)
-        .join(" | "),
     });
   }
 

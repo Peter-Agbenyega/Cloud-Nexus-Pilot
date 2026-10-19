@@ -9,7 +9,7 @@ const requireDependency = createRequire(new URL("../package.json", import.meta.u
 
 // Execute the actual route source with per-test dependency doubles. No provider
 // requests, Next request context or production credentials are needed.
-export function routeLoader(mocks = {}) {
+export function sourceLoader(mocks = {}, globals = {}) {
   const cache = new Map();
   function load(specifier, parent = appRoot) {
     if (Object.hasOwn(mocks, specifier)) return mocks[specifier];
@@ -30,9 +30,15 @@ export function routeLoader(mocks = {}) {
     });
     const loadedModule = { exports: {} };
     cache.set(path, loadedModule);
-    const run = new Function("require", "module", "exports", compiled.outputText);
-    run((name) => load(name, dirname(path)), loadedModule, loadedModule.exports);
+    const run = new Function("require", "module", "exports", "process", "console", "fetch", compiled.outputText);
+    run((name) => load(name, dirname(path)), loadedModule, loadedModule.exports,
+      globals.process ?? process, globals.console ?? console, globals.fetch ?? globalThis.fetch);
     return loadedModule.exports;
   }
+  return (specifier) => load(specifier);
+}
+
+export function routeLoader(mocks = {}, globals = {}) {
+  const load = sourceLoader(mocks, globals);
   return (route) => load(`@/app/api/${route}/route`);
 }

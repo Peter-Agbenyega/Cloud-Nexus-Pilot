@@ -1,13 +1,12 @@
 import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
+import { toPublicTranscriptionError } from "@/lib/transcription/public-error";
 
 import {
-  DeepgramTranscriptionError,
   isDeepgramTranscriptionConfigured,
   transcribeWithDeepgram,
 } from "@/lib/transcription/deepgram-transcribe";
 import {
-  OpenAiTranscriptionError,
   transcribeWithOpenAi,
 } from "@/lib/transcription/openai-transcribe";
 
@@ -30,27 +29,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    if (error instanceof DeepgramTranscriptionError || error instanceof OpenAiTranscriptionError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: error.code,
-            message: error.message,
-            detail: error.detail || undefined,
-          },
-        },
-        { status: error.status }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        error: {
-          code: "transcript_processing_failed",
-          message: "Unexpected transcription failure in the server route.",
-        },
-      },
-      { status: 500 }
-    );
+    const safe = toPublicTranscriptionError(error);
+    return NextResponse.json({ error: safe.error }, { status: safe.status });
   }
 }

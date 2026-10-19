@@ -1,4 +1,5 @@
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
+import { toPublicTranscriptionError } from "./public-error";
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type SessionEvent =
@@ -181,41 +182,23 @@ export async function processStreamingSessionChunk(params: {
     }
     return { ok: true };
   } catch (error) {
-    const detail =
-      error instanceof Error && "detail" in error && typeof error.detail === "string"
-        ? error.detail
-        : "";
-    const code =
-      error instanceof Error && "code" in error && typeof error.code === "string"
-        ? error.code
-        : "transcript_processing_failed";
-    const message =
-      error instanceof Error && error.message
-        ? error.message
-        : "Streaming transcription failed for the latest chunk.";
+    const { status, error: publicError } = toPublicTranscriptionError(error);
 
     emit(session, {
       type: "chunk-error",
       sessionId: session.id,
       chunkIndex: params.chunkIndex,
-      error: {
-        code,
-        message,
-        detail: detail || undefined,
-      },
+      error: publicError,
     });
     console.warn("[transcription][stream-session] chunk-process-error", {
       sessionId: session.id,
       chunkIndex: params.chunkIndex,
-      code,
-      message,
-      detail,
+      code: publicError.code,
+      status,
     });
     return {
       ok: false,
-      code,
-      message,
-      detail: detail || undefined,
+      ...publicError,
     };
   }
 }

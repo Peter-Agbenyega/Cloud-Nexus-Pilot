@@ -1,5 +1,6 @@
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
+import { toPublicTranscriptionError } from "./public-error";
 
 const DEEPGRAM_TRANSCRIPTION_URL = "https://api.deepgram.com/v1/listen";
 const DEEPGRAM_TRANSCRIPTION_MODEL = "nova-3";
@@ -33,12 +34,13 @@ export class DeepgramTranscriptionError extends Error {
   code: string;
   detail: string;
 
-  constructor(params: { status: number; code: string; message: string; detail?: string }) {
-    super(params.message);
+  constructor(params: { status: number; code: string; message?: string; detail?: string }) {
+    const safe = toPublicTranscriptionError(params);
+    super(safe.error.message);
     this.name = "DeepgramTranscriptionError";
-    this.status = params.status;
-    this.code = params.code;
-    this.detail = params.detail ?? "";
+    this.status = safe.status;
+    this.code = safe.error.code;
+    this.detail = "";
   }
 }
 
@@ -64,39 +66,6 @@ function extractMimeType(contentType: string): string {
   return contentType.split(";")[0]?.trim().toLowerCase() ?? "";
 }
 
-async function readDeepgramError(response: Response): Promise<{ message: string; detail: string }> {
-  const bodyText = await response.text();
-  if (!bodyText.trim()) {
-    return {
-      message: `Deepgram transcription request failed with status ${response.status}.`,
-      detail: "",
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(bodyText) as {
-      err_code?: string;
-      err_msg?: string;
-      error?: string;
-      message?: string;
-      reason?: string;
-    };
-    return {
-      message:
-        parsed.err_msg?.trim() ||
-        parsed.message?.trim() ||
-        parsed.error?.trim() ||
-        `Deepgram transcription request failed with status ${response.status}.`,
-      detail: [parsed.err_code, parsed.reason].filter(Boolean).join(" | "),
-    };
-  } catch {
-    return {
-      message: bodyText.trim(),
-      detail: "",
-    };
-  }
-}
-
 export async function transcribeWithDeepgram(params: {
   arrayBuffer: ArrayBuffer;
   requestContentType: string;
@@ -108,9 +77,6 @@ export async function transcribeWithDeepgram(params: {
     throw new DeepgramTranscriptionError({
       status: 503,
       code: "transcript_backend_unavailable",
-      message:
-        "Deepgram transcription is not configured. Set DEEPGRAM_API_KEY on the server to enable Deepgram transcription.",
-      detail: "The server received this request but DEEPGRAM_API_KEY was empty at request time.",
     });
   }
 
@@ -118,7 +84,6 @@ export async function transcribeWithDeepgram(params: {
     throw new DeepgramTranscriptionError({
       status: 400,
       code: "transcript_validation_failed",
-      message: "Audio chunk is empty.",
     });
   }
 
@@ -157,20 +122,10 @@ export async function transcribeWithDeepgram(params: {
   });
 
   if (!deepgramResponse.ok) {
-    const upstream = await readDeepgramError(deepgramResponse);
+    await deepgramResponse.body?.cancel().catch(() => {});
     throw new DeepgramTranscriptionError({
       status: deepgramResponse.status,
       code: "transcript_processing_failed",
-      message: upstream.message,
-      detail: [
-        upstream.detail,
-        `Deepgram status: ${deepgramResponse.status}`,
-        `Request chunk bytes: ${params.arrayBuffer.byteLength}`,
-        `Request content-type: ${requestContentType}`,
-        `Model: ${DEEPGRAM_TRANSCRIPTION_MODEL}`,
-      ]
-        .filter(Boolean)
-        .join(" | "),
     });
   }
 

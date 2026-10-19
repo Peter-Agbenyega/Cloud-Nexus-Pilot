@@ -1,5 +1,6 @@
 import { requireProviderUser } from "@/lib/server/provider-auth";
 import { getStreamingSession, subscribeToStreamingSession } from "@/lib/transcription/streaming-session-store";
+import { toPublicTranscriptionError } from "@/lib/transcription/public-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,7 +55,10 @@ export async function GET(
           type: event.type,
           chunkIndex: "chunkIndex" in event ? event.chunkIndex : undefined,
         });
-        controller.enqueue(encoder.encode(toSseChunk(event)));
+        const publicEvent = event.type === "chunk-error"
+          ? { ...event, error: toPublicTranscriptionError(event.error).error }
+          : event;
+        controller.enqueue(encoder.encode(toSseChunk(publicEvent)));
       });
 
       if (!unsubscribe) {

@@ -45,7 +45,8 @@ Use an account that can access Docker, read Caddy configuration, write `/var/lib
 2. Verify `systemctl is-active docker caddy`, `systemctl is-enabled docker caddy`, `docker info`, and `docker compose version`.
 3. If the Caddy fragment changed, install it first with `install-caddy-site.sh`. Record its printed backup path.
 4. Run `ops/realtime/deploy-realtime.sh <git-sha>` from the clean checkout.
-5. Export a short-lived ordinary Supabase user access token (never a service-role key), run the authenticated smoke check, then unset it:
+5. Install the root smoke client dependency with `npm ci --omit=dev --ignore-scripts --workspaces=false` from this exact checkout. The root package owns `ws`, so the smoke client also works on a Docker-only deployment host without installing every application workspace.
+6. Export a short-lived ordinary Supabase user access token (never a service-role key), run the authenticated smoke check, then unset it:
 
    ```sh
    export REALTIME_SMOKE_JWT='<short-lived-user-access-token>'

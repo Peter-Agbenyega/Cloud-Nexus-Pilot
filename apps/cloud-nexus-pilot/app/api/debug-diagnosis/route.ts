@@ -1,3 +1,4 @@
+import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
 import { NextResponse } from "next/server";
 
 import { diagnoseTerminalArtifact } from "@/lib/interview-intelligence/terminal-debugging";
@@ -10,7 +11,8 @@ function text(value: unknown, maxChars: number): string {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return invalidJsonObjectResponse();
   const artifactText = text(body.text ?? body.artifactText ?? body.screenText, 8_000);
 
   if (!artifactText) {

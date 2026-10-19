@@ -1,3 +1,4 @@
+import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
 import { requireProviderUser } from "@/lib/server/provider-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,18 +30,6 @@ type GuidancePayload = {
   full_answer: string;
 };
 
-type GuidanceRequestBody = {
-  question?: unknown;
-  transcriptContext?: unknown;
-  interviewMode?: unknown;
-  promptRef?: unknown;
-  userBackground?: unknown;
-  resumeText?: unknown;
-  jobDescriptionText?: unknown;
-  companyContext?: unknown;
-  screenText?: unknown;
-  previousAnswers?: unknown;
-};
 
 function toSseChunk(payload: unknown): Uint8Array {
   return new TextEncoder().encode(`data: ${JSON.stringify(payload)}\n\n`);
@@ -217,9 +206,10 @@ export async function POST(request: Request) {
     const auth = await requireProviderUser();
     if (auth.response) return auth.response;
   }
+  const body = await readJsonObject(request);
+  if (!body) return invalidJsonObjectResponse();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const body = (await request.json().catch(() => ({}))) as GuidanceRequestBody;
       const question = sanitizeText(body.question, MAX_QUESTION_CHARS);
       const transcriptContext = sanitizeRecentText(body.transcriptContext, MAX_CONTEXT_CHARS);
       const interviewMode = sanitizeText(body.interviewMode, 80) || "general";

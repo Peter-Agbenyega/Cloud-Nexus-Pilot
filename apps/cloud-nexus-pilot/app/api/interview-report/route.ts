@@ -1,3 +1,4 @@
+import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
 import { NextResponse } from "next/server";
 
 import { generateInterviewReport } from "@/lib/interview-intelligence/report";
@@ -10,7 +11,8 @@ function text(value: unknown, maxChars: number): string {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return invalidJsonObjectResponse();
   const transcriptText = text(body.transcriptText, 60_000);
 
   if (!transcriptText) {

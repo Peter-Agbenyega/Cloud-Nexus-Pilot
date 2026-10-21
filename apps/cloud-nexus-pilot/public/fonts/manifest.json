@@ -1,0 +1,74 @@
+{
+  "source": "Unmodified WOFF2 files referenced by the existing Pilot Next.js build CSS; all existing normal-weight Unicode subsets retained.",
+  "licenses": [
+    "https://github.com/google/fonts/blob/main/ofl/inter/OFL.txt",
+    "https://github.com/google/fonts/blob/main/ofl/jetbrainsmono/OFL.txt"
+  ],
+  "files": [
+    {
+      "file": "0aa834ed78bf6d07-s.woff2",
+      "sha256": "af7486955880be1c2b972e9c766acffb776768d669b6576ed9a0919ce72e7ca6",
+      "bytes": 12064
+    },
+    {
+      "file": "19cfc7226ec3afaa-s.woff2",
+      "sha256": "46dd4cdca58c26ae87cc6927657bf83b2e8abfc39ffd0ab176e301a8d28d22bf",
+      "bytes": 19044
+    },
+    {
+      "file": "21350d82a1f187e9-s.woff2",
+      "sha256": "aebf2ab4a4ce6810d73c1ac7be7cafb4e5ec4cee2d6db5fb3e09691747ec4bd6",
+      "bytes": 18744
+    },
+    {
+      "file": "67957d42bae0796d-s.woff2",
+      "sha256": "3edf363dbf9d5fa0cdc784ae2b431a8a4152f4055a8a8858028c0bd668808273",
+      "bytes": 9084
+    },
+    {
+      "file": "886030b0b59bc5a7-s.woff2",
+      "sha256": "992eea2f70210457ddd1196de4df3240919ffe068ad188c79d985fba4565d3bf",
+      "bytes": 2020
+    },
+    {
+      "file": "8e9860b6e62d6359-s.woff2",
+      "sha256": "a28eb6d3ccb534ae0c94ca999371df024aab60b08c3c8a5720ee9e32fa0faaa2",
+      "bytes": 85272
+    },
+    {
+      "file": "939c4f875ee75fbb-s.woff2",
+      "sha256": "7db7affbce1fdee69c1ffc2641bbca289b049867f524c9d861fe35ab6670bf29",
+      "bytes": 15204
+    },
+    {
+      "file": "ba9851c3c22cd980-s.woff2",
+      "sha256": "fccca918fea40089dacadc7045861314d1a6bc91f1f323cc1eeb22ebcdb321b5",
+      "bytes": 25844
+    },
+    {
+      "file": "bb3ef058b751a6ad-s.p.woff2",
+      "sha256": "1e06740a02a443fb7f3eeda8fcaa685a0f6c620e3f01e6666e847295469ce3ad",
+      "bytes": 40480
+    },
+    {
+      "file": "c5fe6dc8356a8c31-s.woff2",
+      "sha256": "a2e2c783ca6f9c20486e81e72a279203e86730bbf8f01ff6a5ee9dbd09e1c271",
+      "bytes": 11272
+    },
+    {
+      "file": "df0a9ae256c0569c-s.woff2",
+      "sha256": "8db00ff46c67b22cda8bed865acf7077651cac8d2841d5b40980556b48961931",
+      "bytes": 10280
+    },
+    {
+      "file": "e4af272ccee01ff0-s.p.woff2",
+      "sha256": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4",
+      "bytes": 48432
+    },
+    {
+      "file": "f911b923c6adde36-s.woff2",
+      "sha256": "1390e86cc2823e759358918c01c4fcc1b6e4f01bca915bdbeb6d68eb5c244405",
+      "bytes": 7468
+    }
+  ]
+}

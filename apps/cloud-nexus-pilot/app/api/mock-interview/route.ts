@@ -4,8 +4,8 @@ import {
   runMockInterviewTurn,
   type MockInterviewDifficulty,
   type MockInterviewTurn,
-} from "@/lib/interview-intelligence/mock-interview";
-import type { InterviewMode } from "@/lib/interview-intelligence/types";
+} from "../../../lib/interview-intelligence/mock-interview";
+import type { InterviewMode } from "../../../lib/interview-intelligence/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,7 +63,11 @@ function history(value: unknown): MockInterviewTurn[] {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const parsed: unknown = await request.json().catch(() => null);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return NextResponse.json({ error: "Request body must be a JSON object." }, { status: 400 });
+  }
+  const body = parsed as Record<string, unknown>;
   return NextResponse.json(
     runMockInterviewTurn({
       resumeText: text(body.resumeText, 20_000),

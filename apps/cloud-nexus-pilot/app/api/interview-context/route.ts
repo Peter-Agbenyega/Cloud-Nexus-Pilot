@@ -1,3 +1,4 @@
+import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
 import { NextResponse } from "next/server";
 
 import { buildInterviewContext } from "@/lib/interview-intelligence/context";
@@ -36,7 +37,8 @@ function mode(value: unknown): InterviewMode {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = await readJsonObject(request);
+  if (!body) return invalidJsonObjectResponse();
   const questionText = text(body.question, 600);
   const detectedQuestion = detectStreamingQuestions({ text: questionText })[0];
 

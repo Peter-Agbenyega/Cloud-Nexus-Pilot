@@ -1,59 +1,120 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { InterviewReport } from "@/lib/interview-intelligence/types";
-
-type StoredTranscript = {
-  id: string;
-  title: string;
-  transcriptText: string;
-  updatedAt?: number;
-};
-
-function readLocalTranscripts(): StoredTranscript[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem("cloudnexus.transcripts.v1") ?? "[]") as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter((item): item is StoredTranscript => {
-        const candidate = item as Partial<StoredTranscript>;
-        return (
-          typeof candidate.id === "string" &&
-          typeof candidate.title === "string" &&
-          typeof candidate.transcriptText === "string"
-        );
-      })
-      .sort((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0));
-  } catch {
-    return [];
-  }
-}
+import { createInterviewReportRepository, createReportOwnerTracker, readReportTranscriptOptions, type ReportTranscriptOption, type SavedInterviewReport } from "@/lib/interview-report-persistence";
+import { supabase } from "@/lib/supabase";
 
 export function InterviewReportWorkbench() {
+  const repository = useMemo(() => createInterviewReportRepository(), []);
+  const generation = useRef(0);
+  const busy = useRef(false);
+  const request = useRef<AbortController | null>(null);
   const [transcriptText, setTranscriptText] = useState("");
   const [report, setReport] = useState<InterviewReport | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [error, setError] = useState("");
-  const [localTranscripts, setLocalTranscripts] = useState<StoredTranscript[]>([]);
+  const [localTranscripts, setLocalTranscripts] = useState<ReportTranscriptOption[]>([]);
+  const [savedReports, setSavedReports] = useState<SavedInterviewReport[]>([]);
+  const [saveNote, setSaveNote] = useState("");
+  const [pendingSave, setPendingSave] = useState<{ report: InterviewReport; ownerId: string | null } | null>(null);
+  const ownerTracker = useMemo(() => createReportOwnerTracker(() => {
+    generation.current += 1;
+    request.current?.abort();
+    busy.current = false;
+    setReport(null);
+    setTranscriptText("");
+    setLocalTranscripts([]);
+    setSavedReports([]);
+    setPendingSave(null);
+    setSaveNote("");
+    setError("");
+    setStatus("idle");
+  }), []);
 
   useEffect(() => {
-    setLocalTranscripts(readLocalTranscripts());
-  }, []);
+    let active = true;
+    let loadVersion = 0;
+    async function loadReports() {
+      const version = ++loadVersion;
+      try {
+        const result = await repository.list();
+        if (active && version === loadVersion) {
+          ownerTracker.observe(result.ownerId);
+          setSavedReports(result.reports);
+          setLocalTranscripts(readReportTranscriptOptions(result.ownerId));
+        }
+      } catch (caught) {
+        if (active && version === loadVersion) setError(caught instanceof Error ? caught.message : "Saved reports could not be loaded.");
+      }
+    }
+    void loadReports();
+    const subscription = supabase?.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "INITIAL_SESSION") return;
+      ownerTracker.observe(session?.user.id ?? null);
+      void Promise.resolve().then(loadReports);
+    }).data.subscription;
+    return () => {
+      active = false;
+      generation.current += 1;
+      request.current?.abort();
+      subscription?.unsubscribe();
+    };
+  }, [repository, ownerTracker]);
+
+  async function persistReport(value: InterviewReport, ownerId: string | null, version: number) {
+    if (version !== generation.current) return;
+    setPendingSave({ report: value, ownerId });
+    const saved = await repository.save(value, ownerId);
+    if (version !== generation.current) return;
+    setReport(saved.report);
+    setPendingSave(null);
+    setSaveNote(saved.source === "remote" ? "Saved to your account." : "Saved on this browser only.");
+    const result = await repository.list();
+    if (version === generation.current) setSavedReports(result.reports);
+  }
+
+  async function retrySave() {
+    if (!pendingSave || busy.current) return;
+    busy.current = true;
+    const version = ++generation.current;
+    setStatus("loading");
+    setError("");
+    try {
+      await persistReport(pendingSave.report, pendingSave.ownerId, version);
+      if (version === generation.current) setStatus("ready");
+    } catch (caught) {
+      if (version === generation.current) {
+        setStatus("failed");
+        setError(caught instanceof Error ? caught.message : "Report save was not confirmed.");
+      }
+    } finally {
+      if (version === generation.current) busy.current = false;
+    }
+  }
 
   async function generateReport() {
+    if (busy.current) return;
     if (!transcriptText.trim()) {
       setStatus("failed");
       setError("Paste a transcript or load a saved local transcript first.");
       return;
     }
 
+    busy.current = true;
+    const version = ++generation.current;
+    request.current = new AbortController();
     setStatus("loading");
     setError("");
     setReport(null);
+    setPendingSave(null);
+    setSaveNote("");
 
     try {
+      const ownerId = await repository.getOwnerId();
+      ownerTracker.observe(ownerId);
+      if (version !== generation.current) return;
       const response = await fetch("/api/interview-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,15 +122,23 @@ export function InterviewReportWorkbench() {
           transcriptText,
           sessionId: "local-summary-session",
         }),
+        signal: request.current.signal,
       });
       if (!response.ok) throw new Error("Report generation failed.");
       const payload = (await response.json()) as { report?: InterviewReport };
       if (!payload.report) throw new Error("Report response was empty.");
+      if (await repository.getOwnerId() !== ownerId) throw new Error("Your account changed. Generate the report again before saving.");
+      if (version !== generation.current) return;
       setReport(payload.report);
-      setStatus("ready");
+      await persistReport(payload.report, ownerId, version);
+      if (version === generation.current) setStatus("ready");
     } catch (caught) {
-      setStatus("failed");
-      setError(caught instanceof Error ? caught.message : "Report generation failed.");
+      if (version === generation.current) {
+        setStatus("failed");
+        setError(caught instanceof Error ? caught.message : "Report generation or save failed.");
+      }
+    } finally {
+      if (version === generation.current) busy.current = false;
     }
   }
 
@@ -105,6 +174,30 @@ export function InterviewReportWorkbench() {
             </label>
           ) : null}
 
+          {savedReports.length > 0 ? (
+            <label className="mt-5 block text-sm font-medium text-slate-700">
+              Saved reports
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm"
+                value={report && savedReports.some((saved) => saved.report.id === report.id) ? report.id : ""}
+                disabled={status === "loading"}
+                onChange={(event) => {
+                  const selected = savedReports.find((saved) => saved.report.id === event.target.value);
+                  if (!selected) return;
+                  setReport(selected.report);
+                  setTranscriptText("");
+                  setPendingSave(null);
+                  setError("");
+                  setStatus("ready");
+                  setSaveNote(selected.source === "remote" ? "Loaded from your account." : "Loaded from this browser only.");
+                }}
+              >
+                <option value="" disabled>Choose a saved report</option>
+                {savedReports.map((saved) => <option key={saved.report.id} value={saved.report.id}>{new Date(saved.report.generatedAt).toLocaleString()}</option>)}
+              </select>
+            </label>
+          ) : null}
+
           <label className="mt-5 block text-sm font-medium text-slate-700">
             Transcript text
             <textarea
@@ -125,6 +218,13 @@ export function InterviewReportWorkbench() {
           </button>
 
           {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
+          {saveNote ? <p className="mt-3 text-sm text-slate-600">{saveNote}</p> : null}
+          {pendingSave ? (
+            <div className="mt-3 text-sm text-amber-800">
+              <p>Report generated; saving has not been confirmed. Keep this page open to retry.</p>
+              <button type="button" className="mt-2 underline" disabled={status === "loading"} onClick={() => void retrySave()}>Retry saving this report</button>
+            </div>
+          ) : null}
         </div>
 
         <div className="panel p-6">

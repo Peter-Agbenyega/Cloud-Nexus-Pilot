@@ -136,8 +136,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       </h1>
       <p className="mt-3 text-sm leading-7 text-slate-600">
         {mode === "login"
-          ? "Sign in to enable cloud sync for Prompt Vault and complete any local-to-cloud import."
-          : "Create your account to enable authenticated Prompt Vault sync while keeping local mode as a fallback."}
+          ? "Sign in to start an owned Pilot session and recover your saved work."
+          : "Create an account for owned Pilot sessions, saved transcripts and guidance."}
       </p>
       <p className="mt-3 text-sm text-slate-500">
         Return path: <span className="font-medium text-slate-700">{returnPath}</span>

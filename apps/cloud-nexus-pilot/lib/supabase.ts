@@ -39,12 +39,17 @@ if (rawSupabaseUrl && !hasPlaceholderSupabaseUrl) {
   }
 }
 
-const hasValidSupabaseUrl =
+const allowsLoopback = process.env.NEXT_PUBLIC_PILOT_ALLOW_LOOPBACK === "1" &&
+  Boolean(parsedSupabaseUrl) && ["127.0.0.1", "localhost", "[::1]"].includes(parsedSupabaseUrl?.hostname ?? "") &&
+  ["http:", "https:"].includes(parsedSupabaseUrl?.protocol ?? "") &&
+  !parsedSupabaseUrl?.username && !parsedSupabaseUrl?.password && !parsedSupabaseUrl?.search && !parsedSupabaseUrl?.hash &&
+  parsedSupabaseUrl?.pathname === "/";
+const hasValidSupabaseUrl = allowsLoopback ||
   Boolean(parsedSupabaseUrl) &&
   parsedSupabaseUrl?.protocol === "https:" &&
   parsedSupabaseUrl?.origin === expectedCloudNexusSupabaseUrl;
 const matchesExpectedCloudNexusProject =
-  !parsedSupabaseUrl ||
+  allowsLoopback || !parsedSupabaseUrl ||
   rawSupabaseUrl.replace(/\/+$/, "") === expectedCloudNexusSupabaseUrl;
 const hasValidAnonKey =
   Boolean(rawSupabaseAnonKey) &&

@@ -1,9 +1,3 @@
-const FILLER_PATTERNS = [
-  /\bum\b/gi,
-  /\buh\b/gi,
-  /\byou know\b/gi,
-  /\blike\b/gi,
-] as const;
 const QUESTION_START_PATTERNS = [
   /^(what|why|how|when|where|who|which)\b/i,
   /^(can|could|would|will|do|does|did|are|is|was|were|have|has)\b/i,
@@ -12,13 +6,9 @@ const QUESTION_START_PATTERNS = [
 ] as const;
 
 export function cleanTranscriptText(transcript: string): string {
-  let cleaned = transcript.trim();
-
-  for (const pattern of FILLER_PATTERNS) {
-    cleaned = cleaned.replace(pattern, " ");
-  }
-
-  return cleaned
+  // Preserve provider words verbatim: guessing that "like" is filler destroys
+  // technical questions (for example SQL LIKE) and short truthful answers.
+  return transcript.trim()
     .replace(/\s+/g, " ")
     .replace(/\s+([,.!?])/g, "$1")
     .replace(/([,.!?]){2,}/g, "$1")

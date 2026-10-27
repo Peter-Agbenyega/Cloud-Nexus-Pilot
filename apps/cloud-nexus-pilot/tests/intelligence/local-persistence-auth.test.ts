@@ -22,7 +22,7 @@ test("missing and malformed Prompt Vault storage retain prior starter fallback",
 
 test("auth return paths cannot escape origin through URL normalization", () => {
   for (const unsafe of [null, "https://evil.example", "//evil.example", "/\\evil.example", "/\n/evil.example", "/\t/evil.example", "javascript:alert(1)"]) {
-    assert.equal(resolveSafeReturnPath(unsafe), "/prompt-library");
+    assert.equal(resolveSafeReturnPath(unsafe), "/workspace");
   }
   assert.equal(resolveSafeReturnPath("/workspace?mode=local#notes"), "/workspace?mode=local#notes");
   assert.equal(resolveSafeReturnPath("/transcripts"), "/transcripts");

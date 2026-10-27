@@ -9,7 +9,7 @@ const MIME_TYPE_CANDIDATES = [
 export function isAudioCaptureSupported(): boolean {
   return (
     typeof window !== "undefined" &&
-    typeof MediaRecorder !== "undefined" &&
+    Boolean(window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) &&
     Boolean(navigator.mediaDevices?.getUserMedia)
   );
 }
@@ -37,21 +37,22 @@ export function getFileExtension(mimeType: string): string {
   return "webm";
 }
 
-export async function createCaptureStream(
-  source: LiveTranscriptionSource
-): Promise<MediaStream> {
-  if (source === "system-audio") {
-    return navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
-  }
+/** Missing/ended audio is a capability error, never a request to switch sources. */
+export function requireActiveAudioTracks(stream: MediaStream): MediaStreamTrack[] {
+  const tracks = stream.getAudioTracks().filter((track) => track.readyState === "live" && track.enabled);
+  if (!tracks.length) throw new Error("The selected source did not provide active audio. Select a supported tab with Share audio enabled, choose Microphone explicitly, or upload a completed recording.");
+  return tracks;
+}
 
-  return navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
+export async function createCaptureStream(source: LiveTranscriptionSource): Promise<MediaStream> {
+  const stream = source === "system-audio"
+    ? await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+    : await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  try {
+    requireActiveAudioTracks(stream);
+    return stream;
+  } catch (error) {
+    stream.getTracks().forEach((track) => track.stop());
+    throw error;
+  }
 }

@@ -5285,6 +5285,7 @@ export function SessionWorkspaceShell({
     });
   }, []);
 
+  const attachedMeetingTranscriptStreamRef = useRef<MediaStream | null>(null);
   const workspaceTranscriptIsRecording = workspaceTranscriptionWorkflow.isRecording;
   const startWorkspaceTranscriptCapture = workspaceTranscriptionWorkflow.startCapture;
   const stopWorkspaceTranscriptCapture = workspaceTranscriptionWorkflow.stopCapture;
@@ -5297,21 +5298,15 @@ export function SessionWorkspaceShell({
       liveMeetingSessionRuntimeState.metadata.audioTrackCount > 0 &&
       Boolean(activeStream);
 
-    if (hasActiveLiveSession && !workspaceTranscriptIsRecording) {
-      void startWorkspaceTranscriptCapture({
-        existingStream: activeStream ?? undefined,
-        source: "system-audio",
-      });
-      return;
-    }
-
-    if (!hasActiveLiveSession && workspaceTranscriptIsRecording) {
-      stopWorkspaceTranscriptCapture();
+    // Attaching is an explicit action below. An effect must never restart
+    // capture after Stop, nor stop a separately selected microphone source.
+    if (attachedMeetingTranscriptStreamRef.current && !hasActiveLiveSession) {
+      attachedMeetingTranscriptStreamRef.current = null;
+      if (workspaceTranscriptIsRecording) stopWorkspaceTranscriptCapture();
     }
   }, [
     liveMeetingSessionRuntimeState.metadata.audioTrackCount,
     liveMeetingSessionRuntimeState.status,
-    startWorkspaceTranscriptCapture,
     stopWorkspaceTranscriptCapture,
     workspaceTranscriptIsRecording,
   ]);
@@ -5920,6 +5915,7 @@ export function SessionWorkspaceShell({
       return;
     }
 
+    attachedMeetingTranscriptStreamRef.current = activeStream;
     void startWorkspaceTranscriptCapture({
       existingStream: activeStream,
       source: "system-audio",

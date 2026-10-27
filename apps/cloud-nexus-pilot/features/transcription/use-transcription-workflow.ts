@@ -1,5 +1,7 @@
 "use client";
 
+import { ensureOwnedGuidanceSession, savedGuidanceAssociations, type SavedGuidanceAssociation } from "./guidance-session-client";
+import { loadSavedTranscriptSession, deleteSavedTranscriptSession, listOwnedTranscriptSessions, type OwnedTranscriptSessionSummary } from "./saved-session-service";
 import { CaptureOwnership } from "@/lib/realtime/capture-ownership";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -8,6 +10,7 @@ import {
   createCaptureStream,
   getPreferredMimeType,
   isAudioCaptureSupported,
+  requireActiveAudioTracks,
   type LiveTranscriptionSource,
 } from "@/features/transcription/audio-capture";
 import {
@@ -46,6 +49,8 @@ export type TranscriptionStatus =
   | "listening"
   | "receiving-transcript"
   | "no-speech-yet"
+  | "paused"
+  | "stopping"
   | "stopped"
   | "unsupported"
   | "failed";
@@ -54,6 +59,7 @@ export type TranscriptionTransportStatus =
   | "idle"
   | "streaming-session-creating"
   | "streaming-session-connected"
+  | "streaming-session-reconnecting"
   | "streaming-session-failed"
   | "legacy-fallback-active";
 
@@ -93,7 +99,22 @@ export type UseTranscriptionWorkflowResult = {
   source: LiveTranscriptionSource;
   isSupported: boolean;
   systemAudioSupported: boolean;
+  serverSessionId: string | null;
+  savedGuidance: SavedGuidanceAssociation[];
+  ensureServerSession: (signal?: AbortSignal) => Promise<string>;
+  refreshServerGuidance: (sessionId?: string) => Promise<void>;
+  serverSaveState: "unavailable" | "unsaved" | "saving" | "saved" | "failed";
+  recoverServerSession: (sessionId?: string) => Promise<void>;
+  findServerSessions: () => Promise<void>;
+  savedServerSessions: OwnedTranscriptSessionSummary[];
+  isFindingServerSessions: boolean;
+  exportServerSession: () => Promise<void>;
+  deleteServerSession: () => Promise<void>;
   isRecording: boolean;
+  isPaused: boolean;
+  audioLevel: number;
+  pauseCapture: () => void;
+  resumeCapture: () => void;
   isTranscribing: boolean;
   canUseTranscript: boolean;
   transcriptSummary: string;
@@ -123,9 +144,6 @@ export type UseTranscriptionWorkflowOptions = {
 
 // 4-second chunks balance live response speed with enough speech context for Whisper quality.
 const DEFAULT_CHUNK_INTERVAL_MS = 4_000;
-const MIN_UPLOAD_CHUNK_BYTES = 1_024;
-const MIN_RAW_CHUNK_BYTES = 256;
-const MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD = 3;
 const PCM_CHUNK_FLUSH_INTERVAL_MS = DEFAULT_CHUNK_INTERVAL_MS;
 const PCM_MIN_FRAMES_PER_CHUNK = 64_000;
 const MIN_LIVE_SEGMENT_WORDS = 5;
@@ -137,29 +155,11 @@ const INCOMPLETE_QUESTION_WAIT_MS = 3_000;
 const CHUNK_UPLOAD_RETRY_BACKOFF_MS = 2_000;
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
-const WHISPER_SILENCE_HALLUCINATIONS = new Set([
-  "thank you",
-  "thank you for watching",
-  "thank you for joining us",
-  "thanks for watching",
-  "please subscribe",
-  "music",
-  "applause",
-  "you should not receive a live exit from the train in the netherlands",
-]);
-
 const QUESTION_CUE_PATTERNS = [
   /\b(who|what|when|where|why|how|explain|describe)\b/i,
   /\btell me\b/i,
   /\bcan you\b/i,
   /\bcould you\b/i,
-] as const;
-
-const DOMAIN_CONTEXT_PATTERNS = [
-  /\bcloud nexus pilot\b/i,
-  /\binterview copilot\b/i,
-  /\bmock interview\b/i,
-  /\brecruiter screen\b/i,
 ] as const;
 
 const WEAK_TRAILING_QUESTION_PATTERNS = [
@@ -190,22 +190,6 @@ function countMeaningfulWords(text: string): number {
 
 function containsQuestionCue(text: string): boolean {
   return text.includes("?") || QUESTION_CUE_PATTERNS.some((pattern) => pattern.test(text));
-}
-
-function containsDomainContext(text: string): boolean {
-  return DOMAIN_CONTEXT_PATTERNS.some((pattern) => pattern.test(text));
-}
-
-function isLikelyHallucinatedTranscript(text: string): boolean {
-  const normalized = normalizeTranscriptForFiltering(text);
-  if (!normalized) return true;
-
-  // Avoid Whisper silence hallucinations from noisy chunks before they become transcript segments.
-  if (containsQuestionCue(text)) return false;
-  if (WHISPER_SILENCE_HALLUCINATIONS.has(normalized)) return true;
-  if (containsDomainContext(text)) return false;
-
-  return countMeaningfulWords(text) < 4;
 }
 
 function startsLikeContinuation(text: string): boolean {
@@ -267,6 +251,28 @@ export function useTranscriptionWorkflow(
   const [transportFallbackReason, setTransportFallbackReason] = useState("");
   const [source, setSource] = useState<LiveTranscriptionSource>("microphone");
   const [activeUploads, setActiveUploads] = useState(0);
+  const [serverSessionId, setServerSessionId] = useState<string | null>(null);
+  const serverSessionIdRef = useRef<string | null>(null);
+  const recoveryEpochRef = useRef(0);
+  const guidanceSessionPromiseRef = useRef<Promise<string> | null>(null);
+  const [savedGuidance, setSavedGuidance] = useState<SavedGuidanceAssociation[]>([]);
+  const [savedServerSessions, setSavedServerSessions] = useState<OwnedTranscriptSessionSummary[]>([]);
+  const [isFindingServerSessions, setIsFindingServerSessions] = useState(false);
+  const sessionListAbortRef = useRef<AbortController | null>(null);
+  const [serverSaveState, setServerSaveState] = useState<"unavailable" | "unsaved" | "saving" | "saved" | "failed">("unavailable");
+  useEffect(() => {
+    try {
+      const id = window.localStorage.getItem("cloud-nexus-pilot:last-owned-stream-session");
+      if (id && /^[a-zA-Z0-9_-]{1,128}$/.test(id)) { serverSessionIdRef.current = id; setServerSessionId(id); }
+    } catch { /* Recovery can still use the active session when storage is unavailable. */ }
+  }, []);
+  const [captureActive, setCaptureActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const stoppingRef = useRef(false);
+  const pendingChunkTasksRef = useRef(new Set<Promise<void>>());
+  const trackCleanupRef = useRef<(() => void) | null>(null);
+  const lastMeterUpdateRef = useRef(0);
   const [transcriptRecords, setTranscriptRecords] = useState<TranscriptRecord[]>([]);
   const [activeTranscriptId, setActiveTranscriptId] = useState<TranscriptId | null>(null);
   const [persistenceInfo, setPersistenceInfo] = useState<TranscriptionPersistenceInfo>({
@@ -291,6 +297,8 @@ export function useTranscriptionWorkflow(
   const captureOwnershipRef = useRef(new CaptureOwnership());
   const streamingGenerationRef = useRef(0);
   const audioPipelineRef = useRef<LiveAudioPipelineHandle | null>(null);
+  const audioStartupAbortRef = useRef<AbortController | null>(null);
+  const fileUploadAbortRef = useRef<AbortController | null>(null);
   const streamingClientRef = useRef<StreamingTranscriptClient | null>(null);
   const streamingConnectPromiseRef = useRef<Promise<StreamingTranscriptClient | null> | null>(null);
   const streamingFallbackReasonRef = useRef("");
@@ -599,6 +607,9 @@ export function useTranscriptionWorkflow(
 
       const generation = streamingGenerationRef.current;
       const connectPromise = createStreamingTranscriptClient({
+        onSaveAcknowledged: () => {
+          if (generation === streamingGenerationRef.current) setServerSaveState("saved");
+        },
         onLog: (entry) => {
           if (generation !== streamingGenerationRef.current) return;
           if (shouldDebugLogs) {
@@ -611,6 +622,11 @@ export function useTranscriptionWorkflow(
             return;
           }
 
+          if (entry.event === "sse-reconnecting") {
+            setTransportStatus("streaming-session-reconnecting");
+            setFeedback("The event channel is reconnecting. Only server-acknowledged final text is recoverable; live audio gaps may remain.");
+            return;
+          }
           if (entry.event === "sse-connect-error") {
             const detail = entry.detail || "Streaming transcript event channel disconnected.";
             if (entry.sessionId && streamingClientRef.current?.sessionId === entry.sessionId) {
@@ -640,6 +656,11 @@ export function useTranscriptionWorkflow(
             return null;
           }
           streamingClientRef.current = client;
+          serverSessionIdRef.current = client.sessionId;
+          setServerSessionId(client.sessionId);
+          setSavedGuidance([]);
+          setServerSaveState("unsaved");
+          try { window.localStorage.setItem("cloud-nexus-pilot:last-owned-stream-session", client.sessionId); } catch { /* No recovery cursor is stored if local storage is unavailable. */ }
           streamingFallbackReasonRef.current = "";
           setTransportStatus("streaming-session-connected");
           setTransportFallbackReason("");
@@ -681,16 +702,6 @@ export function useTranscriptionWorkflow(
     ) => {
       const cleaned = cleanTranscriptText(text);
       if (!cleaned) return null;
-      if (isLikelyHallucinatedTranscript(cleaned)) {
-        if (shouldDebugLogs) {
-          console.log("[transcription] segment suppressed: likely silence hallucination", {
-            chunkIndex,
-            text: cleaned,
-          });
-        }
-        return null;
-      }
-
       const createdAt = Date.now();
       const previousSegment = segmentsRef.current.at(-1) ?? null;
       const nextSpeakerId = speakerId ?? null;
@@ -853,7 +864,21 @@ export function useTranscriptionWorkflow(
   }, []);
 
   const stopInternal = useCallback(() => {
+    recoveryEpochRef.current += 1;
+    sessionListAbortRef.current?.abort();
+    sessionListAbortRef.current = null;
+    setIsFindingServerSessions(false);
+    fileUploadAbortRef.current?.abort();
+    fileUploadAbortRef.current = null;
+    trackCleanupRef.current?.();
+    trackCleanupRef.current = null;
+    stoppingRef.current = false;
+    setCaptureActive(false);
+    setIsPaused(false);
+    setAudioLevel(0);
     captureOwnershipRef.current.cancel();
+    audioStartupAbortRef.current?.abort();
+    audioStartupAbortRef.current = null;
     streamingGenerationRef.current += 1;
     audioPipelineRef.current?.stop();
     audioPipelineRef.current = null;
@@ -896,7 +921,8 @@ export function useTranscriptionWorkflow(
   }, [clearIncompleteQuestionWait, flushPendingLiveSegment]);
 
   const processAudioChunk = useCallback(
-    async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource, overrideContentType?: string) => {
+    async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource, overrideContentType?: string, attempt = 0) => {
+      const generation = streamingGenerationRef.current;
       if (audioBlob.size === 0) return;
 
       if (inFlightChunkCountRef.current >= MAX_IN_FLIGHT_LIVE_CHUNKS) {
@@ -907,7 +933,9 @@ export function useTranscriptionWorkflow(
           size: audioBlob.size,
           source: nextSource,
         });
-        setFeedback("Live transcription is still catching up. A chunk was skipped to keep the session stable.");
+        stopInternal();
+        setStatus("failed");
+        setError("Capture stopped because transcription could not keep up. An audio gap was not saved. Review retained text, then retry capture.");
         return;
       }
 
@@ -939,47 +967,11 @@ export function useTranscriptionWorkflow(
           throw new Error(reason);
         }
 
-        let result: Awaited<ReturnType<StreamingTranscriptClient["sendChunk"]>> | null = null;
-
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          try {
-            result = await streamingClient.sendChunk({
-              blob: audioBlob,
-              chunkIndex,
-              source: nextSource,
-              contentType,
-            });
-            break;
-          } catch (streamingError) {
-            const message =
-              streamingError instanceof Error
-                ? streamingError.message
-                : "Unable to process the latest audio chunk.";
-            const shouldRetry = attempt === 0 && shouldResetStreamingClient(message);
-
-            if (!shouldRetry) {
-              throw streamingError;
-            }
-
-            console.warn("[transcription] streaming session reset after chunk failure", {
-              chunkIndex,
-              message,
-            });
-            resetStreamingClient(message);
-            streamingClient = await ensureStreamingClient("chunk-send");
-
-            if (!streamingClient) {
-              const reason = streamingFallbackReasonRef.current || message;
-              setTransportStatus("streaming-session-failed");
-              setTransportFallbackReason(reason);
-              throw new Error(reason);
-            }
-          }
-        }
-
-        if (!result) {
-          throw new Error("Unable to process the latest audio chunk.");
-        }
+        setServerSaveState("saving");
+        const result = await streamingClient.sendChunk({
+          blob: audioBlob, chunkIndex, source: nextSource, contentType,
+        });
+        if (generation !== streamingGenerationRef.current) return;
 
         setTransportStatus("streaming-session-connected");
         setTransportFallbackReason("");
@@ -988,16 +980,13 @@ export function useTranscriptionWorkflow(
         activeContentTypeRef.current = result.contentType || contentType;
 
         const cleanedChunkText = cleanTranscriptText(result.text) || result.text.trim();
-        const shouldSuppressChunk =
-          Boolean(cleanedChunkText) && isLikelyHallucinatedTranscript(cleanedChunkText);
-        if (!cleanedChunkText || shouldSuppressChunk) {
+        if (!cleanedChunkText) {
           if (shouldDebugLogs) {
             console.log("[transcription] transcript accepted: no usable speech detected", {
               chunkIndex: result.chunkIndex,
               size: audioBlob.size,
               textLength: result.text.length,
               source: result.source,
-              suppressed: shouldSuppressChunk,
             });
           }
           setStatus("no-speech-yet");
@@ -1052,7 +1041,7 @@ export function useTranscriptionWorkflow(
 
         if (!shouldFlushBufferedSegment) {
           setStatus("receiving-transcript");
-          setFeedback("Receiving transcript from OpenAI in near real time.");
+          setFeedback("Receiving transcript from the configured transcription provider.");
           setError("");
           return;
         }
@@ -1089,13 +1078,21 @@ export function useTranscriptionWorkflow(
           captureMode: activeCaptureModeRef.current,
         });
         setStatus("receiving-transcript");
-        setFeedback("Receiving transcript from OpenAI in near real time.");
+        setFeedback("Receiving transcript from the configured transcription provider.");
         setError("");
       } catch (uploadError) {
+        if (generation !== streamingGenerationRef.current) return;
+        setServerSaveState("failed");
         const message =
           uploadError instanceof Error
             ? uploadError.message
             : "Unable to process the latest audio chunk.";
+        if (stoppingRef.current || attempt >= 2) {
+          if (!stoppingRef.current) stopInternal();
+          setError("Transcription stopped after bounded retries. The latest audio may not have been saved. Retained text remains available.");
+          setStatus("failed");
+          return;
+        }
         consecutiveChunkUploadFailuresRef.current += 1;
         console.warn("[transcription] live chunk failed; retrying without ending session", {
           chunkIndex,
@@ -1110,8 +1107,9 @@ export function useTranscriptionWorkflow(
         );
         setStatus(transcriptRef.current.trim() ? "receiving-transcript" : "listening");
         window.setTimeout(() => {
-          if (recorderRef.current?.state === "recording" || audioPipelineRef.current) {
-            void processAudioChunk(audioBlob, chunkIndex, nextSource, overrideContentType);
+          if (!stoppingRef.current && generation === streamingGenerationRef.current &&
+              (recorderRef.current?.state === "recording" || audioPipelineRef.current)) {
+            void processAudioChunk(audioBlob, chunkIndex, nextSource, overrideContentType, attempt + 1);
           }
         }, CHUNK_UPLOAD_RETRY_BACKOFF_MS);
         return;
@@ -1138,6 +1136,7 @@ export function useTranscriptionWorkflow(
       persistCurrentTranscript,
       resetStreamingClient,
       shouldResetStreamingClient,
+      stopInternal,
       triggerAiQuestionDetection,
     ]
   );
@@ -1154,9 +1153,11 @@ export function useTranscriptionWorkflow(
         return true;
       }
 
+      if (stoppingRef.current) return false;
       const ownership = captureOwnershipRef.current;
       const token = ownership.begin();
       if (token === null) return false;
+      recoveryEpochRef.current += 1;
 
       setError("");
       setFeedback("");
@@ -1179,13 +1180,16 @@ export function useTranscriptionWorkflow(
       pendingLiveSegmentRef.current = "";
       pendingLiveSegmentAgeRef.current = null;
       pendingLiveSegmentSpeakerRef.current = null;
+      stoppingRef.current = false;
+      setIsPaused(false);
       const nextSource = options?.source ?? sourceRef.current;
-      if (options?.source && options.source !== sourceRef.current) {
+      sourceRef.current = nextSource;
+      if (options?.source) {
         setSource(options.source);
       }
       activeCaptureModeRef.current = "live-capture";
-      activeContentTypeRef.current = getPreferredMimeType() || "audio/webm";
-      activeFilenameRef.current = `live-capture-${Date.now()}.webm`;
+      activeContentTypeRef.current = "audio/wav";
+      activeFilenameRef.current = `live-capture-${Date.now()}.wav`;
       activeByteSizeRef.current = 0;
       chunkIndexRef.current = 0;
       seedChunkRef.current = null;
@@ -1194,6 +1198,28 @@ export function useTranscriptionWorkflow(
       setActiveTranscriptId(null);
 
       try {
+        const sourceStream = options?.existingStream ?? (await createCaptureStream(nextSource));
+        if (!options?.existingStream) {
+          if (!ownership.adopt(token, sourceStream)) return false;
+        } else if (!ownership.isCurrent(token)) {
+          return false;
+        }
+        const audioTracks = requireActiveAudioTracks(sourceStream);
+        const handleEnded = () => {
+          stopInternal();
+          setStatus("stopped");
+          setError("The selected audio source ended. Unacknowledged final audio may be missing; retained transcript remains available. Select a source explicitly to resume.");
+        };
+        for (const track of audioTracks) track.addEventListener("ended", handleEnded, { once: true });
+        trackCleanupRef.current = () => {
+          for (const track of audioTracks) track.removeEventListener("ended", handleEnded);
+        };
+
+        // Keep transcription capture audio-only so downstream chunks are stable.
+        const stream = new MediaStream(audioTracks);
+        streamRef.current = stream;
+        ownsStreamRef.current = !options?.existingStream;
+
         const initialStreamingClient = await ensureStreamingClient("session-start");
         if (!ownership.isCurrent(token)) return false;
         if (!initialStreamingClient) {
@@ -1205,184 +1231,41 @@ export function useTranscriptionWorkflow(
         setTransportFallbackReason("");
         logStreamingSeam("fallback-cleared", "streaming-session-active");
 
-        const sourceStream = options?.existingStream ?? (await createCaptureStream(nextSource));
-        if (!options?.existingStream) {
-          if (!ownership.adopt(token, sourceStream)) return false;
-        } else if (!ownership.isCurrent(token)) {
-          return false;
+        if (!isPcmAudioPipelineSupported()) {
+          throw new Error("Live PCM capture is unavailable. Upload a completed audio recording instead; no incomplete MediaRecorder fragments will be sent.");
         }
-        const audioTracks = sourceStream.getAudioTracks();
-        if (audioTracks.length === 0) {
-          throw new Error("No live audio track was found for this capture source.");
-        }
-
-        // Keep transcription capture audio-only so downstream chunks are stable.
-        const stream = new MediaStream(audioTracks);
-        streamRef.current = stream;
-        ownsStreamRef.current = !options?.existingStream;
-
-        // Prefer Web Audio PCM chunks first to keep live streaming inputs stable.
-        // MediaRecorder remains only as an alternate capture mechanism into the same streaming path.
-        if (isPcmAudioPipelineSupported()) {
-          try {
-            const pipeline = await createLiveAudioPipeline({
-              stream,
-              flushIntervalMs: PCM_CHUNK_FLUSH_INTERVAL_MS,
-              minFramesPerChunk: PCM_MIN_FRAMES_PER_CHUNK,
-              onDebug: (event, metadata) => {
-                if (shouldDebugLogs) {
-                  console.log("[transcription][pcm-pipeline]", event, metadata ?? {});
-                }
-              },
-              onError: (pipelineError) => {
-                setError(pipelineError.message);
-                setStatus("failed");
-              },
-              onChunk: (chunk) => {
-                if (!ownership.isCurrent(token)) return;
-                const chunkIndex = chunkIndexRef.current;
-                chunkIndexRef.current += 1;
-                if (shouldDebugLogs) {
-                  console.log("[transcription] batch upload queued", {
-                    chunkIndex,
-                    size: chunk.blob.size,
-                    contentType: chunk.contentType,
-                    durationMs: chunk.durationMs,
-                    engine: "pcm-pipeline",
-                  });
-                }
-                void processAudioChunk(chunk.blob, chunkIndex, nextSource, chunk.contentType);
-              },
-            });
-
-            if (!ownership.isCurrent(token)) {
-              pipeline.stop();
-              return false;
+        const startupController = new AbortController();
+        audioStartupAbortRef.current = startupController;
+        const pipeline = await createLiveAudioPipeline({
+          stream,
+          signal: startupController.signal,
+          flushIntervalMs: PCM_CHUNK_FLUSH_INTERVAL_MS,
+          minFramesPerChunk: PCM_MIN_FRAMES_PER_CHUNK,
+          onLevel: (value) => {
+            const now = Date.now();
+            if (value === 0 || now - lastMeterUpdateRef.current >= 150) {
+              lastMeterUpdateRef.current = now;
+              setAudioLevel(value);
             }
-            audioPipelineRef.current = pipeline;
-            setStatus("listening");
-            setFeedback(
-              "Live PCM audio pipeline connected. Waiting for speech for near real-time transcription."
-            );
-            return true;
-          } catch (pipelineStartError) {
-            if (!ownership.isCurrent(token)) return false;
-            console.warn("[transcription] PCM pipeline failed, falling back to MediaRecorder", {
-              error:
-                pipelineStartError instanceof Error
-                  ? pipelineStartError.message
-                  : "unknown pipeline start error",
-            });
-            audioPipelineRef.current = null;
-          }
-        }
-
-        const mimeType = getPreferredMimeType();
-        const recorder = mimeType
-          ? new MediaRecorder(stream, { mimeType })
-          : new MediaRecorder(stream);
-
-        recorder.ondataavailable = (event) => {
-          if (!ownership.isCurrent(token)) return;
-          if (!event.data || event.data.size === 0) return;
-
-          const blob = event.data;
-          if (shouldDebugLogs) {
-            console.log("[transcription] media chunk captured", {
-              size: blob.size,
-              type: blob.type || recorder.mimeType || "audio/webm",
-            });
-          }
-
-          if (blob.size < MIN_RAW_CHUNK_BYTES) {
-            if (shouldDebugLogs) {
-              console.log("[transcription] chunk skipped: tiny media chunk", {
-                size: blob.size,
-                minimum: MIN_RAW_CHUNK_BYTES,
-              });
-            }
-            return;
-          }
-
-          if (!seedChunkRef.current) {
-            seedChunkRef.current = blob;
-            if (shouldDebugLogs) {
-              console.log("[transcription] chunk buffered as seed segment", {
-                size: blob.size,
-              });
-            }
-            return;
-          }
-
-          pendingChunkPartsRef.current.push(blob);
-          pendingChunkBytesRef.current += blob.size;
-
-          const hasEnoughBytes = pendingChunkBytesRef.current >= MIN_UPLOAD_CHUNK_BYTES;
-          const hasEnoughParts =
-            pendingChunkPartsRef.current.length >= MAX_BUFFERED_CHUNKS_BEFORE_UPLOAD;
-          if (!hasEnoughBytes && !hasEnoughParts) {
-            if (shouldDebugLogs) {
-              console.log("[transcription] chunk buffered: awaiting larger batch", {
-                pendingParts: pendingChunkPartsRef.current.length,
-                pendingBytes: pendingChunkBytesRef.current,
-                targetBytes: MIN_UPLOAD_CHUNK_BYTES,
-              });
-            }
-            return;
-          }
-
-          const uploadType = recorder.mimeType || blob.type || "audio/webm";
-          const uploadBlob = new Blob(
-            [seedChunkRef.current, ...pendingChunkPartsRef.current],
-            { type: uploadType }
-          );
-          if (uploadBlob.size < MIN_UPLOAD_CHUNK_BYTES) {
-            if (shouldDebugLogs) {
-              console.log("[transcription] chunk skipped: upload batch below threshold", {
-                size: uploadBlob.size,
-                minimum: MIN_UPLOAD_CHUNK_BYTES,
-              });
-            }
-            pendingChunkPartsRef.current = [];
-            pendingChunkBytesRef.current = 0;
-            return;
-          }
-
-          const chunkIndex = chunkIndexRef.current;
-          chunkIndexRef.current += 1;
-          if (shouldDebugLogs) {
-            console.log("[transcription] batch upload queued", {
-              chunkIndex,
-              size: uploadBlob.size,
-              contentType: uploadType,
-              parts: pendingChunkPartsRef.current.length + 1,
-            });
-          }
-          pendingChunkPartsRef.current = [];
-          pendingChunkBytesRef.current = 0;
-          void processAudioChunk(uploadBlob, chunkIndex, nextSource);
-        };
-
-        recorder.onerror = () => {
-          setStatus("failed");
-          setError("Recording failed. Please stop and try again.");
-        };
-
-        recorder.onstop = () => {
-          if (activeUploadsRef.current === 0) {
-            setStatus("stopped");
-            setFeedback(
-              "Listening stopped. Transcript text remains visible for review in this session."
-            );
-          }
-        };
-
-        recorderRef.current = recorder;
-        recorder.start(DEFAULT_CHUNK_INTERVAL_MS);
+          },
+          onError: (pipelineError) => {
+            stopInternal();
+            setError(pipelineError.message);
+            setStatus("failed");
+          },
+          onChunk: (chunk) => {
+            if (!ownership.isCurrent(token)) return;
+            const chunkIndex = chunkIndexRef.current++;
+            const task = processAudioChunk(chunk.blob, chunkIndex, nextSource, chunk.contentType);
+            pendingChunkTasksRef.current.add(task);
+            void task.finally(() => pendingChunkTasksRef.current.delete(task));
+          },
+        });
+        if (!ownership.isCurrent(token)) { pipeline.stop(); return false; }
+        audioPipelineRef.current = pipeline;
+        setCaptureActive(true);
         setStatus("listening");
-        setFeedback(
-          "Live audio stream and transcription runtime are connected. Waiting for speech."
-        );
+        setFeedback("The selected audio source is active. Watch the input meter; transcript progress is reported separately.");
         return true;
       } catch (startError) {
         if (!ownership.isCurrent(token)) return false;
@@ -1412,9 +1295,150 @@ export function useTranscriptionWorkflow(
   );
 
   const stopCapture = useCallback(() => {
-    stopInternal();
-    setStatus(activeUploadsRef.current > 0 ? "receiving-transcript" : "stopped");
+    if (stoppingRef.current) return;
+    stoppingRef.current = true;
+    trackCleanupRef.current?.();
+    trackCleanupRef.current = null;
+    // Flush valid final PCM before invalidating capture, and retain its bounded
+    // in-flight upload until acknowledgement. Tracks stop immediately.
+    audioPipelineRef.current?.stop();
+    audioPipelineRef.current = null;
+    captureOwnershipRef.current.cancel();
+    audioStartupAbortRef.current?.abort();
+    audioStartupAbortRef.current = null;
+    setCaptureActive(false);
+    setIsPaused(false);
+    setAudioLevel(0);
+    setStatus("stopping");
+    void Promise.allSettled([...pendingChunkTasksRef.current]).then(() => {
+      stopInternal();
+      setStatus("stopped");
+      setFeedback("Capture stopped. Completed transcript remains available; any reported failed audio is a gap.");
+    });
   }, [stopInternal]);
+
+  const pauseCapture = useCallback(() => {
+    if (!audioPipelineRef.current || stoppingRef.current) return;
+    audioPipelineRef.current.pause();
+    setIsPaused(true);
+    setStatus("paused");
+    setFeedback("Audio processing is paused. The selected source remains acquired; Stop releases it.");
+  }, []);
+  const resumeCapture = useCallback(() => {
+    if (!audioPipelineRef.current || stoppingRef.current) return;
+    audioPipelineRef.current.resume();
+    setIsPaused(false);
+    setStatus("listening");
+    setFeedback("Audio processing resumed on the same selected source.");
+  }, []);
+
+  const ensureServerSession = useCallback(async (signal?: AbortSignal): Promise<string> => {
+    recoveryEpochRef.current += 1;
+    if (streamingClientRef.current) return streamingClientRef.current.sessionId;
+    if (guidanceSessionPromiseRef.current) return guidanceSessionPromiseRef.current;
+    const pending = ensureOwnedGuidanceSession(serverSessionIdRef.current, signal).then((id) => {
+      if (signal?.aborted) throw new DOMException("Guidance was cancelled.", "AbortError");
+      if (id !== serverSessionIdRef.current) setSavedGuidance([]);
+      serverSessionIdRef.current = id;
+      setServerSessionId(id);
+      setServerSaveState("unsaved");
+      try { window.localStorage.setItem("cloud-nexus-pilot:last-owned-stream-session", id); } catch { /* The server remains authoritative. */ }
+      return id;
+    }).finally(() => { if (guidanceSessionPromiseRef.current === pending) guidanceSessionPromiseRef.current = null; });
+    guidanceSessionPromiseRef.current = pending;
+    return pending;
+  }, []);
+  const refreshServerGuidance = useCallback(async (sessionId?: string) => {
+    const id = sessionId ?? serverSessionIdRef.current;
+    if (!id) return;
+    const saved = await loadSavedTranscriptSession(id);
+    if (serverSessionIdRef.current !== id) return;
+    setSavedGuidance(savedGuidanceAssociations(saved));
+    setServerSaveState("saved");
+  }, []);
+
+  const findServerSessions = useCallback(async () => {
+    sessionListAbortRef.current?.abort();
+    const controller = new AbortController(); sessionListAbortRef.current = controller;
+    setIsFindingServerSessions(true); setSavedServerSessions([]); setError("");
+    try {
+      const sessions = await listOwnedTranscriptSessions(controller.signal);
+      if (controller.signal.aborted) return;
+      setSavedServerSessions(sessions);
+      setFeedback(sessions.length ? "Showing the most recent 100 saved sessions at most for the signed-in account. Select one to recover." : "No saved sessions were returned for this signed-in account.");
+    } catch (error) {
+      if (!controller.signal.aborted) setError(error instanceof Error ? error.message : "Unable to list saved sessions.");
+    } finally {
+      if (sessionListAbortRef.current === controller) { sessionListAbortRef.current = null; setIsFindingServerSessions(false); }
+    }
+  }, []);
+  const recoverServerSession = useCallback(async (selectedId?: string) => {
+    const id = selectedId ?? serverSessionId;
+    if (!id || captureActive || stoppingRef.current) return;
+    const epoch = ++recoveryEpochRef.current;
+    const startingSessionId = serverSessionIdRef.current;
+    try {
+      const saved = await loadSavedTranscriptSession(id);
+      if (epoch !== recoveryEpochRef.current || serverSessionIdRef.current !== startingSessionId) return;
+      // Selecting metadata is not a save acknowledgement. Adopt the cursor only
+      // after the owner-scoped full read succeeds.
+      serverSessionIdRef.current = saved.sessionId;
+      setServerSessionId(saved.sessionId);
+      try { window.localStorage.setItem("cloud-nexus-pilot:last-owned-stream-session", saved.sessionId); } catch { /* Recovery remains valid without a local cursor. */ }
+      setSavedGuidance(savedGuidanceAssociations(saved));
+      const restored = saved.events.map((event) => ({
+        id: event.id ?? `saved-${event.sequence}`,
+        chunkIndex: Number.isSafeInteger(event.provider_result?.chunkIndex) ? event.provider_result!.chunkIndex! : event.sequence,
+        text: event.text, source: event.source, createdAt: Date.parse(event.captured_at ?? "") || Date.now(),
+      }));
+      const text = restored.map((event) => event.text).join("\n");
+      setTranscript(text); transcriptRef.current = text;
+      setSegments(restored); segmentsRef.current = restored;
+      setLatestSegment(restored.at(-1)?.text ?? "");
+      setActiveTranscriptId(null);
+      setServerSaveState("saved");
+      setStatus("stopped");
+      setFeedback(saved.captureGap || "Saved final events restored. Live audio gaps are not recoverable.");
+      setError("");
+    } catch (error) {
+      if (epoch !== recoveryEpochRef.current || serverSessionIdRef.current !== startingSessionId) return;
+      setError(error instanceof Error ? error.message : "Unable to recover saved session.");
+      setServerSaveState("failed");
+    }
+  }, [serverSessionId, captureActive]);
+  const exportServerSession = useCallback(async () => {
+    if (!serverSessionId) return;
+    try {
+      await loadSavedTranscriptSession(serverSessionId);
+      const link = document.createElement("a");
+      link.href = `/api/transcribe/stream/session/${encodeURIComponent(serverSessionId)}?format=export`;
+      link.download = "pilot-session.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setFeedback("Export requested from acknowledged server records. Check your browser's downloads; an export is not confirmed until the file is saved.");
+      setError("");
+    } catch (error) { setError(error instanceof Error ? error.message : "Unable to export saved session."); }
+  }, [serverSessionId]);
+  const deleteServerSession = useCallback(async () => {
+    if (!serverSessionId || captureActive || stoppingRef.current) return;
+    const epoch = ++recoveryEpochRef.current;
+    try {
+      await deleteSavedTranscriptSession(serverSessionId);
+      setSavedServerSessions(current => current.filter(item => item.sessionId !== serverSessionId));
+      if (epoch !== recoveryEpochRef.current || serverSessionIdRef.current !== serverSessionId) return;
+      try { window.localStorage.removeItem("cloud-nexus-pilot:last-owned-stream-session"); } catch { /* Server deletion is already acknowledged. */ }
+      serverSessionIdRef.current = null; setServerSessionId(null); setServerSaveState("unavailable"); setSavedGuidance([]);
+      setTranscript(""); transcriptRef.current = "";
+      setSegments([]); segmentsRef.current = [];
+      setLatestSegment(""); setDraftSegment("");
+      setFeedback("Server session deletion acknowledged. Separate browser-local transcript copies must be deleted from local history too.");
+      setError("");
+    } catch (error) {
+      if (epoch !== recoveryEpochRef.current || serverSessionIdRef.current !== serverSessionId) return;
+      setError(error instanceof Error ? error.message : "Unable to delete saved session.");
+    }
+  }, [serverSessionId, captureActive]);
 
   const clearTranscript = useCallback(() => {
     stopInternal();
@@ -1448,13 +1472,16 @@ export function useTranscriptionWorkflow(
   const uploadFile = useCallback(
     async (file: File) => {
       stopInternal();
+      const uploadController = new AbortController();
+      fileUploadAbortRef.current = uploadController;
       setSelectedFileName(file.name);
       setError("");
       setFeedback("");
       setStatus("receiving-transcript");
 
       try {
-        const uploadResult = await transcribeUploadedAsset(file);
+        const uploadResult = await transcribeUploadedAsset(file, uploadController.signal);
+        if (uploadController.signal.aborted) return;
         const nextTranscript = cleanTranscriptText(uploadResult.transcript);
         const nextRecordSegments =
           nextTranscript.length > 0
@@ -1507,6 +1534,7 @@ export function useTranscriptionWorkflow(
             status: nextTranscript ? "completed" : "processing",
           }
         );
+        if (uploadController.signal.aborted) return;
         setActiveTranscriptId(result.transcript.id);
         setTranscriptRecords((current) => [result.transcript, ...current]);
         setPersistenceInfo(result.persistence);
@@ -1529,6 +1557,7 @@ export function useTranscriptionWorkflow(
               : "Upload received. No transcript text was found in the provided file."
         );
       } catch (uploadError) {
+        if (uploadController.signal.aborted) return;
         const message =
           uploadError instanceof Error
             ? uploadError.message
@@ -1541,6 +1570,8 @@ export function useTranscriptionWorkflow(
         });
         setError(message);
         setStatus("failed");
+      } finally {
+        if (fileUploadAbortRef.current === uploadController) fileUploadAbortRef.current = null;
       }
     },
     [loadTranscriptInventory, repository, stopInternal]
@@ -1570,6 +1601,7 @@ export function useTranscriptionWorkflow(
 
   const selectTranscript = useCallback(
     async (id: TranscriptId) => {
+      recoveryEpochRef.current += 1;
       const result = await repository.getTranscriptById(id);
       if (!result.transcript) {
         setError("Selected transcript could not be found.");
@@ -1685,11 +1717,22 @@ export function useTranscriptionWorkflow(
     source,
     isSupported: isAudioCaptureSupported(),
     systemAudioSupported: canCaptureSystemAudio(),
-    isRecording:
-      status === "connecting" ||
-      status === "listening" ||
-      status === "receiving-transcript" ||
-      status === "no-speech-yet",
+    serverSessionId,
+    savedGuidance,
+    ensureServerSession,
+    refreshServerGuidance,
+    serverSaveState,
+    recoverServerSession,
+    findServerSessions,
+    savedServerSessions,
+    isFindingServerSessions,
+    exportServerSession,
+    deleteServerSession,
+    isRecording: captureActive || status === "connecting",
+    isPaused,
+    audioLevel,
+    pauseCapture,
+    resumeCapture,
     isTranscribing: activeUploads > 0 || status === "receiving-transcript",
     canUseTranscript: Boolean(transcript.trim() || latestSegment.trim()),
     transcriptSummary,

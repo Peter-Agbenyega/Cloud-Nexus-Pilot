@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CaptureDisclosure } from "./capture-disclosure";
+import { SavedSessionPicker } from "./saved-session-picker";
 
+import { requestOwnedGuidance, readFinalGuidance } from "@/features/transcription/guidance-session-client";
 import { useTranscriptionWorkflow } from "@/features/transcription/use-transcription-workflow";
 import type { InterviewIntent } from "@/lib/contracts/interview";
 import {
@@ -217,27 +220,6 @@ function writeStoredInterviewContextDraft(draft: InterviewContextDraft) {
   window.localStorage.setItem(INTERVIEW_CONTEXT_STORAGE_KEY, JSON.stringify(draft));
 }
 
-function parseSsePayloads(buffer: string) {
-  const payloads: Array<Record<string, unknown>> = [];
-  let nextBuffer = buffer;
-  let boundaryIndex = nextBuffer.indexOf("\n\n");
-  while (boundaryIndex >= 0) {
-    const rawEvent = nextBuffer.slice(0, boundaryIndex);
-    nextBuffer = nextBuffer.slice(boundaryIndex + 2);
-    const dataText = rawEvent
-      .split(/\r?\n/)
-      .filter((line) => line.startsWith("data:"))
-      .map((line) => line.slice(5).trim())
-      .filter(Boolean)
-      .join("\n");
-    if (dataText) {
-      try { payloads.push(JSON.parse(dataText) as Record<string, unknown>); } catch { /* skip */ }
-    }
-    boundaryIndex = nextBuffer.indexOf("\n\n");
-  }
-  return { payloads, buffer: nextBuffer };
-}
-
 function parseGuidanceJson(rawText: string): GuidanceData | null {
   try {
     const trimmed = rawText.trim();
@@ -360,6 +342,8 @@ export function ReadyStateLaunchPanel() {
   const captureOwnershipRef = useRef(new CaptureOwnership());
   const mountedRef = useRef(false);
   const guidanceAbortControllerRef = useRef<AbortController | null>(null);
+  const activeGuidanceQuestionRef = useRef<{ question: string; source: "typed" | "detected" } | null>(null);
+  const previousCaptureStateRef = useRef({ recording: false, paused: false });
   const lastAutoGuidanceQuestionRef = useRef<string>("");
   const lastRealtimeTranscriptSegmentIdRef = useRef<string>("");
   const activeInterviewSessionRef = useRef<PersistedInterviewSession | null>(null);
@@ -374,6 +358,7 @@ export function ReadyStateLaunchPanel() {
   const realtimeConnection = usePilotRealtimeConnection();
   const interviewPersistenceRepository = useMemo(() => createInterviewPersistenceRepository(), []);
 
+  const [typedQuestion, setTypedQuestion] = useState("");
   const [guidanceText, setGuidanceText] = useState("");
   const [guidanceError, setGuidanceError] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
@@ -662,15 +647,16 @@ export function ReadyStateLaunchPanel() {
     setLaunchFlowStep("ready");
   }
 
-  const handleGetGuidance = useCallback(async function handleGetGuidance() {
-    const detectedQuestion =
+  const handleGetGuidance = useCallback(async function handleGetGuidance(typedOverride?: string) {
+    const detectedQuestion = (typedOverride?.trim() ||
       transcriptionWorkflow.aiDetectedQuestion.trim() ||
-      transcriptionWorkflow.latestDetectedQuestion.trim();
-    if (detectedQuestion.length < 10) return;
+      transcriptionWorkflow.latestDetectedQuestion.trim()).slice(0, 500);
+    if (!detectedQuestion || (!typedOverride && detectedQuestion.length < 10)) return;
 
     cancelActiveGuidanceRequest();
     const abortController = new AbortController();
     guidanceAbortControllerRef.current = abortController;
+    activeGuidanceQuestionRef.current = { question: detectedQuestion, source: typedOverride ? "typed" : "detected" };
 
     setGuidanceStatus("loading");
     setGuidanceError("");
@@ -687,22 +673,20 @@ export function ReadyStateLaunchPanel() {
       lastGuidanceStartedAtRef.current = guidanceStartedAt;
       void ensureSessionExecution();
       const userBackground = getParsedResumeBackground();
-      const response = await fetch("/api/generate-guidance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-        body: JSON.stringify({
-          question: detectedQuestion,
+      const { sessionId: ownedSessionId, response, signal: guidanceSignal } = await requestOwnedGuidance({
+        question: detectedQuestion,
+        segments: transcriptionWorkflow.segments,
+        ensureSession: transcriptionWorkflow.ensureServerSession,
+        signal: abortController.signal,
+        body: {
           transcriptContext: buildTranscriptContext(transcriptionWorkflow.segments),
           interviewMode: inferInterviewIntent(detectedQuestion),
           userBackground,
           resumeText: interviewContextDraft.resumeText || userBackground,
           jobDescriptionText: interviewContextDraft.jobDescriptionText,
-          companyContext: [interviewContextDraft.companyContext, interviewContextDraft.interviewNotes]
-            .filter(Boolean)
-            .join("\n\n"),
+          companyContext: [interviewContextDraft.companyContext, interviewContextDraft.interviewNotes].filter(Boolean).join("\n\n"),
           screenText: interviewContextDraft.screenContextText,
-        }),
-        signal: abortController.signal,
+        },
       });
 
       if (!response.ok) {
@@ -711,88 +695,27 @@ export function ReadyStateLaunchPanel() {
       }
       if (!response.body) throw new Error("Live guidance is unavailable right now.");
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let streamedText = "";
-      let finalGuidanceText = "";
-      let receivedDone = false;
-
-      while (!receivedDone) {
-        const { done, value } = await reader.read();
-        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
-        const parsed = parseSsePayloads(buffer);
-        buffer = parsed.buffer;
-
-        for (const payload of parsed.payloads) {
-          if (payload.type === "token" && typeof payload.token === "string") {
-            streamedText += payload.token;
-            setGuidanceText(streamedText);
-          }
-          if (payload.type === "chunk" && typeof payload.content === "string") {
-            streamedText += payload.content;
-            setGuidanceText(streamedText);
-          }
-          if (payload.type === "final" && typeof payload.content === "string") {
-            finalGuidanceText = payload.content;
-            setGuidanceText(finalGuidanceText);
-          }
-          if (payload.type === "error" && typeof payload.message === "string") {
-            throw new Error(payload.message);
-          }
-          if (payload.type === "done") receivedDone = true;
-        }
-        if (done) receivedDone = true;
-      }
-
-      if (!streamedText.trim() && !finalGuidanceText.trim()) {
-        throw new Error("Live guidance returned an empty response.");
-      }
+      const finalGuidanceText = await readFinalGuidance(response, guidanceSignal);
+      if (abortController.signal.aborted || guidanceAbortControllerRef.current !== abortController) return;
 
       // Try to parse structured JSON
-      const guidanceParseText = finalGuidanceText || streamedText;
+      const guidanceParseText = finalGuidanceText;
       const structured = parseGuidanceJson(guidanceParseText);
       let completedGuidance: GuidanceData;
       if (structured?.gist.trim() === FALLBACK_GIST) {
         showFallbackGuidance();
         return;
       }
-      if (structured) {
-        completedGuidance = structured;
-        setGuidanceData(structured);
-        // Staggered card reveal
-        setShowCard1(true);
-        setTimeout(() => setShowCard2(true), 400);
-        setTimeout(() => {
-          setShowCard3(true);
-          // Simulate streaming the full answer character by character
-          let i = 0;
-          const fullAnswer = structured.full_answer;
-          const streamInterval = setInterval(() => {
-            i += 6;
-            if (i >= fullAnswer.length) {
-              setStreamedFullAnswer(fullAnswer);
-              clearInterval(streamInterval);
-            } else {
-              setStreamedFullAnswer(fullAnswer.slice(0, i));
-            }
-          }, 8);
-        }, 800);
-      } else {
-        // Fallback: show raw text as full_answer
-        completedGuidance = {
-          headline: "Draft answer",
-          speakNow: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 120),
-          keyPoints: [],
-          gist: guidanceParseText.split(/[.!?]/)[0]?.trim() || guidanceParseText.slice(0, 80),
-          key_points: [],
-          full_answer: guidanceParseText,
-        };
-        setGuidanceData(completedGuidance);
-        setShowCard1(true);
-        setTimeout(() => setShowCard3(true), 800);
-        setStreamedFullAnswer(streamedText);
-      }
+      if (!structured) throw new Error("The provider did not return a valid completed guidance answer.");
+      completedGuidance = structured;
+      setGuidanceData(structured);
+      setGuidanceText(finalGuidanceText);
+      setStreamedFullAnswer(structured.full_answer);
+      setShowCard1(true); setShowCard2(true); setShowCard3(true);
+      await transcriptionWorkflow.refreshServerGuidance(ownedSessionId).catch(() => {
+        setGuidanceError("The answer was acknowledged, but saved guidance history could not be refreshed. Try recovery before relying on a reload.");
+      });
+      if (abortController.signal.aborted || guidanceAbortControllerRef.current !== abortController) return;
 
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
@@ -866,6 +789,8 @@ export function ReadyStateLaunchPanel() {
     transcriptionWorkflow.aiDetectedQuestion,
     transcriptionWorkflow.latestDetectedQuestion,
     transcriptionWorkflow.segments,
+    transcriptionWorkflow.ensureServerSession,
+    transcriptionWorkflow.refreshServerGuidance,
     interviewContextDraft,
     interviewPersistenceRepository,
     ensureInterviewSession,
@@ -875,7 +800,29 @@ export function ReadyStateLaunchPanel() {
 
   const preferredDetectedQuestion =
     transcriptionWorkflow.aiDetectedQuestion || transcriptionWorkflow.latestDetectedQuestion;
-  const liveIndicator = getLiveIndicatorState({
+  useEffect(() => {
+    const active = activeGuidanceQuestionRef.current;
+    if (guidanceStatus === "loading" && active?.source === "detected" &&
+        preferredDetectedQuestion.trim().slice(0, 500) !== active.question) {
+      cancelActiveGuidanceRequest();
+      setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
+      setGuidanceStatus("idle");
+      setGuidanceError("The question changed; the previous answer was cancelled.");
+    }
+  }, [preferredDetectedQuestion, guidanceStatus]);
+  useEffect(() => {
+    const previous = previousCaptureStateRef.current;
+    const stopped = previous.recording && !transcriptionWorkflow.isRecording;
+    const paused = !previous.paused && transcriptionWorkflow.isPaused;
+    previousCaptureStateRef.current = { recording: transcriptionWorkflow.isRecording, paused: transcriptionWorkflow.isPaused };
+    if (stopped || paused) {
+      cancelActiveGuidanceRequest();
+      setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
+      setGuidanceStatus("idle"); setAnswerReadyVisible(false);
+      setGuidanceError(paused ? "Audio processing paused; pending guidance was cancelled. Saved answers remain recoverable." : "Audio capture stopped; pending guidance was cancelled. Saved answers remain recoverable.");
+    }
+  }, [transcriptionWorkflow.isRecording, transcriptionWorkflow.isPaused]);
+  const liveIndicator = transcriptionWorkflow.isPaused ? { color: "#FBBF24", shadow: "rgba(251,191,36,0.5)", label: "Audio processing paused" } : getLiveIndicatorState({
     guidanceStatus,
     preferredDetectedQuestion,
     answerReadyVisible,
@@ -955,6 +902,7 @@ export function ReadyStateLaunchPanel() {
     const detectedQuestion = preferredDetectedQuestion.trim();
     if (
       launchFlowStep !== "live" ||
+      transcriptionWorkflow.isPaused ||
       !detectedQuestion ||
       guidanceStatus === "loading" ||
       detectedQuestion === lastAutoGuidanceQuestionRef.current
@@ -1040,6 +988,7 @@ export function ReadyStateLaunchPanel() {
     ensureInterviewSession,
     interviewPersistenceRepository,
     launchFlowStep,
+    transcriptionWorkflow.isPaused,
     preferredDetectedQuestion,
     realtimeConnection,
   ]);
@@ -1058,12 +1007,44 @@ export function ReadyStateLaunchPanel() {
   const realtimeStatusLabel = getRealtimeStatusLabel(realtimeConnection.state);
   const realtimeStatusColor = getRealtimeStatusColor(realtimeConnection.state);
 
+  const ownedSessionTools = (
+    <section aria-label="Typed coaching and saved session" style={{ marginBottom: 18, padding: 16, border: "1px solid #49496A", borderRadius: 10, color: "#D8D8F0" }}>
+      <label style={{ display: "block", fontSize: 13 }}>
+        Type a question without recording
+        <textarea aria-label="Typed coaching question" maxLength={500} value={typedQuestion} onChange={event => setTypedQuestion(event.target.value)} style={{ display: "block", width: "100%", marginTop: 8, padding: 10, background: "#16162A", color: "#F0F0FF", border: "1px solid #636386", borderRadius: 8 }} />
+      </label>
+      <p style={{ fontSize: 12, margin: "8px 0" }}>Generating requires a signed-in account, an owned saved session and available server allowance. Typed coaching does not acquire audio.</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button type="button" disabled={!typedQuestion.trim() || guidanceStatus === "loading" || launchFlowStep === "requesting" || transcriptionWorkflow.isPaused} onClick={() => void handleGetGuidance(typedQuestion)} style={{ padding: "8px 12px", borderRadius: 6, background: "#4F46E5", color: "white" }}>{guidanceStatus === "loading" ? "Generating..." : "Generate typed guidance"}</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.recoverServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Recover saved session</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId} onClick={() => void transcriptionWorkflow.exportServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Export saved session</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.deleteServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Delete saved session</button>
+      </div>
+      <SavedSessionPicker appearance="dark" sessions={transcriptionWorkflow.savedServerSessions} loading={transcriptionWorkflow.isFindingServerSessions}
+        disabled={transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"}
+        find={transcriptionWorkflow.findServerSessions} recover={transcriptionWorkflow.recoverServerSession} />
+      <p style={{ marginTop: 8, fontSize: 12 }}>Server acknowledgement: {transcriptionWorkflow.serverSaveState}. {transcriptionWorkflow.error || transcriptionWorkflow.feedback}</p>
+      {guidanceError ? <p role="status" style={{ color: "#FBBF24", fontSize: 12 }}>{guidanceError}</p> : null}
+      {launchFlowStep !== "live" && guidanceStatus !== "failed" && guidanceData ? <article style={{ marginTop: 12 }}><h3>{guidanceData.headline || "Completed guidance"}</h3><p>{guidanceData.speakNow || guidanceData.gist}</p><p>{guidanceData.full_answer}</p></article> : null}
+      {transcriptionWorkflow.savedGuidance.length > 0 ? <div style={{ marginTop: 12 }}>
+        <h3>Saved guidance in this session</h3>
+        <p style={{ fontSize: 12 }}>Review each saved question before reusing its answer.</p>
+        {transcriptionWorkflow.savedGuidance.map(item => <article key={item.operationId} style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #49496A" }}>
+          <p style={{ fontWeight: 600 }}>{item.question}</p><p>{item.speakNow}</p>
+          {item.fullAnswer ? <details><summary>Full saved answer</summary><p>{item.fullAnswer}</p></details> : null}
+        </article>)}
+      </div> : null}
+    </section>
+  );
+
   /* ================================================================
      RENDER — IDLE STATE (two mode cards)
      ================================================================ */
   if (launchFlowStep !== "live") {
     return (
       <div>
+        <CaptureDisclosure appearance="dark" />
+        {ownedSessionTools}
         <div style={{
           alignItems: "center",
           color: realtimeStatusColor,
@@ -1434,7 +1415,7 @@ export function ReadyStateLaunchPanel() {
               </svg>
             </div>
             <p style={{ fontSize: 14, fontWeight: 500, color: "#E0E0FF", marginBottom: 4 }}>Share Tab Audio</p>
-            <p style={{ fontSize: 12, color: "#5050A0", lineHeight: 1.5 }}>For Zoom, Teams, and Google Meet calls</p>
+            <p style={{ fontSize: 12, color: "#5050A0", lineHeight: 1.5 }}>Supported shared tabs; enable Share audio</p>
           </button>
         </div>
 
@@ -1443,7 +1424,7 @@ export function ReadyStateLaunchPanel() {
           <button
             type="button"
             onClick={() => void handleStartLiveCopilot()}
-            disabled={launchFlowStep === "requesting"}
+            disabled={launchFlowStep === "requesting" || guidanceStatus === "loading"}
             style={{
               background: "#4F46E5",
               color: "white",
@@ -1475,6 +1456,7 @@ export function ReadyStateLaunchPanel() {
      ================================================================ */
   return (
     <div>
+      {ownedSessionTools}
       {/* Live header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
@@ -1514,6 +1496,14 @@ export function ReadyStateLaunchPanel() {
               : "Local interview persistence active"}
           </div>
         </div>
+        <label style={{ color: "#C8C8E0", fontSize: 12 }}>Input level
+          <meter aria-label="Selected-source audio level" min={0} max={1} value={transcriptionWorkflow.audioLevel} style={{ display: "block", width: 100 }} />
+        </label>
+        <button type="button" disabled={!transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "connecting" || transcriptionWorkflow.status === "stopping"}
+          onClick={() => { if (transcriptionWorkflow.isPaused) transcriptionWorkflow.resumeCapture(); else { cancelActiveGuidanceRequest(); transcriptionWorkflow.pauseCapture(); } }}
+          style={{ background: "#34344F", color: "white", border: "1px solid #636386", borderRadius: 8, padding: "6px 12px" }}>
+          {transcriptionWorkflow.isPaused ? "Resume" : "Pause"}
+        </button>
         <button
           type="button"
           onClick={() => void handleEndSession()}

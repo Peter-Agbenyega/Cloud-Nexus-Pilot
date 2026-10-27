@@ -40,7 +40,7 @@ function normalizeSession(raw: unknown): SavedSession {
   const payload = raw as { session?: Record<string, unknown>; events?: Array<Record<string, unknown>>; guidance?: unknown[]; hasMore?: boolean; nextCursor?: number };
   const row = payload.session ?? raw as Record<string, unknown>;
   return { sessionId: String(row.id), status: String(row.status), createdAt: Date.parse(String(row.created_at)),
-    hasMore: (payload.events ?? []).length >= 1000, nextCursor: Number(payload.events?.at(-1)?.pilot_sequence ?? 0),
+    hasMore: (payload.events ?? []).length >= 1000 || (payload.guidance ?? []).length >= 500, nextCursor: Number(payload.events?.at(-1)?.pilot_sequence ?? 0),
     events: (payload.events ?? []).map((event) => ({ ...event, sequence: Number(event.pilot_sequence) })), guidance: payload.guidance ?? [] };
 }
 

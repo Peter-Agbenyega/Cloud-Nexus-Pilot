@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { CaptureDisclosure } from "@/components/capture-disclosure";
+import { SavedSessionPicker } from "@/components/saved-session-picker";
 import { useRef } from "react";
 
 import type { LiveTranscriptionSource } from "@/features/transcription/audio-capture";
@@ -12,6 +14,8 @@ const STATUS_LABELS = {
   listening: "Listening",
   "receiving-transcript": "Receiving Transcript",
   "no-speech-yet": "No Speech Yet",
+  paused: "Paused",
+  stopping: "Finishing bounded uploads",
   stopped: "Stopped",
   unsupported: "Unsupported",
   failed: "Failed",
@@ -39,6 +43,17 @@ export function TranscriptionRuntimeSurface({
     isSupported,
     systemAudioSupported,
     isRecording,
+    isPaused,
+    audioLevel,
+    pauseCapture,
+    resumeCapture,
+    transportStatus,
+    serverSessionId,
+    savedGuidance,
+    serverSaveState,
+    recoverServerSession,
+    exportServerSession,
+    deleteServerSession,
     isTranscribing,
     canUseTranscript,
     transcriptSummary,
@@ -83,12 +98,12 @@ export function TranscriptionRuntimeSurface({
             <h2 className="mt-4 text-3xl font-semibold text-slate-950">
               {isWorkspaceVariant
                 ? "Run the same browser-local transcript workflow inside the workspace shell."
-                : "Capture live audio or stage uploads with OpenAI transcription."}
+                : "Capture live audio or upload a completed recording."}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               {isWorkspaceVariant
-                ? "This workspace transcript lane can attach directly to the active browser-local stream. Transcript output comes from OpenAI and remains visible in this local runtime surface."
-                : "This workflow sends captured audio chunks to a secure server route, which calls OpenAI for transcription. No OpenAI secrets are exposed in the browser."}
+                ? "This transcript lane can attach to the selected active audio stream. Capture, transport and transcript progress are separate states."
+                : "Capture is visible and user initiated. Audio is sent through the authenticated server to its configured transcription provider. Capture only content you are authorized to process; Stop releases the source. Provider secrets remain on the server."}
             </p>
             <p className="mt-3 text-sm leading-7 text-slate-500">{persistenceInfo.note}</p>
             {!isWorkspaceVariant ? (
@@ -127,6 +142,8 @@ export function TranscriptionRuntimeSurface({
           </div>
         </div>
 
+        <CaptureDisclosure sharedSession={isWorkspaceVariant} />
+
         {feedback ? (
           <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {feedback}
@@ -145,7 +162,7 @@ export function TranscriptionRuntimeSurface({
               className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"
               value={source}
               onChange={(event) => handleSourceChange(event.target.value as LiveTranscriptionSource)}
-              disabled={isRecording}
+              disabled={isRecording || status === "stopping"}
             >
               <option value="microphone">Microphone</option>
               <option value="system-audio" disabled={!systemAudioSupported}>
@@ -156,8 +173,8 @@ export function TranscriptionRuntimeSurface({
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
             {isSupported
-              ? "MediaRecorder is available. Live capture can stream chunks to OpenAI through the server route."
-              : "This browser does not support MediaRecorder. Upload mode still works for transcript flow validation."}
+              ? "PCM capture is available. Each upload is a complete mono WAV; check the meter before expecting transcript updates."
+              : "Live PCM capture is unavailable. Explicitly upload a completed audio recording or text file instead."}
           </div>
         </div>
 
@@ -167,19 +184,15 @@ export function TranscriptionRuntimeSurface({
               Live Audio Stream
             </p>
             <p className="mt-2 font-semibold text-slate-900">
-              {isRecording ? "Active" : "Not Active"}
+              {isRecording ? (isPaused ? "Acquired, processing paused" : "Capturing") : "Not capturing"}
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Transcription Engine
+              Transport / Processing
             </p>
             <p className="mt-2 font-semibold text-slate-900">
-              {status === "failed"
-                ? "Failed"
-                : status === "idle" || status === "stopped"
-                  ? "Not Active"
-                  : "Active"}
+              {transportStatus}; {isTranscribing ? "request in progress" : "no request in progress"}
             </p>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
@@ -196,10 +209,35 @@ export function TranscriptionRuntimeSurface({
           </div>
         </div>
 
+        <label className="mt-5 block text-sm font-medium text-slate-700">
+          Selected-source input level
+          <meter className="mt-2 block w-full" min={0} max={1} value={audioLevel} aria-label="Selected-source audio level" />
+          <span className="text-xs text-slate-500">{isRecording ? (isPaused ? "Paused; queued audio may still finish." : "A moving level confirms a captured signal, not provider success.") : "No active capture."}</span>
+        </label>
+
         <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
           Persistence mode:{" "}
           <span className="font-semibold text-slate-900">{persistenceInfo.mode}</span>
           <p className="mt-2 leading-7">{persistenceInfo.note}</p>
+        </div>
+
+        <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 text-sm text-slate-700">
+          <p className="font-semibold">Server save: {serverSaveState}</p>
+          <p className="mt-2">Only acknowledged final events are saved on the server. Browser-local history is separate. Live audio is not retained; interrupted audio may be missing.</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button type="button" onClick={() => void recoverServerSession()} disabled={!serverSessionId || isRecording || status === "stopping"} className="rounded-full border px-4 py-2 disabled:opacity-50">Recover saved session</button>
+            <button type="button" onClick={() => void exportServerSession()} disabled={!serverSessionId} className="rounded-full border px-4 py-2 disabled:opacity-50">Export server session</button>
+            <button type="button" onClick={() => void deleteServerSession()} disabled={!serverSessionId || isRecording || status === "stopping"} className="rounded-full border px-4 py-2 disabled:opacity-50">Delete server session</button>
+          </div>
+          <SavedSessionPicker sessions={workflow.savedServerSessions} loading={workflow.isFindingServerSessions}
+            disabled={isRecording || status === "stopping"} find={workflow.findServerSessions} recover={recoverServerSession} />
+          {savedGuidance.length ? <div className="mt-4 space-y-3">
+            <h3 className="font-semibold">Saved guidance for this session</h3>
+            {savedGuidance.map(item => <article key={item.operationId} className="rounded-xl border border-slate-200 p-3">
+              <p className="font-medium">{item.question}</p><p className="mt-2">{item.speakNow}</p>
+              {item.fullAnswer ? <details className="mt-2"><summary>Full saved answer</summary><p className="mt-2 whitespace-pre-wrap">{item.fullAnswer}</p></details> : null}
+            </article>)}
+          </div> : null}
         </div>
 
         {!isWorkspaceVariant && persistenceInfo.mode === "supabase-active" ? (
@@ -227,10 +265,18 @@ export function TranscriptionRuntimeSurface({
           <button
             type="button"
             onClick={() => void startCapture()}
-            disabled={!isSupported || isRecording}
+            disabled={!isSupported || isRecording || status === "stopping"}
             className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             Start Live Capture
+          </button>
+          <button
+            type="button"
+            onClick={isPaused ? resumeCapture : pauseCapture}
+            disabled={!isRecording || status === "connecting" || status === "stopping"}
+            className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 disabled:opacity-60"
+          >
+            {isPaused ? "Resume" : "Pause"}
           </button>
           <button
             type="button"
@@ -245,7 +291,7 @@ export function TranscriptionRuntimeSurface({
             onClick={() => fileInputRef.current?.click()}
             className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
           >
-            Upload File
+            Upload Transcript or PCM WAV
           </button>
           <button
             type="button"
@@ -259,7 +305,7 @@ export function TranscriptionRuntimeSurface({
             ref={fileInputRef}
             type="file"
             className="hidden"
-            accept=".txt,.md,.json,.srt,.vtt,audio/*"
+            accept=".txt,.md,.json,.srt,.vtt,.wav,audio/wav"
             onChange={(event) => void handleFileChange(event)}
           />
         </div>
@@ -310,7 +356,7 @@ export function TranscriptionRuntimeSurface({
                 : isRecording
                   ? "Live audio stream is active."
                   : isTranscribing
-                    ? "OpenAI is processing incoming audio."
+                    ? "The configured provider is processing incoming audio."
                     : status === "failed"
                       ? "Transcription failed to start or continue."
                       : "No active stream or upload yet."}

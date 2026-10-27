@@ -94,7 +94,7 @@ async function streamFinalGuidancePayload(
 
 
 function limitWords(text: string, maxWords: number): string {
-  return text.trim().split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
+  return text.trim().split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ").slice(0, Math.min(maxWords * 32, 6000));
 }
 
 function limitSentences(text: string, maxSentences: number, maxWords: number): string {

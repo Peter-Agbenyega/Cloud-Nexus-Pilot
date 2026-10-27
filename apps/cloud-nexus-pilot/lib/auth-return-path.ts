@@ -1,4 +1,4 @@
-const DEFAULT_RETURN_PATH = "/prompt-library";
+const DEFAULT_RETURN_PATH = "/workspace";
 
 /** Accept only paths that remain on this origin after browser URL normalization. */
 export function resolveSafeReturnPath(rawNext: string | null): string {

@@ -9,7 +9,34 @@ from pathlib import Path
 import re
 import secrets
 import subprocess
-from verify_config import read_values,validate
+from verify_config import read_values
+
+
+def validate_backup_values(values):
+    # Backup must remain available before public admission is configured.
+    if not re.fullmatch(r'[a-zA-Z0-9./:_-]+@sha256:[a-f0-9]{64}',values.get('PILOT_POSTGRES_IMAGE','')):
+        raise ValueError('Immutable PostgreSQL image required')
+    if not re.fullmatch(r'(?:pilot|cnp-pilot)[a-zA-Z0-9_-]*',values.get('PILOT_PG_VOLUME','')):
+        raise ValueError('Dedicated Pilot volume required')
+    if not Path(values.get('PILOT_CONFIG_DIR','')).is_absolute():
+        raise ValueError('Absolute private configuration directory required')
+
+
+def release_source(root, expected=None):
+    if expected is not None and not re.fullmatch('[a-f0-9]{40}',expected):
+        raise ValueError('Full source SHA required')
+    try:
+        result=subprocess.run(['git','rev-parse','HEAD'],cwd=root,text=True,capture_output=True)
+        actual=result.stdout.strip() if result.returncode==0 else None
+    except FileNotFoundError:
+        actual=None
+    if actual and not re.fullmatch('[a-f0-9]{40}',actual):
+        raise ValueError('Invalid checkout source identity')
+    if actual and expected and actual!=expected:
+        raise ValueError('Selected source differs from checkout')
+    if not actual and not expected:
+        raise ValueError('Exported deployment requires independently selected source SHA')
+    return actual or expected,'git-checkout' if actual else 'operator-selected-export'
 
 
 def validate_database(details, values, image_id, networks):
@@ -53,7 +80,10 @@ def main():
     p.add_argument('--recipient',type=Path,required=True)
     p.add_argument('--expected-recipient-sha256',required=True)
     p.add_argument('--output-directory',type=Path,required=True)
-    args=p.parse_args();values=read_values(args.env);validate(values)
+    p.add_argument('--source-sha',help='Independently selected full SHA for a deployment without Git metadata')
+    args=p.parse_args();values=read_values(args.env);validate_backup_values(values)
+    root=Path(__file__).resolve().parents[2]
+    source_sha,source_basis=release_source(root,args.source_sha)
     out=args.output_directory
     if any(item.is_symlink() for item in (out,*out.parents)) or not out.is_absolute() or not out.is_dir() or out.stat().st_mode & 0o077 or out.stat().st_uid != os.getuid():
         raise ValueError('Existing owned private mode0700 backup directory required')
@@ -80,7 +110,7 @@ def main():
     final=out/(name+'.cms')
     # Atomic no-overwrite publication in the same private filesystem.
     os.link(archive,final);archive.unlink();archive=final
-    receipt={'recorded_at':datetime.now(timezone.utc).isoformat(),'source_sha':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'database_container':cid,'database_image_id':details['Image'],'archive':archive.name,'bytes':archive.stat().st_size,'sha256':archive_digest,'recipient_certificate_sha256':digest,'pg_dump_exit':dump_code,'encryption_exit':encryption_code,'consistent_snapshot':True,'restore_verified':False,'includes':'Pilot database, auth records, ownership, durable sessions; signing/config secrets separately escrowed'}
+    receipt={'recorded_at':datetime.now(timezone.utc).isoformat(),'source_sha':source_sha,'source_identity_basis':source_basis,'backup_script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'database_container':cid,'database_image_id':details['Image'],'archive':archive.name,'bytes':archive.stat().st_size,'sha256':archive_digest,'recipient_certificate_sha256':digest,'pg_dump_exit':dump_code,'encryption_exit':encryption_code,'consistent_snapshot':True,'restore_verified':False,'includes':'Pilot database, auth records, ownership, durable sessions; signing/config secrets separately escrowed'}
     with (out/(name+'.receipt.json')).open('x') as f:
         json.dump(receipt,f,indent=2);f.write('\n');f.flush();os.fsync(f.fileno())
     descriptor=os.open(out,os.O_RDONLY)

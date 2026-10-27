@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 OPS=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(OPS))
@@ -33,6 +34,27 @@ class BackupBoundaryTests(unittest.TestCase):
         for key,value in [('Internal',False),('Id','other-network')]:
             d,v,n=self.fixture();n[0][key]=value
             with self.assertRaises(ValueError):backup.validate_database(d,v,'sha256:actual',n)
+
+
+class BackupSourceTests(unittest.TestCase):
+    def test_private_pre_admission_backup_does_not_require_public_routing(self):
+        backup.validate_backup_values({'PILOT_POSTGRES_IMAGE':'pg@sha256:'+'a'*64,'PILOT_PG_VOLUME':'cnp-pilot-staging-pg17','PILOT_CONFIG_DIR':'/private/config'})
+        with self.assertRaises(ValueError):backup.validate_backup_values({'PILOT_POSTGRES_IMAGE':'pg:latest'})
+
+    def test_export_requires_explicit_full_source(self):
+        with patch.object(backup.subprocess,'run',return_value=subprocess.CompletedProcess([],128,'','')):
+            for value in (None,'short','a'*39):
+                with self.assertRaises(ValueError):backup.release_source(Path('/tmp'),value)
+            self.assertEqual(backup.release_source(Path('/tmp'),'a'*40),('a'*40,'operator-selected-export'))
+
+    def test_export_without_git_binary(self):
+        with patch.object(backup.subprocess,'run',side_effect=FileNotFoundError):
+            self.assertEqual(backup.release_source(Path('/tmp'),'a'*40),('a'*40,'operator-selected-export'))
+
+    def test_checkout_disagreement_rejected(self):
+        with patch.object(backup.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'a'*40+'\n','')):
+            with self.assertRaises(ValueError):backup.release_source(Path('/tmp'),'b'*40)
+            self.assertEqual(backup.release_source(Path('/tmp'),'a'*40),('a'*40,'git-checkout'))
 
 
 class BackupEncryptionTests(unittest.TestCase):

@@ -1,0 +1,47 @@
+{
+  "project": {
+    "id": "prj_gv3EGRDtboiptK7DcevvsxvvJnoR",
+    "name": "cloud-nexus-pilot-cloud-nexus-pilot-ebpu",
+    "accountId": "team_MUZZoWAsIqodGK9XbE3LY9dZ",
+    "rootDirectory": "apps/cloud-nexus-pilot",
+    "framework": "nextjs",
+    "nodeVersion": "24.x",
+    "installCommand": null,
+    "buildCommand": null,
+    "repository": {
+      "type": "github",
+      "org": "Peter-Agbenyega",
+      "repo": "Cloud-Nexus-Pilot",
+      "productionBranch": "main"
+    },
+    "production": {
+      "id": "dpl_6egLvHkikpie25Z7Ux1M9NoFAdKW",
+      "url": "cloud-nexus-pilot-cloud-nexus-pilot-ebpu-c80niukn5.vercel.app",
+      "readyState": "READY",
+      "createdAt": 1789352984498,
+      "git_sha": "f6a24716952ffd1b4d92be695adee267a4c3a31e"
+    }
+  },
+  "domains": [
+    {
+      "name": "cloud-nexus-pilot-cloud-nexus-pilot.vercel.app",
+      "verified": true,
+      "redirect": null,
+      "gitBranch": null
+    },
+    {
+      "name": "www.cloudnexuspilot.com",
+      "verified": true,
+      "redirect": null,
+      "gitBranch": null
+    },
+    {
+      "name": "cloudnexuspilot.com",
+      "verified": true,
+      "redirect": null,
+      "gitBranch": null
+    }
+  ],
+  "recorded_at": "2026-10-27T18:17:57.108884+00:00",
+  "method": "CLI explicit exact project/team read-only GETs; connector404 was access-context mismatch, not outage proof"
+}

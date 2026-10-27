@@ -1,0 +1,125 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.34kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#2 DONE 0.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 313B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 959B done
+#4 DONE 0.0s
+
+#5 [builder 1/7] FROM docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#5 resolve docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9 0.0s done
+#5 sha256:6801706d64f22e698baf9e7efd382fb8ea2b159491f379ae571fbe6057790ce8 448B / 448B 0.1s done
+#5 sha256:80c7eb17e88afae2c7051a64cb4f0b234b434d36195aba50b05e7455157ee736 0B / 1.71MB 0.2s
+#5 sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 0B / 49.84MB 0.2s
+#5 sha256:41e886dd412c5cd3726825fbb11adcc20c053addb3d0052230930e699929e1dc 3.31kB / 3.31kB 0.2s done
+#5 sha256:80c7eb17e88afae2c7051a64cb4f0b234b434d36195aba50b05e7455157ee736 1.71MB / 1.71MB 0.3s done
+#5 sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26 1.05MB / 28.25MB 0.3s
+#5 sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26 15.73MB / 28.25MB 0.5s
+#5 sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 5.24MB / 49.84MB 0.6s
+#5 sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26 27.26MB / 28.25MB 0.6s
+#5 sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 33.55MB / 49.84MB 0.9s
+#5 sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26 28.25MB / 28.25MB 0.6s done
+#5 extracting sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26
+#5 sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 48.23MB / 49.84MB 1.1s
+#5 sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 49.84MB / 49.84MB 1.1s done
+#5 extracting sha256:11422d7ca1a44390a32bd8d8d9dc5946b4d053b3bbd9507d682e35584ba84a26 0.5s done
+#5 DONE 1.3s
+
+#5 [builder 1/7] FROM docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#5 extracting sha256:41e886dd412c5cd3726825fbb11adcc20c053addb3d0052230930e699929e1dc done
+#5 extracting sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb
+#5 extracting sha256:576da2a04b86fc2f576457ce37a90d7a40f7445f94b016890d3ecb0f0d3371fb 0.6s done
+#5 DONE 1.9s
+
+#5 [builder 1/7] FROM docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#5 extracting sha256:80c7eb17e88afae2c7051a64cb4f0b234b434d36195aba50b05e7455157ee736 0.0s done
+#5 extracting sha256:6801706d64f22e698baf9e7efd382fb8ea2b159491f379ae571fbe6057790ce8 done
+#5 DONE 1.9s
+
+#6 [builder 2/7] WORKDIR /app
+#6 DONE 0.4s
+
+#7 [builder 3/7] COPY package.json package-lock.json ./
+#7 DONE 0.0s
+
+#8 [builder 4/7] COPY apps/pilot-realtime-api/package.json ./apps/pilot-realtime-api/package.json
+#8 DONE 0.0s
+
+#9 [runtime 5/6] RUN npm install --global npm@10.9.9   && npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api   && npm cache clean --force
+#9 8.022 
+#9 8.022 changed 13 packages in 8s
+#9 8.022 
+#9 8.022 24 packages are looking for funding
+#9 8.022   run `npm fund` for details
+#9 ...
+
+#10 [builder 5/7] RUN npm install --global npm@10.9.9   && npm ci --workspace=@cloudnexus/pilot-realtime-api
+#10 8.132 
+#10 8.132 changed 13 packages in 8s
+#10 8.132 
+#10 8.132 24 packages are looking for funding
+#10 8.132   run `npm fund` for details
+#10 ...
+
+#9 [runtime 5/6] RUN npm install --global npm@10.9.9   && npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api   && npm cache clean --force
+#9 11.25 
+#9 11.25 added 77 packages, and audited 79 packages in 3s
+#9 11.25 
+#9 11.25 26 packages are looking for funding
+#9 11.25   run `npm fund` for details
+#9 11.25 
+#9 11.25 found 0 vulnerabilities
+#9 11.25 npm notice
+#9 11.25 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#9 11.25 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#9 11.25 npm notice To update run: npm install -g npm@12.2.1
+#9 11.25 npm notice
+#9 11.63 npm warn using --force Recommended protections disabled.
+#9 DONE 12.1s
+
+#10 [builder 5/7] RUN npm install --global npm@10.9.9   && npm ci --workspace=@cloudnexus/pilot-realtime-api
+#10 12.83 
+#10 12.83 added 220 packages, and audited 222 packages in 4s
+#10 12.83 
+#10 12.83 55 packages are looking for funding
+#10 12.83   run `npm fund` for details
+#10 12.83 
+#10 12.83 found 0 vulnerabilities
+#10 12.84 npm notice
+#10 12.84 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#10 12.84 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#10 12.84 npm notice To update run: npm install -g npm@12.2.1
+#10 12.84 npm notice
+#10 DONE 12.9s
+
+#11 [builder 6/7] COPY apps/pilot-realtime-api ./apps/pilot-realtime-api
+#11 DONE 0.1s
+
+#12 [builder 7/7] RUN npm run build --workspace=@cloudnexus/pilot-realtime-api
+#12 0.495 
+#12 0.495 > @cloudnexus/pilot-realtime-api@0.1.0 build
+#12 0.495 > tsc -p tsconfig.json
+#12 0.495 
+#12 DONE 4.2s
+
+#13 [runtime 6/6] COPY --from=builder   /app/apps/pilot-realtime-api/dist   ./apps/pilot-realtime-api/dist
+#13 DONE 0.1s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 1.7s done
+#14 exporting manifest sha256:95c6e2690ff19040ac4e0740c0e3433e5da404c86ab704527d2bd272886e194a done
+#14 exporting config sha256:cbb2086fe26853d973bfa989f56c4dfd7b0ee64d80c3b916ca0805d6a0135ffc done
+#14 exporting attestation manifest sha256:69a12e39b63be55ac1dd475da7cc108c36d42cd3db2f1478ffbed6a2025e45df done
+#14 exporting manifest list sha256:2a909d8442e9669d45dd6003334d926b1a1648eec07d2c6eeb7b4b1d14d631de done
+#14 naming to docker.io/library/cloud-nexus-pilot-realtime:prep-71a1ed5-amd64 done
+#14 DONE 1.7s

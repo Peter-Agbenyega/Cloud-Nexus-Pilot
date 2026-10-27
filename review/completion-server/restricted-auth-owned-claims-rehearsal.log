@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "image": "supabase/postgres@sha256:be60aee15997daca475b710b734bc6bfe52cd544dcd7e9fd2ff58210b6747d83",
+  "layer": "disposable PostgreSQL bootstrap/migration, not production identity or hosted acceptance",
+  "steps": [
+    "new isolated PostgreSQL17 initialized via proposed production entrypoint; no ports/network",
+    "fresh dedicated pilot database and separated non-superuser auth/REST roles; no public role can login",
+    "real GoTrue schema migration and health200 with restricted auth role, signup disabled, no external network",
+    "full002+003 applied, checksum receipts identical on repeat; ownership RLS enabled; no automatic usage grants",
+    "service-only quota grant, migration ledger privacy, truncate denial and identity function ownership verified",
+    "changed applied checksum is refused before SQL reapplication"
+  ],
+  "files": {
+    "ops/pilot/bootstrap.sql": "0b09ba993c0985beb8284fa40b56c8e2e95a2a365a33296519c26d46f5cf3696",
+    "ops/pilot/migrate.sh": "11da178b43d9ccc84836b899f232f585c6dab5c15c0892483fea370658f425bd",
+    "ops/pilot/start-postgres.sh": "d9998ef95117a618655ac453c0511c9f83099f0e7e3bd38798c90c593a1f012e"
+  }
+}

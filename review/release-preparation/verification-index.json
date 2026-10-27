@@ -1,0 +1,208 @@
+{
+  "source_sha": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "recorded_at": "2026-10-27T18:47:38.723445+00:00",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "ops/pilot/tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:26:08.894333+00:00",
+      "finished_at": "2026-10-27T18:26:09.425622+00:00",
+      "exit_code": 0,
+      "log": "release-prep-committed-tests.log",
+      "sha256": "c5e6ed873db0ffc5d1d134ec89814b23e7d284810c8e5bf9881339ee1c97f48d"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:26:09.461368+00:00",
+      "finished_at": "2026-10-27T18:26:09.653673+00:00",
+      "exit_code": 0,
+      "log": "release-checker-committed-tests.log",
+      "sha256": "3c3d7e0ad1d705606453b192379679d16499248e62761297e4f35b14ac83582b"
+    },
+    {
+      "command": [
+        "python3",
+        "ops/pilot/tests/rehearse_postgres.py"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:32:54.200434+00:00",
+      "finished_at": "2026-10-27T18:32:58.400870+00:00",
+      "exit_code": 0,
+      "log": "release-prep-committed-postgres.log",
+      "sha256": "c7ae20e7fcd7514c5420ed50ce2e99024f54d623e72c3fb1fd728f407a023af0"
+    },
+    {
+      "command": [
+        "python3",
+        "ops/pilot/tests/rehearse_caddy.py"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:32:55.363473+00:00",
+      "finished_at": "2026-10-27T18:32:56.672505+00:00",
+      "exit_code": 0,
+      "log": "release-prep-committed-caddy.log",
+      "sha256": "38608bfd65dc3bd36279f74f3db70cf66506888425182ef48b8ced930b069b5f"
+    },
+    {
+      "command": [
+        "docker",
+        "build",
+        "--label",
+        "org.opencontainers.image.revision=71a1ed5",
+        "-f",
+        "apps/pilot-realtime-api/Dockerfile",
+        "-t",
+        "cloud-nexus-pilot-realtime:prep-71a1ed5",
+        "."
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:32:35.208920+00:00",
+      "finished_at": "2026-10-27T18:32:56.990416+00:00",
+      "exit_code": 0,
+      "log": "release-prep-realtime-image.log",
+      "sha256": "ee432b500e141868bc5e90d6de39e7072a9707eda87190abec95f5ab5066adae"
+    },
+    {
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "none",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges",
+        "--tmpfs",
+        "/tmp:mode=1777,size=67108864",
+        "--entrypoint",
+        "node",
+        "cloud-nexus-pilot-realtime:prep-71a1ed5",
+        "--test",
+        "apps/pilot-realtime-api/dist/server.test.js"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:34:52.924612+00:00",
+      "finished_at": "2026-10-27T18:34:56.414171+00:00",
+      "exit_code": 0,
+      "log": "release-prep-container-unit-tests.log",
+      "sha256": "37f313521b35bf39df001fd07dd32bdaad4fbcd25fe72172fd3127231d7db528"
+    },
+    {
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--label",
+        "org.opencontainers.image.revision=71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+        "-f",
+        "apps/pilot-realtime-api/Dockerfile",
+        "-t",
+        "cloud-nexus-pilot-realtime:prep-71a1ed5-amd64",
+        "."
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:39:09.486731+00:00",
+      "finished_at": "2026-10-27T18:39:32.311917+00:00",
+      "exit_code": 0,
+      "log": "release-prep-amd64-image.log",
+      "sha256": "4faaf6caf588cc4e52744e7a0a9a48573e5ff26675b3d3e3f204a814f096c499"
+    },
+    {
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--platform",
+        "linux/amd64",
+        "--network",
+        "none",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges",
+        "--tmpfs",
+        "/tmp:mode=1777,size=67108864",
+        "--entrypoint",
+        "node",
+        "cloud-nexus-pilot-realtime:prep-71a1ed5-amd64",
+        "--test",
+        "apps/pilot-realtime-api/dist/server.test.js"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:40:12.615864+00:00",
+      "finished_at": "2026-10-27T18:40:17.480179+00:00",
+      "exit_code": 0,
+      "log": "release-prep-amd64-container-tests.log",
+      "sha256": "f79432079639abd6565c97ff29926eb8d5959effbcda2a58da15023a64d59e83"
+    },
+    {
+      "command": [
+        "python3",
+        "review/release-preparation/executed-encrypted-restore.py"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:44:37.993357+00:00",
+      "finished_at": "2026-10-27T18:44:42.453307+00:00",
+      "exit_code": 0,
+      "log": "release-prep-encrypted-restore.log",
+      "sha256": "375fda2bec3f63444c618346be05a76f7e7d68026d134493cc7ab05bbecd66a7"
+    },
+    {
+      "command": [
+        "python3",
+        "tools/check_release_evidence.py",
+        "validation/pilot_release_manifest.current.pending.json",
+        "--evidence-root",
+        ".",
+        "--product",
+        "pilot",
+        "--expected-sha",
+        "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+      "started_at": "2026-10-27T18:39:33.096345+00:00",
+      "finished_at": "2026-10-27T18:39:33.137873+00:00",
+      "exit_code": 1,
+      "log": "current-pilot-release-gates.log",
+      "sha256": "b28d84ab1cf30b1edf55509121446f6f7f60b360a2e1eaf3ef4cbaeaf6046dcd"
+    }
+  ],
+  "counts_note": "14 preparation tests and53 checker tests are separate from predecessor289 product checks;57 realtime tests were additionally exercised in each container architecture. Do not sum repeated tests into a new unique product count.",
+  "release_status": "BLOCKED; no paid provider, physical capture, hosted staging or production acceptance claimed.",
+  "unchanged_frontend_and_lock": true
+}

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "ops/pilot/tests/rehearse_postgres.py"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "started_at": "2026-10-27T18:32:54.200434+00:00",
+  "finished_at": "2026-10-27T18:32:58.400870+00:00",
+  "exit_code": 0,
+  "log": "release-prep-committed-postgres.log",
+  "sha256": "c7ae20e7fcd7514c5420ed50ce2e99024f54d623e72c3fb1fd728f407a023af0"
+}

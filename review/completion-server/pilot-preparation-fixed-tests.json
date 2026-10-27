@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "ops/pilot/tests",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "c1c7e0afdaac021bf92b202de9e0555b685a8682",
+  "started_at": "2026-10-27T18:07:02.095487+00:00",
+  "finished_at": "2026-10-27T18:07:02.477071+00:00",
+  "exit_code": 0,
+  "log": "pilot-preparation-fixed-tests.log",
+  "sha256": "5d7d28d54110f3bdea6ba62e974f5bdb9fd9d7ffd74cf055a2fa64012ef17328"
+}

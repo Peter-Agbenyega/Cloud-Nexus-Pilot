@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "ops/pilot/tests/rehearse_postgres.py"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "c1c7e0afdaac021bf92b202de9e0555b685a8682",
+  "started_at": "2026-10-27T18:11:28.011834+00:00",
+  "finished_at": "2026-10-27T18:11:30.882264+00:00",
+  "exit_code": 0,
+  "log": "restricted-auth-bootstrap-rehearsal.log",
+  "sha256": "f497084b7410951e4aa2646cee9b8f8bcf95bc6547319fed6b589222861c9745"
+}

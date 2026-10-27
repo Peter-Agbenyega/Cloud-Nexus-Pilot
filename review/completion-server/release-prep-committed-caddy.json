@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "ops/pilot/tests/rehearse_caddy.py"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "started_at": "2026-10-27T18:32:55.363473+00:00",
+  "finished_at": "2026-10-27T18:32:56.672505+00:00",
+  "exit_code": 0,
+  "log": "release-prep-committed-caddy.log",
+  "sha256": "38608bfd65dc3bd36279f74f3db70cf66506888425182ef48b8ced930b069b5f"
+}

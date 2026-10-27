@@ -1,0 +1,20 @@
+{
+  "command": [
+    "docker",
+    "build",
+    "--label",
+    "org.opencontainers.image.revision=71a1ed5",
+    "-f",
+    "apps/pilot-realtime-api/Dockerfile",
+    "-t",
+    "cloud-nexus-pilot-realtime:prep-71a1ed5",
+    "."
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "started_at": "2026-10-27T18:32:35.208920+00:00",
+  "finished_at": "2026-10-27T18:32:56.990416+00:00",
+  "exit_code": 0,
+  "log": "release-prep-realtime-image.log",
+  "sha256": "ee432b500e141868bc5e90d6de39e7072a9707eda87190abec95f5ab5066adae"
+}

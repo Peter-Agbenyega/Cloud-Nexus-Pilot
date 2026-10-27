@@ -1,0 +1,118 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.34kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#2 DONE 1.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 313B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 936.44kB 0.0s done
+#4 DONE 0.0s
+
+#5 [builder 1/7] FROM docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#5 resolve docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9 0.0s done
+#5 sha256:7cb1530aad98c6f0dd92f29af2cc7173264c0490deace7c5c2dacbde10222999 0B / 1.71MB 0.2s
+#5 sha256:7cb1530aad98c6f0dd92f29af2cc7173264c0490deace7c5c2dacbde10222999 1.71MB / 1.71MB 0.3s done
+#5 sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 0B / 49.96MB 0.2s
+#5 sha256:b2dc140fdd5bc5284440629bd78af778a4b4f003121c74b6838c6d3cec28d574 448B / 448B 0.2s done
+#5 sha256:f7b93b10669b493db3269218aaf971765212445706ce6dac78cd5cef9faab23e 3.31kB / 3.31kB 0.2s done
+#5 extracting sha256:f7b93b10669b493db3269218aaf971765212445706ce6dac78cd5cef9faab23e 0.0s done
+#5 sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 8.39MB / 49.96MB 0.5s
+#5 sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 27.26MB / 49.96MB 0.6s
+#5 sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 46.14MB / 49.96MB 0.8s
+#5 sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 49.96MB / 49.96MB 0.8s done
+#5 extracting sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b
+#5 extracting sha256:b3e1fd6eeafb50c606425515bcb4fac683f2d4ebb56a23092c08314d6121b48b 0.9s done
+#5 DONE 1.8s
+
+#5 [builder 1/7] FROM docker.io/library/node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9
+#5 extracting sha256:7cb1530aad98c6f0dd92f29af2cc7173264c0490deace7c5c2dacbde10222999 0.0s done
+#5 extracting sha256:b2dc140fdd5bc5284440629bd78af778a4b4f003121c74b6838c6d3cec28d574 done
+#5 DONE 1.8s
+
+#6 [builder 2/7] WORKDIR /app
+#6 DONE 0.2s
+
+#7 [builder 3/7] COPY package.json package-lock.json ./
+#7 DONE 0.0s
+
+#8 [builder 4/7] COPY apps/pilot-realtime-api/package.json ./apps/pilot-realtime-api/package.json
+#8 DONE 0.0s
+
+#9 [runtime 5/6] RUN npm install --global npm@10.9.9   && npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api   && npm cache clean --force
+#9 ...
+
+#10 [builder 5/7] RUN npm install --global npm@10.9.9   && npm ci --workspace=@cloudnexus/pilot-realtime-api
+#10 10.85 
+#10 10.85 changed 13 packages in 10s
+#10 10.85 
+#10 10.85 24 packages are looking for funding
+#10 10.85   run `npm fund` for details
+#10 ...
+
+#9 [runtime 5/6] RUN npm install --global npm@10.9.9   && npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api   && npm cache clean --force
+#9 10.92 
+#9 10.92 changed 13 packages in 10s
+#9 10.92 
+#9 10.92 24 packages are looking for funding
+#9 10.92   run `npm fund` for details
+#9 13.00 
+#9 13.00 added 77 packages, and audited 79 packages in 2s
+#9 13.00 
+#9 13.00 26 packages are looking for funding
+#9 13.00   run `npm fund` for details
+#9 13.00 
+#9 13.00 found 0 vulnerabilities
+#9 13.00 npm notice
+#9 13.00 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#9 13.00 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#9 13.00 npm notice To update run: npm install -g npm@12.2.1
+#9 13.00 npm notice
+#9 13.06 npm warn using --force Recommended protections disabled.
+#9 DONE 13.5s
+
+#10 [builder 5/7] RUN npm install --global npm@10.9.9   && npm ci --workspace=@cloudnexus/pilot-realtime-api
+#10 13.80 
+#10 13.80 added 220 packages, and audited 222 packages in 3s
+#10 13.80 
+#10 13.80 55 packages are looking for funding
+#10 13.80   run `npm fund` for details
+#10 13.80 
+#10 13.80 found 0 vulnerabilities
+#10 13.80 npm notice
+#10 13.80 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#10 13.80 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#10 13.80 npm notice To update run: npm install -g npm@12.2.1
+#10 13.80 npm notice
+#10 DONE 13.9s
+
+#11 [builder 6/7] COPY apps/pilot-realtime-api ./apps/pilot-realtime-api
+#11 DONE 0.1s
+
+#12 [builder 7/7] RUN npm run build --workspace=@cloudnexus/pilot-realtime-api
+#12 0.230 
+#12 0.230 > @cloudnexus/pilot-realtime-api@0.1.0 build
+#12 0.230 > tsc -p tsconfig.json
+#12 0.230 
+#12 DONE 1.7s
+
+#13 [runtime 6/6] COPY --from=builder   /app/apps/pilot-realtime-api/dist   ./apps/pilot-realtime-api/dist
+#13 DONE 0.1s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 1.2s done
+#14 exporting manifest sha256:5a67e63c7e9992c39db4e97ff764f84891ab593113af35b58f4600307e7eea38 done
+#14 exporting config sha256:58b69a2303077009cfadd0bcc3fd64fb6cd7825eebce3b75e0d62369e666b8c1 0.0s done
+#14 exporting attestation manifest sha256:b2b8c33ba3de601484e937daed02ae737067bbbc65ed52cb505be8e14590ccc4 0.0s done
+#14 exporting manifest list sha256:5f1a9e39b13633cf3e62804df4e4f708970e3bde1f70ea6386b0f847c40260e5 done
+#14 naming to docker.io/library/cloud-nexus-pilot-realtime:prep-71a1ed5 done
+#14 unpacking to docker.io/library/cloud-nexus-pilot-realtime:prep-71a1ed5
+#14 unpacking to docker.io/library/cloud-nexus-pilot-realtime:prep-71a1ed5 0.7s done
+#14 DONE 2.0s

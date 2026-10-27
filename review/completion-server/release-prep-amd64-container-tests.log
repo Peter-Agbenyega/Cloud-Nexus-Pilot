@@ -1,0 +1,539 @@
+TAP version 13
+# {"level":30,"time":1793126414178,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:33623"}
+# {"level":30,"time":1793126414243,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f792d40a-3de7-4f3c-a563-2577913726bf","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414250,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f792d40a-3de7-4f3c-a563-2577913726bf","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: allows a configured production Origin
+ok 1 - allows a configured production Origin
+  ---
+  duration_ms: 163.434
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414259,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:35701"}
+# {"level":30,"time":1793126414261,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"152acbe4-bb52-4c15-a461-a9542c63249f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":50,"time":1793126414264,"pid":12,"hostname":"7149a867fe5b","err":{"type":"RangeError","message":"Max payload size exceeded","stack":"RangeError: Max payload size exceeded\\n    at Receiver.haveLength (/app/node_modules/ws/lib/receiver.js:442:28)\\n    at Receiver.getInfo (/app/node_modules/ws/lib/receiver.js:377:15)\\n    at Receiver.startLoop (/app/node_modules/ws/lib/receiver.js:178:16)\\n    at Receiver._write (/app/node_modules/ws/lib/receiver.js:117:10)\\n    at writeOrBuffer (node:internal/streams/writable:572:12)\\n    at _write (node:internal/streams/writable:501:10)\\n    at Writable.write (node:internal/streams/writable:510:10)\\n    at Socket.socketOnData (/app/node_modules/ws/lib/websocket.js:1374:35)\\n    at Socket.emit (node:events:519:28)\\n    at addChunk (node:internal/streams/readable:561:12)","code":"WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"},"msg":"Max payload size exceeded"}
+# {"level":50,"time":1793126414265,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"152acbe4-bb52-4c15-a461-a9542c63249f","clientIp":"127.0.0.1","err":{"type":"RangeError","message":"Max payload size exceeded","stack":"RangeError: Max payload size exceeded\\n    at Receiver.haveLength (/app/node_modules/ws/lib/receiver.js:442:28)\\n    at Receiver.getInfo (/app/node_modules/ws/lib/receiver.js:377:15)\\n    at Receiver.startLoop (/app/node_modules/ws/lib/receiver.js:178:16)\\n    at Receiver._write (/app/node_modules/ws/lib/receiver.js:117:10)\\n    at writeOrBuffer (node:internal/streams/writable:572:12)\\n    at _write (node:internal/streams/writable:501:10)\\n    at Writable.write (node:internal/streams/writable:510:10)\\n    at Socket.socketOnData (/app/node_modules/ws/lib/websocket.js:1374:35)\\n    at Socket.emit (node:events:519:28)\\n    at addChunk (node:internal/streams/readable:561:12)","code":"WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"},"msg":"Realtime WebSocket session error"}
+# {"level":30,"time":1793126414266,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"152acbe4-bb52-4c15-a461-a9542c63249f","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: rejects oversized WebSocket messages without crashing
+ok 2 - rejects oversized WebSocket messages without crashing
+  ---
+  duration_ms: 14.887333
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414272,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:35129"}
+# {"level":30,"time":1793126414274,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"8826e73b-36b6-4ade-9466-5c04209030eb","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414276,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","sessionId":"1d2b9a97-87a0-4461-ad2a-3cdc8c62ee79","clientIp":"127.0.0.1","activeSessions":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because global connection limit was reached"}
+# {"level":30,"time":1793126414280,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"8826e73b-36b6-4ade-9466-5c04209030eb","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414281,"pid":12,"hostname":"7149a867fe5b","reqId":"req-3","sessionId":"95f1899b-9424-4d8d-8c46-c734a70ae6d2","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414284,"pid":12,"hostname":"7149a867fe5b","reqId":"req-3","sessionId":"95f1899b-9424-4d8d-8c46-c734a70ae6d2","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: enforces the global active-session limit and decrements after close
+ok 3 - enforces the global active-session limit and decrements after close
+  ---
+  duration_ms: 17.896417
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414288,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:34179"}
+# {"level":30,"time":1793126414290,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad40176e-5575-475b-998b-e14193bdcdad","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414291,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","sessionId":"6061b076-c841-498e-87ec-44c1ebd5e1cc","clientIp":"127.0.0.1","activeSessionsForIp":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because per-IP connection limit was reached"}
+# {"level":30,"time":1793126414293,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad40176e-5575-475b-998b-e14193bdcdad","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: enforces per-IP active-session limits without trusting forwarded headers
+ok 4 - enforces per-IP active-session limits without trusting forwarded headers
+  ---
+  duration_ms: 8.35
+  type: 'test'
+  ...
+# Subtest: ignores forwarded client IP headers when trusted proxy is disabled
+ok 5 - ignores forwarded client IP headers when trusted proxy is disabled
+  ---
+  duration_ms: 8.663833
+  type: 'test'
+  ...
+# Subtest: uses forwarded client IP only from configured trusted proxy addresses
+ok 6 - uses forwarded client IP only from configured trusted proxy addresses
+  ---
+  duration_ms: 5.417834
+  type: 'test'
+  ...
+# Invalid environment configuration: {
+#   SUPABASE_URL: [
+#     'Production SUPABASE_URL is required for WebSocket authentication.'
+#   ],
+#   SUPABASE_PUBLISHABLE_KEY: [
+#     'Production SUPABASE_PUBLISHABLE_KEY is required for WebSocket authentication.'
+#   ]
+# }
+# Invalid environment configuration: { SUPABASE_URL: [ 'SUPABASE_URL must use HTTPS outside test mode.' ] }
+# Invalid environment configuration: {
+#   SUPABASE_PUBLISHABLE_KEY: [ 'SUPABASE_PUBLISHABLE_KEY must not be a service-role secret.' ]
+# }
+# Subtest: does not accept a spoofed forwarded client IP from an untrusted peer
+ok 7 - does not accept a spoofed forwarded client IP from an untrusted peer
+  ---
+  duration_ms: 3.783
+  type: 'test'
+  ...
+# Subtest: production Supabase auth configuration fails closed when invalid
+ok 8 - production Supabase auth configuration fails closed when invalid
+  ---
+  duration_ms: 4.444834
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims require authenticated non-anonymous users from the expected issuer
+ok 9 - verified Supabase claims require authenticated non-anonymous users from the expected issuer
+  ---
+  duration_ms: 1.809
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims reject expiration boundaries fail-closed
+ok 10 - verified Supabase claims reject expiration boundaries fail-closed
+  ---
+  duration_ms: 0.825583
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414352,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:46079"}
+# Subtest: signal-aware fetch passes already-aborted attempt signals to base fetch
+ok 11 - signal-aware fetch passes already-aborted attempt signals to base fetch
+  ---
+  duration_ms: 22.51925
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch combines attempt, Request, and RequestInit signals
+ok 12 - signal-aware fetch combines attempt, Request, and RequestInit signals
+  ---
+  duration_ms: 2.23575
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch preserves init values and handles duplicate signals
+ok 13 - signal-aware fetch preserves init values and handles duplicate signals
+  ---
+  duration_ms: 0.308625
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch returns a generic synthetic response after aborted base fetch
+ok 14 - signal-aware fetch returns a generic synthetic response after aborted base fetch
+  ---
+  duration_ms: 2.010375
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414365,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"bf6ef2cf-818c-417b-8542-f8a3b35d6503","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414367,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","sessionId":"88094e48-85b4-486d-b70d-6ce5bb570bdd","clientIp":"127.0.0.1","activeSessionsForIp":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because per-IP connection limit was reached"}
+# {"level":30,"time":1793126414368,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"bf6ef2cf-818c-417b-8542-f8a3b35d6503","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414371,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:45535"}
+# {"level":30,"time":1793126414375,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e777bb52-5bf9-403d-b9cb-d37fff3b417b","clientIp":"203.0.113.10","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414378,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","sessionId":"b6707860-f721-4f40-bd77-4b05ee3aa30f","clientIp":"203.0.113.11","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414383,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","sessionId":"b6707860-f721-4f40-bd77-4b05ee3aa30f","clientIp":"203.0.113.11","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414383,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e777bb52-5bf9-403d-b9cb-d37fff3b417b","clientIp":"203.0.113.10","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+ok 15 - per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+  ---
+  duration_ms: 38.182666
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414399,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:46743"}
+# {"level":30,"time":1793126414401,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f3b4596b-7f0f-4bd9-8878-05d447db9c9e","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414447,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f3b4596b-7f0f-4bd9-8878-05d447db9c9e","clientIp":"127.0.0.1","closeCode":1006,"msg":"Terminating stale WebSocket session after missed heartbeat"}
+# Subtest: terminates WebSocket sessions that miss native heartbeat pongs
+ok 16 - terminates WebSocket sessions that miss native heartbeat pongs
+  ---
+  duration_ms: 64.163041
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414452,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39793"}
+# {"level":30,"time":1793126414453,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f3b4596b-7f0f-4bd9-8878-05d447db9c9e","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414454,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad4ae65f-d8df-46ff-8d3b-b5d560abd00f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414457,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad4ae65f-d8df-46ff-8d3b-b5d560abd00f","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126414543,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad4ae65f-d8df-46ff-8d3b-b5d560abd00f","clientIp":"127.0.0.1","closeCode":1001,"msg":"Closing idle WebSocket session"}
+# Subtest: closes idle WebSocket sessions and resets idle timeout on valid client traffic
+ok 17 - closes idle WebSocket sessions and resets idle timeout on valid client traffic
+  ---
+  duration_ms: 96.087167
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414551,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:43147"}
+# {"level":30,"time":1793126414551,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ad4ae65f-d8df-46ff-8d3b-b5d560abd00f","clientIp":"127.0.0.1","closeCode":1001,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414552,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"eed3a844-05bf-47d5-928c-3d6488717ece","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414553,"pid":12,"hostname":"7149a867fe5b","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793126414554,"pid":12,"hostname":"7149a867fe5b","sessionId":"eed3a844-05bf-47d5-928c-3d6488717ece","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793126414556,"pid":12,"hostname":"7149a867fe5b","reqId":"req-2","msg":"Rejected WebSocket session while server is shutting down"}
+# {"level":30,"time":1793126414558,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"eed3a844-05bf-47d5-928c-3d6488717ece","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: graceful shutdown rejects new sessions and closes active sessions with 1012
+ok 18 - graceful shutdown rejects new sessions and closes active sessions with 1012
+  ---
+  duration_ms: 13.673917
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414566,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:46571"}
+# {"level":30,"time":1793126414558,"pid":12,"hostname":"7149a867fe5b","msg":"Realtime API graceful shutdown completed"}
+# {"level":30,"time":1793126414572,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d4eec98f-a258-44ad-ad03-1fcbf5cb3db5","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414573,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d4eec98f-a258-44ad-ad03-1fcbf5cb3db5","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126414573,"pid":12,"hostname":"7149a867fe5b","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793126414573,"pid":12,"hostname":"7149a867fe5b","sessionId":"d4eec98f-a258-44ad-ad03-1fcbf5cb3db5","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793126414574,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d4eec98f-a258-44ad-ad03-1fcbf5cb3db5","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: graceful shutdown closes authenticated sessions with 1012
+ok 19 - graceful shutdown closes authenticated sessions with 1012
+  ---
+  duration_ms: 15.855875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414574,"pid":12,"hostname":"7149a867fe5b","msg":"Realtime API graceful shutdown completed"}
+# Subtest: graceful shutdown completes as soon as active sessions drain
+ok 20 - graceful shutdown completes as soon as active sessions drain
+  ---
+  duration_ms: 1.032167
+  type: 'test'
+  ...
+# Subtest: graceful shutdown isolates throwing shutdown callbacks
+ok 21 - graceful shutdown isolates throwing shutdown callbacks
+  ---
+  duration_ms: 1.653125
+  type: 'test'
+  ...
+# Subtest: graceful shutdown terminates sockets that remain after the grace period
+ok 22 - graceful shutdown terminates sockets that remain after the grace period
+  ---
+  duration_ms: 6.6695
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414587,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:42415"}
+# {"level":30,"time":1793126414588,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"06df55c3-a537-463b-b2b7-a847c4440f20","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414589,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"06df55c3-a537-463b-b2b7-a847c4440f20","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: allows a second configured Origin
+ok 23 - allows a second configured Origin
+  ---
+  duration_ms: 5.479875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414592,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:42823"}
+# {"level":40,"time":1793126414593,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","msg":"Rejected WebSocket session from unauthorized origin"}
+# Subtest: rejects an unauthorized browser Origin with HTTP 403
+ok 24 - rejects an unauthorized browser Origin with HTTP 403
+  ---
+  duration_ms: 4.516958
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414597,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:43491"}
+# {"level":30,"time":1793126414598,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e23093b9-c6b0-49f7-b772-201ebf61956e","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414598,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e23093b9-c6b0-49f7-b772-201ebf61956e","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: trims whitespace around configured Origins
+ok 25 - trims whitespace around configured Origins
+  ---
+  duration_ms: 4.399833
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414601,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:37095"}
+# {"level":30,"time":1793126414601,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"75e7847d-7f86-44c1-8e08-280b60fef6f0","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414602,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"75e7847d-7f86-44c1-8e08-280b60fef6f0","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: allows any Origin when CORS_ORIGIN is wildcard
+ok 26 - allows any Origin when CORS_ORIGIN is wildcard
+  ---
+  duration_ms: 3.78675
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414605,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:40903"}
+# {"level":30,"time":1793126414605,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"050ab785-241c-4915-bce0-b3cafae2a487","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414606,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"050ab785-241c-4915-bce0-b3cafae2a487","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: allows missing Origin for trusted non-browser clients
+ok 27 - allows missing Origin for trusted non-browser clients
+  ---
+  duration_ms: 3.746334
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414608,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:32801"}
+# {"level":30,"time":1793126414609,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"7e5a658c-dae7-430f-9475-9fb46354103c","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414645,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"7e5a658c-dae7-430f-9475-9fb46354103c","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: sends session.auth_required first and does not send session.ready before authentication
+ok 28 - sends session.auth_required first and does not send session.ready before authentication
+  ---
+  duration_ms: 38.821666
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414648,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:45455"}
+# {"level":30,"time":1793126414649,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"60d20e02-b00b-4bd8-b9d5-32df566ab797","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414649,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"60d20e02-b00b-4bd8-b9d5-32df566ab797","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126414651,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"60d20e02-b00b-4bd8-b9d5-32df566ab797","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: valid token authenticates and enables ping/pong
+ok 29 - valid token authenticates and enables ping/pong
+  ---
+  duration_ms: 6.065459
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414654,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39203"}
+# {"level":30,"time":1793126414655,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ef026e1e-b546-4ae4-be4e-d017b4e211ac","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414676,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ef026e1e-b546-4ae4-be4e-d017b4e211ac","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: missing authentication times out and closes with 1008
+ok 30 - missing authentication times out and closes with 1008
+  ---
+  duration_ms: 26.22525
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414680,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:33173"}
+# {"level":30,"time":1793126414681,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ef026e1e-b546-4ae4-be4e-d017b4e211ac","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414681,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f5831dda-e6d6-499a-9f8d-90102b9e8903","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414682,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f5831dda-e6d6-499a-9f8d-90102b9e8903","clientIp":"127.0.0.1","authErrorCategory":"unverifiable","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: invalid token closes with a generic authentication error and 1008
+ok 31 - invalid token closes with a generic authentication error and 1008
+  ---
+  duration_ms: 5.634917
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414687,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f5831dda-e6d6-499a-9f8d-90102b9e8903","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: token is never echoed in responses or logs
+ok 32 - token is never echoed in responses or logs
+  ---
+  duration_ms: 5.670417
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414691,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:38259"}
+# {"level":30,"time":1793126414692,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"eef1f5c6-b3fa-492e-984e-2286d22fef9f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: pre-auth binary input is rejected with a generic authentication failure
+ok 33 - pre-auth binary input is rejected with a generic authentication failure
+  ---
+  duration_ms: 4.770417
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414697,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39795"}
+# {"level":30,"time":1793126414698,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"eef1f5c6-b3fa-492e-984e-2286d22fef9f","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414699,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"8c11b739-9857-4602-8064-f02e087f119c","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414724,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"8c11b739-9857-4602-8064-f02e087f119c","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+ok 34 - malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+  ---
+  duration_ms: 31.108875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414728,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:34737"}
+# {"level":30,"time":1793126414729,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"8c11b739-9857-4602-8064-f02e087f119c","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414730,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"4f8ced47-3801-4a0a-bd7d-9ea987583bb2","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414731,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"4f8ced47-3801-4a0a-bd7d-9ea987583bb2","clientIp":"127.0.0.1","authErrorCategory":"pre_auth_message","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: pre-auth ping is rejected
+ok 35 - pre-auth ping is rejected
+  ---
+  duration_ms: 6.69
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414735,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39303"}
+# {"level":30,"time":1793126414736,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"4f8ced47-3801-4a0a-bd7d-9ea987583bb2","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414740,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"0ffb181b-c1b2-4dac-9e4b-660eb69bd244","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414741,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"0ffb181b-c1b2-4dac-9e4b-660eb69bd244","clientIp":"127.0.0.1","authErrorCategory":"pre_auth_message","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: pre-auth session.end is rejected
+ok 36 - pre-auth session.end is rejected
+  ---
+  duration_ms: 10.161875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414744,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:38363"}
+# {"level":30,"time":1793126414744,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"0ffb181b-c1b2-4dac-9e4b-660eb69bd244","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414745,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"88bfd515-1da9-4281-937a-177b43d0a3d2","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126414746,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"88bfd515-1da9-4281-937a-177b43d0a3d2","clientIp":"127.0.0.1","authErrorCategory":"duplicate_authentication","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: duplicate initial authentication is rejected
+ok 37 - duplicate initial authentication is rejected
+  ---
+  duration_ms: 4.666625
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414749,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:46677"}
+# {"level":30,"time":1793126414750,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"88bfd515-1da9-4281-937a-177b43d0a3d2","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414750,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"326d6610-796b-45d0-8234-3692a73acf03","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414751,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"326d6610-796b-45d0-8234-3692a73acf03","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# Subtest: authenticated session.end still works
+ok 38 - authenticated session.end still works
+  ---
+  duration_ms: 4.865791
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414753,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39737"}
+# {"level":30,"time":1793126414754,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"326d6610-796b-45d0-8234-3692a73acf03","clientIp":"127.0.0.1","closeCode":1000,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126414754,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"c9f7e72d-fc38-4a43-a779-243e545d8526","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414754,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"c9f7e72d-fc38-4a43-a779-243e545d8526","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126414755,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"c9f7e72d-fc38-4a43-a779-243e545d8526","clientIp":"127.0.0.1","userId":"user-123","eventType":"transcript.final","clientEventId":"segment-123","msg":"Realtime WebSocket runtime event accepted"}
+# {"level":30,"time":1793126414756,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"c9f7e72d-fc38-4a43-a779-243e545d8526","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: authenticated runtime events are acknowledged without echoing content
+ok 39 - authenticated runtime events are acknowledged without echoing content
+  ---
+  duration_ms: 4.40175
+  type: 'test'
+  ...
+# {"level":30,"time":1793126414758,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:34407"}
+# {"level":30,"time":1793126414759,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"85cffefb-5a53-4aa6-91df-b103336c3825","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126414760,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"85cffefb-5a53-4aa6-91df-b103336c3825","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126415009,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"85cffefb-5a53-4aa6-91df-b103336c3825","clientIp":"127.0.0.1","userId":"user-123","closeCode":1008,"msg":"Closing WebSocket session because authentication token expired"}
+# Subtest: token expiration closes the socket
+ok 40 - token expiration closes the socket
+  ---
+  duration_ms: 258.813667
+  type: 'test'
+  ...
+# {"level":30,"time":1793126415024,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:34521"}
+# {"level":30,"time":1793126415025,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"85cffefb-5a53-4aa6-91df-b103336c3825","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126415026,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"38e3b5ea-276c-4ab0-9058-cbebaeff6d0b","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126415027,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"38e3b5ea-276c-4ab0-9058-cbebaeff6d0b","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126416230,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"38e3b5ea-276c-4ab0-9058-cbebaeff6d0b","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: successful reauthentication extends the session
+ok 41 - successful reauthentication extends the session
+  ---
+  duration_ms: 1216.712959
+  type: 'test'
+  ...
+# {"level":30,"time":1793126416236,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:42435"}
+# {"level":30,"time":1793126416239,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f40e7fed-97a3-4e82-8b3a-f5dc34bd2d5f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126416240,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f40e7fed-97a3-4e82-8b3a-f5dc34bd2d5f","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126417107,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f40e7fed-97a3-4e82-8b3a-f5dc34bd2d5f","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: replaced expiration timer cannot close a refreshed session at the old expiration
+ok 42 - replaced expiration timer cannot close a refreshed session at the old expiration
+  ---
+  duration_ms: 876.51875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417116,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:45949"}
+# {"level":30,"time":1793126417117,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f4e1b0d0-6709-4caa-bbb6-012a6f0170cb","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417119,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f4e1b0d0-6709-4caa-bbb6-012a6f0170cb","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":40,"time":1793126417119,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f4e1b0d0-6709-4caa-bbb6-012a6f0170cb","clientIp":"127.0.0.1","userId":"user-123","authErrorCategory":"identity_switch","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: reauthentication with a different sub is rejected
+ok 43 - reauthentication with a different sub is rejected
+  ---
+  duration_ms: 12.232
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417125,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39613"}
+# {"level":30,"time":1793126417126,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"f4e1b0d0-6709-4caa-bbb6-012a6f0170cb","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126417127,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"2f955f8c-2e2f-4eab-b538-333c5e555dd6","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126417128,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"2f955f8c-2e2f-4eab-b538-333c5e555dd6","clientIp":"127.0.0.1","authErrorCategory":"verifier_exception","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: verifier exceptions fail closed
+ok 44 - verifier exceptions fail closed
+  ---
+  duration_ms: 8.63125
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417134,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:33843"}
+# {"level":30,"time":1793126417134,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"2f955f8c-2e2f-4eab-b538-333c5e555dd6","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126417135,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"db03f2dd-7fa5-45e1-9e16-e8b18aec8b28","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126417160,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"db03f2dd-7fa5-45e1-9e16-e8b18aec8b28","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# {"level":30,"time":1793126417162,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"db03f2dd-7fa5-45e1-9e16-e8b18aec8b28","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: late verifier completion after auth timeout cannot authenticate the session
+ok 45 - late verifier completion after auth timeout cannot authenticate the session
+  ---
+  duration_ms: 37.940708
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417172,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:45055"}
+# {"level":30,"time":1793126417174,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"413e3777-b533-4c60-8319-6762d8e87ca0","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126417194,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"413e3777-b533-4c60-8319-6762d8e87ca0","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: auth timeout aborts in-flight authentication verification
+ok 46 - auth timeout aborts in-flight authentication verification
+  ---
+  duration_ms: 28.208375
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417200,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:40799"}
+# {"level":30,"time":1793126417201,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"413e3777-b533-4c60-8319-6762d8e87ca0","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126417206,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"abf10356-4cf8-48a5-a5b1-2b9d7da5fa3d","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417214,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"abf10356-4cf8-48a5-a5b1-2b9d7da5fa3d","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: client disconnect aborts in-flight authentication verification
+ok 47 - client disconnect aborts in-flight authentication verification
+  ---
+  duration_ms: 18.233416
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417217,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:37555"}
+# {"level":30,"time":1793126417218,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"4a31e96d-8afd-4baf-b735-8168fdac3d01","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417225,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"4a31e96d-8afd-4baf-b735-8168fdac3d01","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: socket cleanup after terminated client aborts in-flight authentication verification
+ok 48 - socket cleanup after terminated client aborts in-flight authentication verification
+  ---
+  duration_ms: 17.2145
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417235,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:38631"}
+# {"level":30,"time":1793126417236,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"961d7c89-5441-46b4-9f91-019659790278","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417237,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"961d7c89-5441-46b4-9f91-019659790278","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: late verifier completion after client disconnect cannot authenticate the session
+ok 49 - late verifier completion after client disconnect cannot authenticate the session
+  ---
+  duration_ms: 6.204459
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417241,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:41703"}
+# {"level":30,"time":1793126417242,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e6a15100-15f8-480b-ba42-8d2016176030","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417249,"pid":12,"hostname":"7149a867fe5b","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793126417249,"pid":12,"hostname":"7149a867fe5b","sessionId":"e6a15100-15f8-480b-ba42-8d2016176030","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793126417250,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"e6a15100-15f8-480b-ba42-8d2016176030","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: graceful shutdown during in-flight authentication keeps shutdown close code
+ok 50 - graceful shutdown during in-flight authentication keeps shutdown close code
+  ---
+  duration_ms: 12.585125
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417253,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:33631"}
+# {"level":30,"time":1793126417250,"pid":12,"hostname":"7149a867fe5b","msg":"Realtime API graceful shutdown completed"}
+# {"level":30,"time":1793126417254,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"35cb9cee-3293-4715-ab0d-f6ac1d0c855f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126417261,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"35cb9cee-3293-4715-ab0d-f6ac1d0c855f","clientIp":"127.0.0.1","authErrorCategory":"duplicate_authentication","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: superseded initial authentication aborts the active verifier
+ok 51 - superseded initial authentication aborts the active verifier
+  ---
+  duration_ms: 11.814083
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417265,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:46445"}
+# {"level":30,"time":1793126417265,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"35cb9cee-3293-4715-ab0d-f6ac1d0c855f","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793126417266,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"64f5bcd3-1aaa-454b-9ee6-9faf2905b9ac","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417273,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"64f5bcd3-1aaa-454b-9ee6-9faf2905b9ac","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: aborted initial authentication cannot send session.ready
+ok 52 - aborted initial authentication cannot send session.ready
+  ---
+  duration_ms: 11.001666
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417276,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:39011"}
+# {"level":30,"time":1793126417277,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ba0af798-48b3-40a1-b5f8-32837714e303","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417278,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ba0af798-48b3-40a1-b5f8-32837714e303","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126417284,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"ba0af798-48b3-40a1-b5f8-32837714e303","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: aborted reauthentication cannot send session.auth_refreshed
+ok 53 - aborted reauthentication cannot send session.auth_refreshed
+  ---
+  duration_ms: 11.683959
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417288,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:43047"}
+# {"level":30,"time":1793126417289,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"54c73e75-96dc-4927-b589-b8269e502cb7","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793126417312,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"54c73e75-96dc-4927-b589-b8269e502cb7","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# {"level":30,"time":1793126417313,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"54c73e75-96dc-4927-b589-b8269e502cb7","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: abort rejection is handled without an unhandled rejection
+ok 54 - abort rejection is handled without an unhandled rejection
+  ---
+  duration_ms: 29.076875
+  type: 'test'
+  ...
+# Subtest: abort reason and logs do not include the access token
+ok 55 - abort reason and logs do not include the access token
+  ---
+  duration_ms: 26.320833
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417344,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:41495"}
+# {"level":30,"time":1793126417346,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d0043f4e-6938-411a-b510-8089a7804f27","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417347,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d0043f4e-6938-411a-b510-8089a7804f27","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793126417347,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"d0043f4e-6938-411a-b510-8089a7804f27","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: cleanup clears authentication and expiration timers
+ok 56 - cleanup clears authentication and expiration timers
+  ---
+  duration_ms: 7.135875
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417351,"pid":12,"hostname":"7149a867fe5b","msg":"Server listening at http://127.0.0.1:35407"}
+# {"level":30,"time":1793126417352,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"17fcb413-e866-44de-ac66-c20c5f6d3e87","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793126417353,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"17fcb413-e866-44de-ac66-c20c5f6d3e87","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# Subtest: preserves ping/pong and session.end behavior
+ok 57 - preserves ping/pong and session.end behavior
+  ---
+  duration_ms: 6.672334
+  type: 'test'
+  ...
+# {"level":30,"time":1793126417355,"pid":12,"hostname":"7149a867fe5b","reqId":"req-1","sessionId":"17fcb413-e866-44de-ac66-c20c5f6d3e87","clientIp":"127.0.0.1","closeCode":1000,"msg":"Realtime WebSocket session disconnected"}
+1..57
+# tests 57
+# suites 0
+# pass 57
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3811.051459

@@ -1,0 +1,3 @@
+# Focused independent QA
+
+Actual worker `/root/quality_review` reviewed only Pilot preparation/source/evidence and did not mutate services or files. It identified unbounded archive hashing, a compose-service/CID race and incomplete backup image/volume/network binding. All three were repaired and independently re-reviewed. Streaming hashing, exact-CID execution and immutable image/dedicated-volume/private-network checks confirmed. New CMS round-trip/failure/identity tests pass. No remaining blocking defect found in those fixes. Guest backup/restore, disk exhaustion and timeout acceptance remain unexecuted limitations. This is source QA, not release approval.

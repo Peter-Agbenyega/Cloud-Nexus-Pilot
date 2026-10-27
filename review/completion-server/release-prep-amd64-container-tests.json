@@ -1,0 +1,30 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--platform",
+    "linux/amd64",
+    "--network",
+    "none",
+    "--read-only",
+    "--cap-drop",
+    "ALL",
+    "--security-opt",
+    "no-new-privileges",
+    "--tmpfs",
+    "/tmp:mode=1777,size=67108864",
+    "--entrypoint",
+    "node",
+    "cloud-nexus-pilot-realtime:prep-71a1ed5-amd64",
+    "--test",
+    "apps/pilot-realtime-api/dist/server.test.js"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "started_at": "2026-10-27T18:40:12.615864+00:00",
+  "finished_at": "2026-10-27T18:40:17.480179+00:00",
+  "exit_code": 0,
+  "log": "release-prep-amd64-container-tests.log",
+  "sha256": "f79432079639abd6565c97ff29926eb8d5959effbcda2a58da15023a64d59e83"
+}

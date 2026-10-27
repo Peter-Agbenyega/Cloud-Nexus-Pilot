@@ -1,0 +1,23 @@
+test_duplicate_and_shell_templates_rejected (test_preparation.PreparationTests.test_duplicate_and_shell_templates_rejected) ... ok
+test_mutable_image_rejected (test_preparation.PreparationTests.test_mutable_image_rejected) ... ok
+test_private_config_must_not_be_world_readable_or_symlinked (test_preparation.PreparationTests.test_private_config_must_not_be_world_readable_or_symlinked) ... ok
+test_public_origins_must_be_exact_https (test_preparation.PreparationTests.test_public_origins_must_be_exact_https) ... 
+  test_public_origins_must_be_exact_https (test_preparation.PreparationTests.test_public_origins_must_be_exact_https) (origin='https://*.pilot.test') ... FAIL
+test_rendered_compose_is_pilot_only_and_private (test_preparation.PreparationTests.test_rendered_compose_is_pilot_only_and_private) ... ok
+test_shared_volume_and_relative_configuration_rejected (test_preparation.PreparationTests.test_shared_volume_and_relative_configuration_rejected) ... ok
+test_templates_cannot_pass_preflight (test_preparation.PreparationTests.test_templates_cannot_pass_preflight) ... ok
+test_valid_shape_does_not_claim_destination (test_preparation.PreparationTests.test_valid_shape_does_not_claim_destination) ... ok
+
+======================================================================
+FAIL: test_public_origins_must_be_exact_https (test_preparation.PreparationTests.test_public_origins_must_be_exact_https) (origin='https://*.pilot.test')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/ops/pilot/tests/test_preparation.py", line 34, in test_public_origins_must_be_exact_https
+    with self.subTest(origin=origin),self.assertRaises(ValueError):verify.validate(v)
+                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.318s
+
+FAILED (failures=1)

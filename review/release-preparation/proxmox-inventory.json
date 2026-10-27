@@ -1,0 +1,25 @@
+{
+  "recorded_at": "2026-10-27T18:20:31.042477+00:00",
+  "method": "Read-only SSH qm list using existing known host key and existing lab identity. Tool transcript is original command record. No host mutation.",
+  "host": "192.168.68.50",
+  "exit_code": 0,
+  "observed_guests": [
+    {
+      "id": 101,
+      "name": "cnx-admin-01",
+      "state": "running"
+    },
+    {
+      "id": 107,
+      "name": "cnx-automation-01",
+      "state": "running"
+    },
+    {
+      "id": 201,
+      "name": "cnx-datahub-01",
+      "state": "stopped"
+    }
+  ],
+  "pilot_destination_established": false,
+  "not_inferred": "No allocation or permission to reuse shared guests/storage is inferred."
+}

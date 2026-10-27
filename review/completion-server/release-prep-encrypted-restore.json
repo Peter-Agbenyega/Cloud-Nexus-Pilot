@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "review/release-preparation/executed-encrypted-restore.py"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "started_at": "2026-10-27T18:44:37.993357+00:00",
+  "finished_at": "2026-10-27T18:44:42.453307+00:00",
+  "exit_code": 0,
+  "log": "release-prep-encrypted-restore.log",
+  "sha256": "375fda2bec3f63444c618346be05a76f7e7d68026d134493cc7ab05bbecd66a7"
+}

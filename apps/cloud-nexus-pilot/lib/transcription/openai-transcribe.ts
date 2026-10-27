@@ -1,8 +1,9 @@
+import { readBoundedBytes } from "../server/request-boundary";
+import { openAiEndpoint } from "../server/provider-endpoint";
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
 import { toPublicTranscriptionError } from "./public-error";
 
-const OPENAI_TRANSCRIPTION_URL = "https://api.openai.com/v1/audio/transcriptions";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
 const TRANSCRIPTION_CONTEXT_PROMPT =
   "Cloud Nexus Pilot is an AI interview copilot. Common phrases include Cloud Nexus Pilot, interview copilot, microphone transcription, tab audio, share tab audio, longer audio chunks, recruiter screen, mock interview, resume studio, culture scanner, AI-powered answer guidance.";
@@ -65,6 +66,7 @@ export async function transcribeWithOpenAi(params: {
   requestContentType: string;
   chunkIndexHeader: string | null;
   sourceHeader: string | null;
+  signal?: AbortSignal;
 }): Promise<TranscriptionResponse> {
   const openAiApiKey = getOpenAiApiKey();
   if (!openAiApiKey) {
@@ -106,13 +108,15 @@ export async function transcribeWithOpenAi(params: {
     });
   }
 
-  const openAiResponse = await fetch(OPENAI_TRANSCRIPTION_URL, {
+  const openAiResponse = await fetch(openAiEndpoint("audio/transcriptions"), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${openAiApiKey}`,
     },
     body: formData,
     cache: "no-store",
+    redirect: "error",
+    signal: params.signal,
   });
 
   if (!openAiResponse.ok) {
@@ -123,7 +127,8 @@ export async function transcribeWithOpenAi(params: {
     });
   }
 
-  const payload = (await openAiResponse.json()) as OpenAiTranscriptionResponse;
+  const reply = await readBoundedBytes(new Request("http://localhost/provider-result", { method: "POST", body: openAiResponse.body, signal: params.signal, duplex: "half" } as RequestInit), 262_144);
+  const payload = JSON.parse(new TextDecoder().decode(reply)) as OpenAiTranscriptionResponse;
   const text = cleanTranscriptText(payload.text ?? "");
   const response: TranscriptionResponse = {
     text,

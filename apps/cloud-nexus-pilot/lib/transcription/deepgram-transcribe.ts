@@ -1,3 +1,4 @@
+import { readBoundedBytes } from "../server/request-boundary";
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
 import { toPublicTranscriptionError } from "./public-error";
@@ -71,6 +72,7 @@ export async function transcribeWithDeepgram(params: {
   requestContentType: string;
   chunkIndexHeader: string | null;
   sourceHeader: string | null;
+  signal?: AbortSignal;
 }): Promise<TranscriptionResponse> {
   const deepgramApiKey = getDeepgramApiKey();
   if (!deepgramApiKey) {
@@ -119,6 +121,7 @@ export async function transcribeWithDeepgram(params: {
     },
     body: params.arrayBuffer,
     cache: "no-store",
+    signal: params.signal,
   });
 
   if (!deepgramResponse.ok) {
@@ -129,7 +132,8 @@ export async function transcribeWithDeepgram(params: {
     });
   }
 
-  const payload = (await deepgramResponse.json()) as DeepgramTranscriptionResponse;
+  const reply = await readBoundedBytes(new Request("http://localhost/provider-result", { method: "POST", body: deepgramResponse.body, signal: params.signal, duplex: "half" } as RequestInit), 262_144);
+  const payload = JSON.parse(new TextDecoder().decode(reply)) as DeepgramTranscriptionResponse;
   const text = cleanTranscriptText(
     payload.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? ""
   );

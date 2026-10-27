@@ -32,7 +32,11 @@ export async function transcribeLiveAudioChunk(params: {
   source: LiveTranscriptionSource;
   contentType: string;
   filename?: string;
+  signal?: AbortSignal;
 }): Promise<TranscriptionResponse> {
+  params.signal?.throwIfAborted();
+  if (params.audioBlob.size > 2_000_000) throw new Error("Audio upload exceeds the 2 MB processing limit. Use shorter PCM16 WAV audio.");
+  if (params.contentType.split(";")[0]?.trim().toLowerCase() !== "audio/wav") throw new Error("Only finalized PCM16 WAV audio is supported by this path.");
   const response = await fetch("/api/transcribe", {
     method: "POST",
     headers: {
@@ -42,6 +46,7 @@ export async function transcribeLiveAudioChunk(params: {
       "X-Audio-Filename": params.filename?.trim() || "live-capture.webm",
     },
     body: params.audioBlob,
+    signal: params.signal ? AbortSignal.any([params.signal, AbortSignal.timeout(45_000)]) : AbortSignal.timeout(45_000),
   });
 
   if (!response.ok) {
@@ -79,12 +84,19 @@ export async function transcribeLiveAudioChunk(params: {
   };
 }
 
-export async function transcribeUploadedFile(file: File): Promise<string> {
+function validateUpload(file: File, signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  if (file.size > 2_000_000) throw new Error("Upload exceeds the 2 MB input limit. Use a shorter WAV or smaller text transcript.");
+}
+
+export async function transcribeUploadedFile(file: File, signal?: AbortSignal): Promise<string> {
+  validateUpload(file, signal);
   const isTextLike =
     file.type.startsWith("text/") || /\.(txt|md|json|srt|vtt)$/i.test(file.name);
 
   if (isTextLike) {
     const rawText = await file.text();
+    signal?.throwIfAborted();
     const transcript = cleanTranscriptText(rawText);
     console.info("[transcription][upload] local-text-ingest-success", {
       fileName: file.name,
@@ -101,17 +113,20 @@ export async function transcribeUploadedFile(file: File): Promise<string> {
       source: "microphone",
       contentType: file.type || "audio/webm",
       filename: file.name,
+      signal,
     });
 
     return cleanTranscriptText(result.text);
   }
 
-  return "";
+  throw new Error("Use a finalized PCM16 WAV or a supported text transcript.");
 }
 
 export async function transcribeUploadedAsset(
-  file: File
+  file: File,
+  signal?: AbortSignal
 ): Promise<UploadedTranscriptionResult> {
+  validateUpload(file, signal);
   const isTextLike =
     file.type.startsWith("text/") || /\.(txt|md|json|srt|vtt)$/i.test(file.name);
 
@@ -122,7 +137,7 @@ export async function transcribeUploadedAsset(
   });
 
   if (isTextLike) {
-    const transcript = await transcribeUploadedFile(file);
+    const transcript = await transcribeUploadedFile(file, signal);
     return {
       transcript,
       source: "text-local",
@@ -139,6 +154,7 @@ export async function transcribeUploadedAsset(
       source: "microphone",
       contentType: file.type || "audio/webm",
       filename: file.name,
+      signal,
     });
     const transcript = cleanTranscriptText(result.text);
     console.info("[transcription][upload] backend-audio-ingest-success", {

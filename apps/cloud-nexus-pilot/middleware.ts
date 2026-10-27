@@ -1,3 +1,4 @@
+import { processingScope, withAbort, readBoundedBytes } from "./lib/server/request-boundary";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr/dist/module/createServerClient";
 
@@ -31,7 +32,13 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const authScope = processingScope(request.signal, 8_000);
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    global: { fetch: async (input, init) => {
+      const upstream = await fetch(input, { ...init, signal: authScope.signal });
+      const bytes = await readBoundedBytes(new Request("http://localhost/auth-reply", { method: "POST", body: upstream.body, signal: authScope.signal, duplex: "half" } as RequestInit), 262_144);
+      return new Response(bytes, { status: upstream.status, headers: upstream.headers });
+    } },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -50,15 +57,12 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data: { user }, error } = await withAbort(supabase.auth.getUser(), authScope.signal)
+    .catch(() => ({ data: { user: null }, error: { message: "Identity verification unavailable." } }))
+    .finally(() => { authScope.abort(); authScope.dispose(); });
 
   if (error) {
-    console.error("[middleware] Supabase auth check failed; denying protected route access.", {
-      message: error.message,
-    });
+    console.error("[middleware] Identity verification failed; denying protected route access.");
 
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";

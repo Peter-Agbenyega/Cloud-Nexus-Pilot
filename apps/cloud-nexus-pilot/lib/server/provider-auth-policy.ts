@@ -2,7 +2,7 @@ type VerifiedUser = { id: string; role?: string; is_anonymous?: boolean };
 type UserLookup = () => Promise<{ data: { user: VerifiedUser | null }; error: unknown }>;
 
 export type ProviderAuthorization =
-  | { userId: string; response?: never }
+  | { userId: string; accessToken?: string; response?: never }
   | { userId?: never; response: Response };
 
 export function providerAuthUnavailable(): ProviderAuthorization {

@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { processingRepository, type Principal, type Reservation } from "@/lib/server/processing-repository";
+import { boundaryResponse, processingScope, RequestBoundaryError, withAbort } from "@/lib/server/request-boundary";
 import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
 import { requireProviderUser } from "@/lib/server/provider-auth";
 export const runtime = "nodejs";
@@ -75,7 +78,7 @@ function normalizeInterviewMode(value: string): InterviewMode {
 }
 
 async function streamFailure(controller: ReadableStreamDefaultController<Uint8Array>, message: string) {
-  controller.enqueue(toSseChunk({ type: "error", message }));
+  controller.enqueue(toSseChunk({ type: "error", code: "guidance_processing_failed", message }));
   controller.enqueue(toSseChunk({ type: "done" }));
   controller.close();
 }
@@ -89,33 +92,6 @@ async function streamFinalGuidancePayload(
   controller.close();
 }
 
-function createTimeoutSignal(parentSignal: AbortSignal, timeoutMs: number): AbortSignal {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, timeoutMs);
-
-  const abort = () => {
-    clearTimeout(timeoutId);
-    controller.abort();
-  };
-
-  if (parentSignal.aborted) {
-    abort();
-  } else {
-    parentSignal.addEventListener("abort", abort, { once: true });
-    controller.signal.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(timeoutId);
-        parentSignal.removeEventListener("abort", abort);
-      },
-      { once: true }
-    );
-  }
-
-  return controller.signal;
-}
 
 function limitWords(text: string, maxWords: number): string {
   return text.trim().split(/\s+/).filter(Boolean).slice(0, maxWords).join(" ");
@@ -202,12 +178,36 @@ function parseGuidancePayload(rawText: string): GuidancePayload {
 
 export async function POST(request: Request) {
   const provider = selectConfiguredLLMProvider();
+  let principal: Principal | undefined;
   if (provider) {
-    const auth = await requireProviderUser();
+    const auth = await requireProviderUser(request);
     if (auth.response) return auth.response;
+    principal = auth;
   }
   const body = await readJsonObject(request);
   if (!body) return invalidJsonObjectResponse();
+  const scope = processingScope(request.signal, GUIDANCE_TIMEOUT_MS);
+  const requestHash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
+  const sessionId = typeof body.sessionId === "string" ? body.sessionId : undefined;
+  const turnIdentity = [sessionId ?? "standalone", sanitizeText(body.questionId, 128) || sanitizeText(body.question, 500), sanitizeText(body.transcriptRevision, 128)];
+  const operationId = `guidance:${createHash("sha256").update(JSON.stringify(turnIdentity)).digest("hex")}`;
+  let held: Reservation | undefined;
+  if (provider && principal && typeof body.question === "string" && body.question.trim()) {
+    try {
+      if (sessionId) {
+        const session = await processingRepository.read(principal, sessionId, 0, scope.signal);
+        if (session.status !== "active") throw new RequestBoundaryError(409, "session_stopped", "The session is stopped.");
+      }
+      held = await processingRepository.reserve(principal, { sessionId, operationId, requestHash, maxUnits: 1000, kind: "guidance" }, scope.signal);
+      if (!held.acquired && held.state !== "succeeded") {
+        throw new RequestBoundaryError(["quota_exhausted", "concurrency_exceeded"].includes(held.state) ? 429 : 409, "guidance_not_available", "Guidance allowance is exhausted, pending or unavailable. Reload saved work before retrying.");
+      }
+    } catch (error) { scope.dispose(); return boundaryResponse(error); }
+  }
+  let providerStarted = false;
+  let settled = false;
+  let providerIterator: AsyncIterator<string> | undefined;
+  let watchTimer: ReturnType<typeof setTimeout> | undefined;
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const question = sanitizeText(body.question, MAX_QUESTION_CHARS);
@@ -222,19 +222,26 @@ export async function POST(request: Request) {
       const previousAnswers = sanitizeStringArray(body.previousAnswers, 4, 700);
 
       controller.enqueue(toSseChunk({ type: "start" }));
+      if (held?.state === "succeeded") {
+        scope.dispose();
+        await streamFinalGuidancePayload(controller, normalizeGuidancePayload(held.result));
+        return;
+      }
 
       if (!question) {
+        scope.dispose();
         await streamFailure(controller, "A detected question is required before guidance can be generated.");
         return;
       }
 
       if (!provider) {
+        scope.dispose();
         await streamFailure(controller, "No guidance provider is configured. No AI guidance was generated.");
         return;
       }
 
       try {
-        const guidanceSignal = createTimeoutSignal(request.signal, GUIDANCE_TIMEOUT_MS);
+        const guidanceSignal = scope.signal;
         const detectedQuestion =
           detectStreamingQuestions({ text: question })[0] ??
           detectStreamingQuestions({ text: `What is your answer to: ${question}?` })[0];
@@ -288,7 +295,18 @@ export async function POST(request: Request) {
         let modelContent = "";
 
         try {
-          for await (const token of provider.streamText({
+          providerStarted = true;
+          if (sessionId && principal) {
+            const watch = async () => {
+              try {
+                const current = await processingRepository.read(principal, sessionId, 0, guidanceSignal);
+                if (current.status !== "active") scope.abort();
+                else if (!scope.signal.aborted) watchTimer = setTimeout(() => void watch(), 2_000);
+              } catch { scope.abort(); }
+            };
+            watchTimer = setTimeout(() => void watch(), 2_000);
+          }
+          providerIterator = provider.streamText({
             messages: [
               {
                 role: "system",
@@ -312,24 +330,43 @@ export async function POST(request: Request) {
             temperature: 0.3,
             responseFormat: "json",
             signal: guidanceSignal,
-          })) {
+          })[Symbol.asyncIterator]();
+          while (true) {
+            const item = await withAbort(providerIterator.next(), guidanceSignal);
+            if (item.done) break;
+            const token = item.value;
             modelContent += token;
-            controller.enqueue(toSseChunk({ type: "token", token }));
+            if (modelContent.length > 32_768) { scope.abort(); throw new Error("Output limit exceeded"); }
+            // Publish only the validated final guidance payload.
           }
         } catch {
           await streamFailure(controller, "The guidance provider failed. No AI guidance was generated.");
           return;
         }
 
-        await streamFinalGuidancePayload(controller, parseGuidancePayload(modelContent));
+        const payload = parseGuidancePayload(modelContent);
+        scope.signal.throwIfAborted();
+        if (principal && held?.acquired) {
+          const result = await processingRepository.complete(principal, { operationId, requestHash, usedUnits: 1000, outcome: "succeeded", result: { ...payload, question, questionId: sanitizeText(body.questionId, 128) || requestHash, transcriptRevision: sanitizeText(body.transcriptRevision, 128), sessionId: sessionId ?? null } });
+          if ((result as { state?: string }).state !== "succeeded") throw new Error("Guidance not committed");
+          settled = true;
+        }
+        await streamFinalGuidancePayload(controller, payload);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           await streamFailure(controller, "The guidance provider failed. No AI guidance was generated.");
           return;
         }
         await streamFailure(controller, "Unable to generate guidance right now.");
+      } finally {
+        clearTimeout(watchTimer); scope.abort(); scope.dispose();
+        if (providerIterator?.return) void providerIterator.return().catch(() => {});
+        if (principal && held?.acquired && !settled) {
+          await processingRepository.complete(principal, { operationId, requestHash, usedUnits: providerStarted ? 1000 : 0, outcome: providerStarted ? "unknown" : "failed", result: { error: { code: "guidance_incomplete" } } }).catch(() => {});
+        }
       }
     },
+    cancel() { clearTimeout(watchTimer); scope.abort(); scope.dispose(); },
   });
 
   return new Response(stream, {

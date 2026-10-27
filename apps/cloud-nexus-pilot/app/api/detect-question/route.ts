@@ -1,3 +1,8 @@
+import { openAiEndpoint } from "@/lib/server/provider-endpoint";
+import { createHash } from "node:crypto";
+import { readJsonObject, invalidJsonObjectResponse } from "@/lib/server/json-request";
+import { processingRepository } from "@/lib/server/processing-repository";
+import { processingScope, readBoundedBytes } from "@/lib/server/request-boundary";
 import { requireProviderUser } from "@/lib/server/provider-auth";
 import { NextResponse } from "next/server";
 import { createQuestionDedupeKey, detectStreamingQuestions } from "@/lib/interview-intelligence/question-detector";
@@ -5,15 +10,12 @@ import { createQuestionDedupeKey, detectStreamingQuestions } from "@/lib/intervi
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL = "gpt-4.1-mini";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json().catch(() => ({}))) as {
-      segments?: unknown;
-      seenQuestionKeys?: unknown;
-    };
+    const body = await readJsonObject(request);
+    if (!body) return invalidJsonObjectResponse();
     const segments = Array.isArray(body.segments)
       ? body.segments.filter((segment): segment is string => typeof segment === "string")
       : [];
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const openAiApiKey = process.env.OPENAI_API_KEY?.trim() || "";
-    const auth = openAiApiKey ? await requireProviderUser() : null;
+    const auth = openAiApiKey ? await requireProviderUser(request) : null;
     // Keep deterministic question detection available without provider authorization.
     if (!openAiApiKey || auth?.response) {
       return NextResponse.json(
@@ -51,8 +53,17 @@ export async function POST(request: Request) {
       );
     }
 
+    const scope = processingScope(request.signal, 8_000);
+    const requestHash = createHash("sha256").update(firstDetectedQuestion.normalizedQuestion).digest("hex");
+    const operationId = `question:${requestHash}`;
+    let acquired = false;
+    let completed = false;
     try {
-      const openAiResponse = await fetch(OPENAI_API_URL, {
+      if (!auth || auth.response) throw new Error("Authorization unavailable");
+      const held = await processingRepository.reserve(auth, { operationId, requestHash, maxUnits: 1000, kind: "guidance" }, scope.signal);
+      if (!held.acquired) throw new Error("Operation unavailable");
+      acquired = true;
+      const openAiResponse = await fetch(openAiEndpoint("chat/completions"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,6 +72,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           model: OPENAI_MODEL,
           temperature: 0,
+          max_completion_tokens: 160,
           messages: [
             {
               role: "system",
@@ -73,21 +85,20 @@ export async function POST(request: Request) {
           ],
         }),
         cache: "no-store",
-        signal: request.signal,
+        signal: scope.signal,
       });
 
       if (!openAiResponse.ok) {
         return NextResponse.json({ question: fullText }, { status: 200 });
       }
 
-      const data = (await openAiResponse.json().catch(() => null)) as
-        | {
-            choices?: Array<{ message?: { content?: string | null } }>;
-          }
-        | null;
+      const reply = await readBoundedBytes(new Request("http://localhost/provider-result", { method: "POST", body: openAiResponse.body, signal: scope.signal, duplex: "half" } as RequestInit), 16_384);
+      const data = JSON.parse(new TextDecoder().decode(reply)) as { choices?: Array<{ message?: { content?: string | null } }> };
 
-      const cleanedQuestion = data?.choices?.[0]?.message?.content?.trim();
+      const cleanedQuestion = data?.choices?.[0]?.message?.content?.trim().slice(0, 500);
       const normalizedQuestion = cleanedQuestion || firstDetectedQuestion.normalizedQuestion;
+      await processingRepository.complete(auth, { operationId, requestHash, usedUnits: 1000, outcome: "succeeded", result: { question: normalizedQuestion } });
+      completed = true;
       return NextResponse.json(
         {
           question: normalizedQuestion,
@@ -110,6 +121,11 @@ export async function POST(request: Request) {
         },
         { status: 200 }
       );
+    } finally {
+      scope.abort(); scope.dispose();
+      if (acquired && !completed && auth && !auth.response) {
+        await processingRepository.complete(auth, { operationId, requestHash, usedUnits: 1000, outcome: "unknown", result: { error: { code: "question_processing_incomplete" } } }).catch(() => {});
+      }
     }
   } catch {
     return NextResponse.json({ question: null, detectedQuestion: null, questions: [] }, { status: 200 });

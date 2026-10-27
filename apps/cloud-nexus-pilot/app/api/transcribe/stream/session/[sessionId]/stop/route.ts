@@ -1,34 +1,15 @@
 import { requireProviderUser } from "@/lib/server/provider-auth";
-import { NextResponse } from "next/server";
-
-import { stopStreamingSession } from "@/lib/transcription/streaming-session-store";
-
+import { processingRepository } from "@/lib/server/processing-repository";
+import { assertSameOrigin, boundaryResponse } from "@/lib/server/request-boundary";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-export async function POST(
-  _request: Request,
-  context: { params: Promise<{ sessionId: string }> }
-) {
-  const auth = await requireProviderUser();
+export async function POST(request: Request, context: { params: Promise<{ sessionId: string }> }) {
+  const auth = await requireProviderUser(request);
   if (auth.response) return auth.response;
-  const { sessionId } = await context.params;
-  const stopped = stopStreamingSession(sessionId, auth.userId);
-
-  if (!stopped) {
-    console.warn("[transcription][stream-session] stop-missing", { sessionId });
-    return NextResponse.json(
-      {
-        error: {
-          code: "transcript_stream_session_missing",
-          message: "Streaming transcription session was not found.",
-        },
-      },
-      { status: 404 }
-    );
-  }
-
-  console.info("[transcription][stream-session] stop-success", { sessionId });
-
-  return NextResponse.json({ sessionId, status: "stopped" }, { status: 200 });
+  try {
+    assertSameOrigin(request);
+    const { sessionId } = await context.params;
+    await processingRepository.stop(auth, sessionId, request.signal);
+    return Response.json({ sessionId, status: "stopped", saved: true });
+  } catch (error) { return boundaryResponse(error); }
 }

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:realtime && npm run test:intelligence && npm run test:routes && npm run test:connectivity && npm run test:provider-routes && npm run test:transcription-errors && npm run test:report-persistence",
+    "test": "npm run test:realtime && npm run test:intelligence && npm run test:routes && npm run test:connectivity && npm run test:provider-routes && npm run test:transcription-errors && npm run test:report-persistence && npm run test:security-boundary",
     "test:report-persistence": "node --test scripts/test-interview-report-persistence.mjs",
     "test:realtime": "tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/realtime/*.test.js",
     "test:intelligence": "tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js",
@@ -17,7 +17,8 @@
     "test:routes": "tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/routes/*.test.js",
     "test:connectivity": "node --test scripts/test-supabase-connectivity.mjs",
     "test:provider-routes": "node --test scripts/test-provider-routes.mjs",
-    "test:transcription-errors": "node --test scripts/test-transcription-errors.mjs"
+    "test:transcription-errors": "node --test scripts/test-transcription-errors.mjs",
+    "test:security-boundary": "node --test scripts/test-security-boundary.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

@@ -1,3 +1,4 @@
+import { openAiEndpoint } from "./server/provider-endpoint";
 export type LLMProviderName = "openai";
 
 export type LLMMessage = {
@@ -26,7 +27,6 @@ type ProviderEnv = Record<string, string | undefined> & {
 
 type FetchLike = typeof fetch;
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 
 function requireBody(response: Response, provider: LLMProviderName): ReadableStream<Uint8Array> {
@@ -62,33 +62,50 @@ async function* streamOpenAiTokens(responseBody: ReadableStream<Uint8Array>): As
   const reader = responseBody.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let finished = false;
+  let receivedBytes = 0;
 
+  try {
   while (true) {
     const { done, value } = await reader.read();
+    receivedBytes += value?.byteLength ?? 0;
+    if (receivedBytes > 262_144) throw new Error("Provider response exceeded its limit.");
     buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+    buffer = buffer.replace(/\r\n/g, "\n");
     const parsed = splitSseEvents(buffer);
     buffer = parsed.buffer;
+    if (buffer.length > 65_536) throw new Error("Provider event exceeded its limit.");
 
     for (const event of parsed.events) {
+      if (event.length > 65_536) throw new Error("Provider event exceeded its limit.");
       for (const dataText of readSseDataLines(event)) {
         if (dataText === "[DONE]") return;
         const payload = JSON.parse(dataText) as {
-          choices?: Array<{ delta?: { content?: string | null } }>;
+          choices?: Array<{ delta?: { content?: string | null }; finish_reason?: string | null }>;
           error?: { message?: string };
         };
         if (payload.error) throw new Error(payload.error.message || "OpenAI stream error.");
+        if (payload.choices?.some((choice) => choice.finish_reason === "stop")) finished = true;
         const token = payload.choices?.[0]?.delta?.content;
         if (typeof token === "string" && token) yield token;
       }
     }
 
-    if (done) return;
+    if (done) {
+      if (buffer.trim() || !finished) throw new Error("Incomplete provider stream.");
+      return;
+    }
+  }
+  } finally {
+    void reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
 }
 
 export function createOpenAiProvider(params: {
   apiKey: string;
   model?: string;
+  baseUrl?: string;
   fetchImpl?: FetchLike;
 }): LLMProvider {
   const fetchImpl = params.fetchImpl ?? fetch;
@@ -98,7 +115,7 @@ export function createOpenAiProvider(params: {
     name: "openai",
     model,
     async *streamText(input) {
-      const response = await fetchImpl(OPENAI_API_URL, {
+      const response = await fetchImpl(openAiEndpoint("chat/completions", params.baseUrl), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,6 +130,7 @@ export function createOpenAiProvider(params: {
           messages: input.messages,
         }),
         cache: "no-store",
+        redirect: "error",
         signal: input.signal,
       });
 
@@ -131,6 +149,7 @@ export function selectConfiguredLLMProvider(
     return createOpenAiProvider({
       apiKey: openAiKey,
       model: env.OPENAI_MODEL,
+      baseUrl: env.OPENAI_BASE_URL,
       fetchImpl,
     });
   }

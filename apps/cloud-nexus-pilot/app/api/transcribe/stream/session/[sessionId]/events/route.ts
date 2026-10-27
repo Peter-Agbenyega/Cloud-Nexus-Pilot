@@ -1,112 +1,52 @@
 import { requireProviderUser } from "@/lib/server/provider-auth";
-import { getStreamingSession, subscribeToStreamingSession } from "@/lib/transcription/streaming-session-store";
-import { toPublicTranscriptionError } from "@/lib/transcription/public-error";
-
+import { processingRepository } from "@/lib/server/processing-repository";
+import { boundaryResponse, processingScope, RequestBoundaryError } from "@/lib/server/request-boundary";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function toSseChunk(payload: unknown): string {
-  return `data: ${JSON.stringify(payload)}\n\n`;
-}
-
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ sessionId: string }> }
-) {
-  const auth = await requireProviderUser();
+export async function GET(request: Request, context: { params: Promise<{ sessionId: string }> }) {
+  const auth = await requireProviderUser(request);
   if (auth.response) return auth.response;
   const { sessionId } = await context.params;
-  const session = getStreamingSession(sessionId, auth.userId);
-
-  if (!session || session.stopped) {
-    console.warn("[transcription][stream-session] events-missing", { sessionId });
-    return new Response(
-      JSON.stringify({
-        error: {
-          code: "transcript_stream_session_missing",
-          message: "Streaming transcription session was not found.",
-        },
-      }),
-      { status: 404, headers: { "content-type": "application/json" } }
-    );
-  }
-
-  console.info("[transcription][stream-session] events-connected", { sessionId });
-
-  let unsubscribe: (() => void) | null = null;
-  let heartbeat: ReturnType<typeof setInterval> | null = null;
-
+  let cursor = Number(request.headers.get("last-event-id") || new URL(request.url).searchParams.get("cursor") || 0);
+  if (!Number.isSafeInteger(cursor) || cursor < 0) return boundaryResponse(new RequestBoundaryError(400, "invalid_cursor", "Invalid resume cursor."));
+  try { await processingRepository.read(auth, sessionId, cursor, request.signal); } catch (error) { return boundaryResponse(error); }
+  const scope = processingScope(request.signal, 50_000);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let closed = false;
+  const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      const encoder = new TextEncoder();
-      controller.enqueue(
-        encoder.encode(
-          toSseChunk({
-            type: "status",
-            sessionId,
-            status: "connected",
-          })
-        )
-      );
-
-      unsubscribe = subscribeToStreamingSession(sessionId, auth.userId, (event) => {
-        console.info("[transcription][stream-session] events-push", {
-          sessionId,
-          type: event.type,
-          chunkIndex: "chunkIndex" in event ? event.chunkIndex : undefined,
-        });
-        const publicEvent = event.type === "chunk-error"
-          ? { ...event, error: toPublicTranscriptionError(event.error).error }
-          : event;
-        controller.enqueue(encoder.encode(toSseChunk(publicEvent)));
-      });
-
-      if (!unsubscribe) {
-        controller.enqueue(
-          encoder.encode(
-            toSseChunk({
-              type: "chunk-error",
-              sessionId,
-              chunkIndex: -1,
-              error: {
-                code: "transcript_stream_session_missing",
-                message: "Streaming transcription session became unavailable.",
-              },
-            })
-          )
-        );
-        controller.close();
-        return;
-      }
-
-      heartbeat = setInterval(() => {
-        controller.enqueue(
-          encoder.encode(
-            `event: heartbeat\ndata: ${JSON.stringify({
-              type: "heartbeat",
-              sessionId,
-              at: Date.now(),
-            })}\n\n`
-          )
-        );
-      }, 15_000);
+      const close = () => {
+        if (closed) return;
+        closed = true; clearTimeout(timer); scope.dispose();
+        try { controller.close(); } catch { /* consumer already cancelled */ }
+      };
+      const send = (payload: unknown, id?: number) => {
+        if (!closed) controller.enqueue(encoder.encode(`${id === undefined ? "" : `id: ${id}\n`}data: ${JSON.stringify(payload)}\n\n`));
+      };
+      scope.signal.addEventListener("abort", close, { once: true });
+      send({ type: "status", sessionId, status: "connected" });
+      const poll = async () => {
+        try {
+          // Reverify cookies/principal on every poll. Token refresh may not switch
+          // identity under an existing subscription.
+          const refreshed = await requireProviderUser(request);
+          if (refreshed.response || refreshed.userId !== auth.userId) { close(); return; }
+          const snapshot = await processingRepository.read(refreshed, sessionId, cursor, scope.signal);
+          for (const event of snapshot.events) {
+            if (event.sequence <= cursor) continue;
+            const response = event.provider_result as { chunkIndex?: number } | null;
+            if (response) send({ type: "chunk-result", sessionId, chunkIndex: response.chunkIndex, response }, event.sequence);
+            cursor = event.sequence;
+          }
+          if (snapshot.status !== "active") { send({ type: "status", sessionId, status: "stopped" }); close(); return; }
+          send({ type: "heartbeat", sessionId });
+          if (!closed) timer = setTimeout(() => void poll(), 750);
+        } catch { close(); }
+      };
+      void poll();
     },
-    cancel() {
-      console.info("[transcription][stream-session] events-disconnected", { sessionId });
-      if (heartbeat) {
-        clearInterval(heartbeat);
-        heartbeat = null;
-      }
-      unsubscribe?.();
-      unsubscribe = null;
-    },
+    cancel() { closed = true; clearTimeout(timer); scope.abort(); scope.dispose(); },
   });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-    },
-  });
+  return new Response(stream, { headers: { "content-type": "text/event-stream", "cache-control": "private, no-store, no-transform", connection: "keep-alive" } });
 }

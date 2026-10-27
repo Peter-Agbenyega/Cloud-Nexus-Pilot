@@ -1,3 +1,6 @@
+import { requireProviderUser } from "@/lib/server/provider-auth";
+import { acquireIngress } from "@/lib/server/ingress-admission";
+import { assertSameOrigin, boundaryResponse, readBoundedBytes } from "@/lib/server/request-boundary";
 import { NextResponse } from "next/server";
 
 import { ingestProfileFile, type ProfileIngestionKind } from "@/lib/interview-intelligence/file-ingestion";
@@ -10,7 +13,17 @@ function kind(value: FormDataEntryValue | null): ProfileIngestionKind {
 }
 
 export async function POST(request: Request) {
-  const formData = await request.formData().catch(() => null);
+  const auth = await requireProviderUser(request);
+  if (auth.response) return auth.response;
+  let release: (() => void) | undefined;
+  try {
+    release = acquireIngress(auth.userId);
+  let formData: FormData | null;
+  try {
+    assertSameOrigin(request);
+    const bytes = await readBoundedBytes(request, 4 * 1024 * 1024);
+    formData = await new Request(request.url, { method: "POST", headers: { "content-type": request.headers.get("content-type") || "" }, body: bytes }).formData();
+  } catch (error) { return boundaryResponse(error); }
   if (!formData) {
     return NextResponse.json(
       { error: "invalid_form_data", message: "Upload a PDF, DOCX, TXT, or Markdown file." },
@@ -35,9 +48,8 @@ export async function POST(request: Request) {
       kind: kind(formData.get("kind")),
     });
     return NextResponse.json(result);
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to extract text from the uploaded file.";
+  } catch {
+    const message = "Unable to extract this file. Use a supported PDF, DOCX or plain-text document within the upload limit.";
     return NextResponse.json(
       {
         error: "ingestion_failed",
@@ -46,4 +58,7 @@ export async function POST(request: Request) {
       { status: /too large/i.test(message) ? 413 : /no readable text/i.test(message) ? 422 : 400 }
     );
   }
+  } catch (error) { return boundaryResponse(error); }
+  finally { release?.(); }
+
 }

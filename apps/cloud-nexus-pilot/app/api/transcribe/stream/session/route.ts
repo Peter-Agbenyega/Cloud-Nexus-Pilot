@@ -1,67 +1,34 @@
 import { requireProviderUser } from "@/lib/server/provider-auth";
-import { NextResponse } from "next/server";
-
-import {
-  createStreamingSession,
-  stopStreamingSession,
-} from "@/lib/transcription/streaming-session-store";
-
+import { processingRepository } from "@/lib/server/processing-repository";
+import { assertSameOrigin, boundaryResponse, readBoundedBytes } from "@/lib/server/request-boundary";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-export async function POST() {
-  const auth = await requireProviderUser();
+export async function POST(request: Request) {
+  const auth = await requireProviderUser(request);
   if (auth.response) return auth.response;
-  const session = createStreamingSession(auth.userId);
-  console.info("[transcription][stream-session] created", {
-    sessionId: session.id,
-    createdAt: session.createdAt,
-  });
-
-  return NextResponse.json(
-    {
-      sessionId: session.id,
-      status: "created",
-      createdAt: session.createdAt,
-      note:
-        "Streaming session created. Use chunk ingest + event stream routes for continuity-safe transcript transport.",
-    },
-    { status: 201 }
-  );
+  try {
+    assertSameOrigin(request);
+    await readBoundedBytes(request, 1024);
+    const session = await processingRepository.create(auth, request.signal);
+    return Response.json({ sessionId: session.sessionId, status: "created", createdAt: session.createdAt, saved: true }, { status: 201 });
+  } catch (error) { return boundaryResponse(error); }
+}
+export async function DELETE(request: Request) {
+  const auth = await requireProviderUser(request);
+  if (auth.response) return auth.response;
+  try {
+    assertSameOrigin(request);
+    const id = new URL(request.url).searchParams.get("sessionId");
+    if (!id) return Response.json({ error: { code: "session_id_required", message: "A session ID is required." } }, { status: 400 });
+    await processingRepository.stop(auth, id, request.signal);
+    return Response.json({ sessionId: id, status: "stopped" });
+  } catch (error) { return boundaryResponse(error); }
 }
 
-export async function DELETE(request: Request) {
-  const auth = await requireProviderUser();
+export async function GET(request: Request) {
+  const auth = await requireProviderUser(request);
   if (auth.response) return auth.response;
-  const url = new URL(request.url);
-  const sessionId = url.searchParams.get("sessionId")?.trim();
-  if (!sessionId) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "transcript_stream_session_id_required",
-          message: "sessionId is required to stop a streaming transcription session.",
-        },
-      },
-      { status: 400 }
-    );
-  }
-
-  const stopped = stopStreamingSession(sessionId, auth.userId);
-  if (!stopped) {
-    console.warn("[transcription][stream-session] stop-missing", { sessionId });
-    return NextResponse.json(
-      {
-        error: {
-          code: "transcript_stream_session_missing",
-          message: "Streaming transcription session was not found.",
-        },
-      },
-      { status: 404 }
-    );
-  }
-
-  console.info("[transcription][stream-session] stopped", { sessionId });
-
-  return NextResponse.json({ sessionId, status: "stopped" }, { status: 200 });
+  try {
+    return Response.json({ sessions: await processingRepository.list(auth, request.signal), limit: 100 }, { headers: { "cache-control": "private, no-store" } });
+  } catch (error) { return boundaryResponse(error); }
 }

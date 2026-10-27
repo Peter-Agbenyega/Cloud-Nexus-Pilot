@@ -75,3 +75,22 @@ test("OpenAI provider streams chat-completion delta content", async () => {
   assert.match(requestUrl, /openai\.com/);
   assert.equal(authorizationHeader, "Bearer test-openai-key");
 });
+
+test("provider stream requires completion and releases its reader", async () => {
+  const encoder = new TextEncoder();
+  const body = new ReadableStream({ start(controller) {
+    controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"partial"}}]}\r\n\r\n'));
+    controller.close();
+  } });
+  const provider = createOpenAiProvider({ apiKey: "synthetic", fetchImpl: async () => new Response(body) });
+  await assert.rejects(async () => { for await (const token of provider.streamText({ messages: [], signal: new AbortController().signal, maxTokens: 10, temperature: 0, responseFormat: "json" })) void token; }, /Incomplete provider stream/);
+  assert.equal(body.locked, false);
+});
+
+test("provider stream handles split UTF8 and CRLF frames with explicit completion", async () => {
+  const bytes = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"café"}}]}\r\n\r\ndata: [DONE]\r\n\r\n');
+  const provider = createOpenAiProvider({ apiKey: "synthetic", fetchImpl: async () => new Response(new ReadableStream({ start(controller) { for (const byte of bytes) controller.enqueue(Uint8Array.of(byte)); controller.close(); } })) });
+  let output = "";
+  for await (const token of provider.streamText({ messages: [], signal: new AbortController().signal, maxTokens: 10, temperature: 0, responseFormat: "json" })) output += token;
+  assert.equal(output, "café");
+});

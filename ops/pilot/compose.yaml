@@ -46,7 +46,9 @@ services:
       - path: "${PILOT_CONFIG_DIR}/rest.env"
         format: raw
     ports: ["127.0.0.1:54192:3000", "127.0.0.1:54193:3001"]
-    networks: [data]
+    # Docker29 does not publish ports for internal-only containers.
+    # The database stays on data only; API ports remain loopback-bound.
+    networks: [data, egress]
     depends_on:
       db: {condition: service_healthy}
     read_only: true

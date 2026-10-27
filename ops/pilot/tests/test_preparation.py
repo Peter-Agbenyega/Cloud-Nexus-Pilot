@@ -68,6 +68,9 @@ class PreparationTests(unittest.TestCase):
             for name in ('auth','rest'):
                 self.assertTrue(all(p['host_ip']=='127.0.0.1' for p in services[name]['ports']))
             self.assertEqual(services['db']['networks'],{'data':None})
+            # Published APIs need a non-internal bridge on Docker29.
+            self.assertEqual(set(services['rest']['networks']),{'data','egress'})
+            self.assertFalse(config['networks']['egress'].get('internal',False))
             self.assertEqual(services['realtime']['network_mode'],'host')
             self.assertEqual(services['realtime']['environment']['HOST'],'127.0.0.1')
             self.assertEqual(services['realtime']['environment']['WS_TRUSTED_PROXY_CIDRS'],'127.0.0.1/32')

@@ -29,6 +29,9 @@ jobs:
         run: npm install --global npm@10.9.9
       - name: Install locked workspace dependencies
         run: npm ci
+      - name: Verify Pilot installed dependency contract
+        if: matrix.project == 'apps/cloud-nexus-pilot' || matrix.project == 'apps/pilot-realtime-api'
+        run: npm run check:pilot-dependencies
       - name: Lint
         run: npm run lint --workspace ${{ matrix.project }}
       - name: Typecheck

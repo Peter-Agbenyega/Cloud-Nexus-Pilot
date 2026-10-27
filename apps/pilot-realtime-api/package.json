@@ -13,20 +13,20 @@
     "lint": "eslint src --max-warnings=0"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "10.0.1",
     "@types/node": "^22.20.1",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "8.57.1",
     "@typescript-eslint/parser": "8.57.1",
-    "eslint": "9.39.4",
+    "eslint": "10.13.0",
     "typescript": "5.8.2"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
     "@fastify/websocket": "^11.3.0",
     "@supabase/supabase-js": "^2.99.0",
-    "fastify": "^5.10.0",
+    "fastify": "5.12.7",
     "ws": "^8.21.1",
-    "zod": "^3.25.76"
+    "zod": "4.6.7"
   }
 }

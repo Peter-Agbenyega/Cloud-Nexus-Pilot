@@ -17,7 +17,10 @@ const live = () => read('live').trim();
 const images = () => read('images').trim().split('\\n');
 fs.appendFileSync(file('calls'), JSON.stringify({name,args,release:process.env.REALTIME_RELEASE})+'\\n');
 const fail = process.env.CNP_FAIL;
-if(name === 'git') {
+if(name === 'flock') {
+  if(args.join(' ') !== '-n 9') process.exit(2);
+  if(fail === 'lock-contention') process.exit(1);
+} else if(name === 'git') {
   if(args.includes('rev-parse')) console.log(process.env.CNP_HEAD);
   if(args.includes('status') && fail === 'dirty') console.log(' M source.ts');
 } else if(name === 'docker') {
@@ -69,7 +72,7 @@ function fixture(t, { current = A, previous = B, pending = "", head = C } = {}) 
   writeFileSync(join(dir, "images"), [current, previous].filter(Boolean).join("\n") + "\n");
   writeFileSync(join(dir, "live"), pending || current);
   writeFileSync(join(bin, "mock.cjs"), mock, { mode: 0o755 });
-  for (const command of ["git", "docker", "ss", "curl", "caddy", "systemctl"]) symlinkSync(join(bin, "mock.cjs"), join(bin, command));
+  for (const command of ["git", "docker", "ss", "curl", "caddy", "systemctl", "flock"]) symlinkSync(join(bin, "mock.cjs"), join(bin, command));
   const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CNP_TEST_DIR: dir, CNP_HEAD: head, CNP_CANDIDATE: head, REALTIME_STATE_DIR: stateDir, CADDY_ROOT: caddy };
   return {
     dir, site, state, caddy, stateText,
@@ -151,3 +154,18 @@ test("successful Caddy install preserves worker configuration", t => {
   assert.equal(readFileSync(join(f.caddy, "Caddyfile"), "utf8"), main);
   assert.match(readFileSync(f.site, "utf8"), /realtime.cloudnexuspilot.com/);
 });
+
+for (const script of ["deploy-realtime.sh", "rollback-realtime.sh"]) {
+  test(`${script} refuses lock contention before state or container changes`, t => {
+    const f = fixture(t);
+    const before = f.saved();
+    const result = f.run(script, "lock-contention");
+    expectStatus(result, 1);
+    assert.match(result.stderr, /Another realtime release operation is running/);
+    assert.equal(f.saved(), before);
+    assert.equal(f.live(), A);
+    const calls = f.calls();
+    assert.ok(calls.some(c => c.name === "flock" && c.args.join(" ") === "-n 9"));
+    assert.ok(!calls.some(c => c.name === "docker" && c.args[0] !== "info"));
+  });
+}

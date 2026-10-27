@@ -15,7 +15,7 @@ async function server(t, onConnection) {
   });
   return `ws://127.0.0.1:${wss.address().port}`;
 }
-const options = { token: "synthetic-test-token", origin: "https://example.invalid", timeoutMs: 150 };
+const options = { token: "synthetic-test-token", origin: "https://example.invalid", timeoutMs: 2_000 };
 
 test("requires session.ready after sending authentication", async t => {
   let authenticated = false;
@@ -30,7 +30,7 @@ test("requires session.ready after sending authentication", async t => {
 });
 for (const [name, behavior, message] of [
   ["silent timeout", () => {}, /Timed out/],
-  ["premature close", ws => ws.close(), /closed before/],
+  ["premature close", ws => ws.terminate(), /closed before/],
   ["malformed JSON", ws => ws.send("{broken"), /Invalid JSON/],
   ["null JSON", ws => ws.send("null"), /Invalid message/],
   ["authentication rejection", ws => ws.send(JSON.stringify({ type: "error", code: options.token })), /Server rejected/],
@@ -38,7 +38,7 @@ for (const [name, behavior, message] of [
 ]) {
   test(`fails on ${name}`, async t => {
     const url = await server(t, behavior);
-    await assert.rejects(runSmoke({ ...options, url }), message);
+    await assert.rejects(runSmoke({ ...options, url, timeoutMs: name === "silent timeout" ? 150 : options.timeoutMs }), message);
   });
 }
 test("CLI exits nonzero on premature close without printing credentials", async t => {

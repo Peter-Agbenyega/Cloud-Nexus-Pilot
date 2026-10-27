@@ -15,7 +15,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "build": "turbo run build",
-    "test:realtime-ops": "node --test ops/realtime/tests/*.test.mjs"
+    "test:realtime-ops": "node --test ops/realtime/tests/*.test.mjs",
+    "check:pilot-dependencies": "node scripts/check-pilot-dependencies.mjs"
   },
   "devDependencies": {
     "turbo": "^2.5.6"
@@ -23,5 +24,10 @@
   "packageManager": "npm@10.9.9",
   "dependencies": {
     "ws": "^8.21.1"
+  },
+  "overrides": {
+    "next@15.5.28": {
+      "postcss": "8.5.32"
+    }
   }
 }

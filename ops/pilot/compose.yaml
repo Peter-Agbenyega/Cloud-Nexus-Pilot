@@ -1,0 +1,115 @@
+# Dedicated Linux guest only. No host provisioning, shared-stack services or seeds.
+name: cloud-nexus-pilot
+services:
+  db:
+    image: ${PILOT_POSTGRES_IMAGE:?Digest-pinned PostgreSQL17 with pgvector required}
+    user: postgres
+    restart: unless-stopped
+    env_file:
+      - path: "${PILOT_CONFIG_DIR:?Private absolute config directory}/db.env"
+        format: raw
+    entrypoint: [/bin/bash, /opt/pilot/start-postgres.sh]
+    volumes:
+      - pgdata:/pilot-data
+      - ./start-postgres.sh:/opt/pilot/start-postgres.sh:ro
+    networks: [data]
+    read_only: true
+    tmpfs: [/tmp:size=64m, /run/postgresql:size=16m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 60s
+    healthcheck:
+      test: [CMD, pg_isready, -h, /tmp, -U, postgres, -d, postgres]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 2g
+  auth:
+    image: ${PILOT_AUTH_IMAGE:?Digest-pinned compatible GoTrue required}
+    restart: unless-stopped
+    env_file:
+      - path: "${PILOT_CONFIG_DIR}/auth.env"
+        format: raw
+    ports: ["127.0.0.1:54191:9999"]
+    networks: [data, egress]
+    depends_on:
+      db: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp:size=16m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+  rest:
+    image: ${PILOT_REST_IMAGE:?Digest-pinned PostgREST required}
+    restart: unless-stopped
+    env_file:
+      - path: "${PILOT_CONFIG_DIR}/rest.env"
+        format: raw
+    ports: ["127.0.0.1:54192:3000", "127.0.0.1:54193:3001"]
+    networks: [data]
+    depends_on:
+      db: {condition: service_healthy}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+  realtime:
+    image: ${PILOT_REALTIME_IMAGE:?Reviewed immutable Pilot realtime image required}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - path: "${PILOT_CONFIG_DIR}/realtime.env"
+        format: raw
+    # Retain the proven same-host Caddy topology and exact proxy trust boundary.
+    network_mode: host
+    environment:
+      NODE_ENV: production
+      HOST: 127.0.0.1
+      PORT: "3010"
+      WS_TRUSTED_PROXY_CIDRS: 127.0.0.1/32
+    read_only: true
+    tmpfs: [/tmp:size=64m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 15s
+    mem_limit: 512m
+  bootstrap:
+    profiles: [bootstrap]
+    image: ${PILOT_POSTGRES_IMAGE}
+    user: postgres
+    env_file:
+      - path: "${PILOT_CONFIG_DIR}/bootstrap.env"
+        format: raw
+    entrypoint: [psql, -X, -v, ON_ERROR_STOP=1, -f, /opt/pilot/bootstrap.sql]
+    volumes: ["./bootstrap.sql:/opt/pilot/bootstrap.sql:ro"]
+    networks: [data]
+    depends_on:
+      db: {condition: service_healthy}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  migrate:
+    profiles: [migrate]
+    image: ${PILOT_POSTGRES_IMAGE}
+    user: postgres
+    env_file:
+      - path: "${PILOT_CONFIG_DIR}/migration.env"
+        format: raw
+    entrypoint: [/bin/bash, /opt/pilot/migrate.sh]
+    volumes:
+      - ./migrate.sh:/opt/pilot/migrate.sh:ro
+      - ../../packages/db/migrations/postgres:/migrations:ro
+    networks: [data]
+    depends_on:
+      db: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp:size=16m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+networks:
+  data: {internal: true}
+  egress: {}
+volumes:
+  pgdata:
+    external: true
+    name: ${PILOT_PG_VOLUME:?Existing dedicated Pilot volume required; do not create duplicates}

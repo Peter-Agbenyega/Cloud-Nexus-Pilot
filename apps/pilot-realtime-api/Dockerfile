@@ -1,18 +1,19 @@
-FROM node:22-bookworm-slim AS builder
+FROM node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9 AS builder
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY apps/pilot-realtime-api/package.json ./apps/pilot-realtime-api/package.json
 
-RUN npm ci --workspace=@cloudnexus/pilot-realtime-api
+RUN npm install --global npm@10.9.9 \
+  && npm ci --workspace=@cloudnexus/pilot-realtime-api
 
 COPY apps/pilot-realtime-api ./apps/pilot-realtime-api
 
 RUN npm run build --workspace=@cloudnexus/pilot-realtime-api
 
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9 AS runtime
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
@@ -23,7 +24,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/pilot-realtime-api/package.json ./apps/pilot-realtime-api/package.json
 
-RUN npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api \
+RUN npm install --global npm@10.9.9 \
+  && npm ci --omit=dev --workspace=@cloudnexus/pilot-realtime-api \
   && npm cache clean --force
 
 COPY --from=builder \

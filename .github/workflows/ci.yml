@@ -47,3 +47,18 @@ jobs:
       - name: Test realtime release operations
         if: matrix.project == 'apps/pilot-realtime-api'
         run: npm run test:realtime-ops
+
+  pilot-release-preparation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Validate dedicated Pilot deployment contract
+        run: python3 -m unittest discover -s ops/pilot/tests -p 'test_*.py' -v
+      - name: Test original release-evidence checker
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Check migration script syntax
+        run: bash -n ops/pilot/start-postgres.sh ops/pilot/migrate.sh
+      # This is preparation only. No deployment, registry push or secrets.

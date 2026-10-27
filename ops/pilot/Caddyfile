@@ -1,0 +1,45 @@
+# Dedicated Pilot guest only. Supply hostname/origin variables to Caddy's
+# systemd environment; validate before installing any fragment. No access logs.
+{$PILOT_IDENTITY_HOST} {
+    # Preserve security-handler order; Caddy default sorting puts handle before respond.
+    route {
+        @foreign {
+            header Origin *
+            not header Origin {$PILOT_WEB_ORIGIN}
+        }
+        respond @foreign 403
+        header {
+            Access-Control-Allow-Origin {$PILOT_WEB_ORIGIN}
+            Access-Control-Allow-Credentials true
+            Access-Control-Allow-Methods "GET,POST,PATCH,PUT,DELETE,OPTIONS"
+            Access-Control-Allow-Headers "apikey,authorization,content-type,x-client-info,x-supabase-api-version,prefer,accept-profile,content-profile"
+            Vary Origin
+            X-Content-Type-Options nosniff
+            Referrer-Policy no-referrer
+            Strict-Transport-Security "max-age=31536000"
+            -Server
+        }
+        @preflight method OPTIONS
+        respond @preflight 204
+        request_body {
+            max_size 4MB
+        }
+        @admin path /auth/v1/admin /auth/v1/admin/*
+        respond @admin 404
+        handle_path /auth/v1/* {
+            reverse_proxy 127.0.0.1:54191
+        }
+        handle_path /rest/v1/* {
+            reverse_proxy 127.0.0.1:54192
+        }
+        respond 404
+    }
+}
+{$PILOT_REALTIME_HOST} {
+    header {
+        X-Content-Type-Options nosniff
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+    reverse_proxy 127.0.0.1:3010
+}

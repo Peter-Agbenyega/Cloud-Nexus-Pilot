@@ -1,0 +1,18 @@
+{
+  "status": "proposal_only_not_applied",
+  "projectId": "prj_gv3EGRDtboiptK7DcevvsxvvJnoR",
+  "teamId": "team_MUZZoWAsIqodGK9XbE3LY9dZ",
+  "current": {
+    "nodeVersion": "24.x",
+    "installCommand": null,
+    "buildCommand": null,
+    "rootDirectory": "apps/cloud-nexus-pilot"
+  },
+  "proposed": {
+    "nodeVersion": "22.x",
+    "installCommand": "cd ../.. && npm ci",
+    "buildCommand": "npm run build"
+  },
+  "reason": "Align the reviewed Node22 application/runtime and root locked installation before staging qualification. Commands execute from the configured frontend root directory.",
+  "guard": "Project settings affect future production builds too. Review and authorize this exact project change with staging setup; do not apply automatically. No production branch, domain, environment value or deployment is changed by this file."
+}

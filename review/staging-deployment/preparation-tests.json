@@ -1,0 +1,18 @@
+{
+  "source_sha": "2e25b1d5ed49acfff9a5dbd07e4c73e5c85e09b0",
+  "at": "2026-10-27T21:29:37.683672+00:00",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "ops/pilot/tests",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "log": "preparation-tests.log",
+  "sha256": "c828cbc06502c2dc71b2efad1fbd81edb00b71805b34f23737f812fbe6e2906b"
+}

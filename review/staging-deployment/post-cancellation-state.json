@@ -1,0 +1,18 @@
+{
+  "recorded_at": "2026-10-27T21:19:23.733726+00:00",
+  "source_sha": "ea7708753d5a5945ddd4ebbafe9bf067490b9309",
+  "guest_id": 215,
+  "guest_address": "192.168.68.54",
+  "guest_name": "cnx-pilot-staging-01",
+  "observed": {
+    "pilot_volume_exists": false,
+    "any_docker_volumes": false,
+    "pilot_containers_exist": false,
+    "caddy": "inactive",
+    "ufw": "active; only 22/tcp from 192.168.68.0/22",
+    "realtime_image": "sha256:2a909d8442e9669d45dd6003334d926b1a1648eec07d2c6eeb7b4b1d14d631de",
+    "architecture": "amd64"
+  },
+  "canceled_initialization": "No volume or containers observed; bootstrap and migrations not executed.",
+  "public_routing_enabled": false
+}

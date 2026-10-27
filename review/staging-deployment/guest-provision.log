@@ -1,0 +1,135 @@
+noble-server-cloudimg-amd64.img: OK
+importing disk '/var/lib/vz/import/cnp-pilot-215/noble-server-cloudimg-amd64.img' to VM 215 ...
+  Logical volume "vm-215-disk-0" created.
+  Logical volume pve/vm-215-disk-0 changed.
+transferred 0.0 B of 3.5 GiB (0.00%)
+transferred 35.8 MiB of 3.5 GiB (1.00%)
+transferred 73.1 MiB of 3.5 GiB (2.04%)
+transferred 111.8 MiB of 3.5 GiB (3.12%)
+transferred 147.7 MiB of 3.5 GiB (4.12%)
+transferred 183.9 MiB of 3.5 GiB (5.13%)
+transferred 219.7 MiB of 3.5 GiB (6.13%)
+transferred 255.5 MiB of 3.5 GiB (7.13%)
+transferred 291.4 MiB of 3.5 GiB (8.13%)
+transferred 327.2 MiB of 3.5 GiB (9.13%)
+transferred 363.1 MiB of 3.5 GiB (10.13%)
+transferred 398.9 MiB of 3.5 GiB (11.13%)
+transferred 434.7 MiB of 3.5 GiB (12.13%)
+transferred 470.9 MiB of 3.5 GiB (13.14%)
+transferred 506.8 MiB of 3.5 GiB (14.14%)
+transferred 542.6 MiB of 3.5 GiB (15.14%)
+transferred 578.5 MiB of 3.5 GiB (16.14%)
+transferred 614.3 MiB of 3.5 GiB (17.14%)
+transferred 650.1 MiB of 3.5 GiB (18.14%)
+transferred 686.0 MiB of 3.5 GiB (19.14%)
+transferred 721.8 MiB of 3.5 GiB (20.14%)
+transferred 758.0 MiB of 3.5 GiB (21.15%)
+transferred 793.9 MiB of 3.5 GiB (22.15%)
+transferred 829.7 MiB of 3.5 GiB (23.15%)
+transferred 865.5 MiB of 3.5 GiB (24.15%)
+transferred 901.4 MiB of 3.5 GiB (25.15%)
+transferred 937.2 MiB of 3.5 GiB (26.15%)
+transferred 973.1 MiB of 3.5 GiB (27.15%)
+transferred 1008.9 MiB of 3.5 GiB (28.15%)
+transferred 1.0 GiB of 3.5 GiB (29.16%)
+transferred 1.1 GiB of 3.5 GiB (30.16%)
+transferred 1.1 GiB of 3.5 GiB (31.16%)
+transferred 1.1 GiB of 3.5 GiB (32.16%)
+transferred 1.2 GiB of 3.5 GiB (33.16%)
+transferred 1.2 GiB of 3.5 GiB (34.16%)
+transferred 1.2 GiB of 3.5 GiB (35.16%)
+transferred 1.3 GiB of 3.5 GiB (36.17%)
+transferred 1.3 GiB of 3.5 GiB (37.17%)
+transferred 1.3 GiB of 3.5 GiB (38.17%)
+transferred 1.4 GiB of 3.5 GiB (39.17%)
+transferred 1.4 GiB of 3.5 GiB (40.17%)
+transferred 1.4 GiB of 3.5 GiB (41.17%)
+transferred 1.5 GiB of 3.5 GiB (42.17%)
+transferred 1.5 GiB of 3.5 GiB (43.17%)
+transferred 1.5 GiB of 3.5 GiB (44.18%)
+transferred 1.6 GiB of 3.5 GiB (45.18%)
+transferred 1.6 GiB of 3.5 GiB (46.18%)
+transferred 1.7 GiB of 3.5 GiB (47.18%)
+transferred 1.7 GiB of 3.5 GiB (48.18%)
+transferred 1.7 GiB of 3.5 GiB (49.18%)
+transferred 1.8 GiB of 3.5 GiB (50.18%)
+transferred 1.8 GiB of 3.5 GiB (51.18%)
+transferred 1.8 GiB of 3.5 GiB (52.19%)
+transferred 1.9 GiB of 3.5 GiB (53.19%)
+transferred 1.9 GiB of 3.5 GiB (54.19%)
+transferred 1.9 GiB of 3.5 GiB (55.19%)
+transferred 2.0 GiB of 3.5 GiB (56.19%)
+transferred 2.0 GiB of 3.5 GiB (57.19%)
+transferred 2.0 GiB of 3.5 GiB (58.19%)
+transferred 2.1 GiB of 3.5 GiB (59.19%)
+transferred 2.1 GiB of 3.5 GiB (60.20%)
+transferred 2.1 GiB of 3.5 GiB (61.20%)
+transferred 2.2 GiB of 3.5 GiB (62.20%)
+transferred 2.2 GiB of 3.5 GiB (63.20%)
+transferred 2.2 GiB of 3.5 GiB (64.20%)
+transferred 2.3 GiB of 3.5 GiB (65.20%)
+transferred 2.3 GiB of 3.5 GiB (66.20%)
+transferred 2.4 GiB of 3.5 GiB (67.21%)
+transferred 2.4 GiB of 3.5 GiB (68.21%)
+transferred 2.4 GiB of 3.5 GiB (69.21%)
+transferred 2.5 GiB of 3.5 GiB (70.21%)
+transferred 2.5 GiB of 3.5 GiB (71.21%)
+transferred 2.5 GiB of 3.5 GiB (72.21%)
+transferred 2.6 GiB of 3.5 GiB (73.21%)
+transferred 2.6 GiB of 3.5 GiB (74.21%)
+transferred 2.6 GiB of 3.5 GiB (75.22%)
+transferred 2.7 GiB of 3.5 GiB (76.22%)
+transferred 2.7 GiB of 3.5 GiB (77.22%)
+transferred 2.7 GiB of 3.5 GiB (78.22%)
+transferred 2.8 GiB of 3.5 GiB (79.22%)
+transferred 2.8 GiB of 3.5 GiB (80.22%)
+transferred 2.8 GiB of 3.5 GiB (81.22%)
+transferred 2.9 GiB of 3.5 GiB (82.22%)
+transferred 2.9 GiB of 3.5 GiB (83.23%)
+transferred 2.9 GiB of 3.5 GiB (84.23%)
+transferred 3.0 GiB of 3.5 GiB (85.23%)
+transferred 3.0 GiB of 3.5 GiB (86.23%)
+transferred 3.1 GiB of 3.5 GiB (87.23%)
+transferred 3.1 GiB of 3.5 GiB (88.23%)
+transferred 3.1 GiB of 3.5 GiB (89.23%)
+transferred 3.2 GiB of 3.5 GiB (90.23%)
+transferred 3.2 GiB of 3.5 GiB (91.24%)
+transferred 3.2 GiB of 3.5 GiB (92.24%)
+transferred 3.3 GiB of 3.5 GiB (93.24%)
+transferred 3.3 GiB of 3.5 GiB (94.24%)
+transferred 3.3 GiB of 3.5 GiB (95.24%)
+transferred 3.4 GiB of 3.5 GiB (96.24%)
+transferred 3.4 GiB of 3.5 GiB (97.24%)
+transferred 3.4 GiB of 3.5 GiB (98.25%)
+transferred 3.5 GiB of 3.5 GiB (99.25%)
+transferred 3.5 GiB of 3.5 GiB (100.00%)
+transferred 3.5 GiB of 3.5 GiB (100.00%)
+scsi0: successfully imported disk 'local-lvm:vm-215-disk-0'
+  Size of logical volume pve/vm-215-disk-0 changed from 3.50 GiB (896 extents) to 96.00 GiB (24576 extents).
+  Logical volume pve/vm-215-disk-0 successfully resized.
+update VM 215: -boot order=scsi0 -cicustom user=local:snippets/cnp-pilot-215-user.yaml -ide2 local-lvm:cloudinit -ipconfig0 ip=dhcp
+  Logical volume "vm-215-cloudinit" created.
+  Logical volume pve/vm-215-cloudinit changed.
+ide2: successfully created disk 'local-lvm:vm-215-cloudinit,media=cdrom'
+generating cloud-init ISO
+generating cloud-init ISO
+agent: enabled=1
+boot: order=scsi0
+cicustom: user=local:snippets/cnp-pilot-215-user.yaml
+cores: 4
+cpu: host
+ide2: local-lvm:vm-215-cloudinit,media=cdrom
+ipconfig0: ip=dhcp
+memory: 8192
+meta: creation-qemu=11.0.3,ctime=1793134860
+name: cnx-pilot-staging-01
+net0: virtio=BC:24:11:49:4B:E4,bridge=vmbr0
+onboot: 0
+scsi0: local-lvm:vm-215-disk-0,size=96G
+scsihw: virtio-scsi-pci
+serial0: socket
+smbios1: uuid=b1cf4a42-41a8-41ef-ad90-74f6b5c6046d
+tags: cloud-nexus-pilot;staging
+vga: serial0
+vmgenid: 9dc9b886-1736-4dd5-8563-4926f74b8fa2
+04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94  noble-server-cloudimg-amd64.img

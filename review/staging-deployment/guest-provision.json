@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-27T21:01:30.302579+00:00",
+  "exit": 0,
+  "guest_id": 215,
+  "host": "pve01.cloudnexus.home",
+  "disk": "local-lvm:96GiB",
+  "source": "ea7708753d5a5945ddd4ebbafe9bf067490b9309",
+  "log": "guest-provision.log"
+}

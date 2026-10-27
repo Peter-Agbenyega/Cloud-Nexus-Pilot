@@ -1,0 +1,19 @@
+cnx-pilot-staging-01
+cloud-nexus-pilot-rest-1 Up 2 minutes 127.0.0.1:54192->3000/tcp, 127.0.0.1:54193->3001/tcp
+cloud-nexus-pilot-auth-1 Up 2 minutes 127.0.0.1:54191->9999/tcp
+cloud-nexus-pilot-db-1 Up 2 minutes (healthy) 5432/tcp
+                 name                 |                              sha256                              |          applied_at           
+--------------------------------------+------------------------------------------------------------------+-------------------------------
+ 002_cloud_nexus_pilot_interviews.sql | c876d10dc7280a6978e7b8eedbc0e255dcc2adab3e4af170abe6bc9923c58e43 | 2026-10-27 21:24:19.303594+00
+ 003_pilot_durable_processing.sql     | 7d76da0f8dccbdada5a957576c5162cec6f93ba3483bed8abce2116d98570652 | 2026-10-27 21:24:19.458611+00
+(2 rows)
+
+PublishedDBPorts={}
+inactive
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW       192.168.68.0/22           
+
+aedec5d788b21c389fc5cefe41da67f1f1f9a6e7262ff651ecb713c6b27eb35d  /opt/cloud-nexus-pilot/ops/pilot/compose.yaml

@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-27T21:29:03.484149+00:00",
+  "command": [
+    "ssh",
+    "-i",
+    "/private/tmp/cnp-pilot-local-stack/pilot-staging-ed25519",
+    "-o",
+    "UserKnownHostsFile=/private/tmp/cnp-pilot-local-stack/staging-known-hosts",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "BatchMode=yes",
+    "pilot@192.168.68.54",
+    "hostname; sudo docker ps --format '{{.Names}} {{.Status}} {{.Ports}}'; sudo docker exec --user postgres cloud-nexus-pilot-db-1 psql -X -h /tmp -U postgres -d pilot -c 'SELECT name,sha256,applied_at FROM pilot_ops.migrations ORDER BY name'; sudo docker inspect cloud-nexus-pilot-db-1 --format 'PublishedDBPorts={{json .HostConfig.PortBindings}}'; sudo systemctl is-active caddy; sudo ufw status; sha256sum /opt/cloud-nexus-pilot/ops/pilot/compose.yaml"
+  ],
+  "exit_code": 0,
+  "log": "guest-state.log",
+  "log_sha256": "5aec2a616ff96daaf1f5647acc862f5e214156df387be7ef832a2c4da4ef5f1c",
+  "local_compose_sha256": "aedec5d788b21c389fc5cefe41da67f1f1f9a6e7262ff651ecb713c6b27eb35d"
+}

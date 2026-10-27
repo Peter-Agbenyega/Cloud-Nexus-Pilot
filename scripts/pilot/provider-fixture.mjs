@@ -1,7 +1,9 @@
 // Synthetic local protocol fixture. It performs NO speech recognition/model
 // inference and never contacts a provider. Do not deploy as a provider service.
 import { createServer } from "node:http";
+import { inspectFixtureWav } from "./audio-diagnostics.mjs";
 let transcriptionCalls = 0, guidanceCalls = 0;
+const audio = { wavChunks: 0, nonSilentChunks: 0, wavBytes: 0, peak: 0, lastChunk: null };
 const server = createServer(async (request, response) => {
   if (request.method === "GET" && request.url === "/fixture-tone") {
     response.setHeader("content-type", "text/html; charset=utf-8");
@@ -10,7 +12,7 @@ const server = createServer(async (request, response) => {
   }
   if (request.method === "GET" && request.url === "/fixture-status") {
     response.setHeader("content-type", "application/json");
-    response.end(JSON.stringify({ synthetic: true, transcriptionCalls, guidanceCalls })); return;
+    response.end(JSON.stringify({ synthetic: true, transcriptionCalls, guidanceCalls, audio })); return;
   }
   const chunks = []; let size = 0;
   try {
@@ -18,6 +20,13 @@ const server = createServer(async (request, response) => {
     if (request.method !== "POST") { response.writeHead(404).end(); return; }
     if (request.url === "/v1/audio/transcriptions") {
       transcriptionCalls++;
+      const measured = inspectFixtureWav(Buffer.concat(chunks));
+      if (measured) {
+        audio.wavChunks++; audio.wavBytes += measured.wavBytes;
+        if (measured.rms > 0.001) audio.nonSilentChunks++;
+        audio.peak = Math.max(audio.peak, measured.peak);
+        audio.lastChunk = { ...measured, receivedAt: new Date().toISOString() };
+      }
       response.setHeader("content-type", "application/json");
       response.end(JSON.stringify({ text: "What is infrastructure as code?" })); return;
     }

@@ -254,7 +254,6 @@ export class WebSocketRuntime {
       }
 
       let resolved = false;
-      let graceTimer: NodeJS.Timeout | undefined;
       const finish = (): void => {
         if (resolved) {
           return;
@@ -267,7 +266,7 @@ export class WebSocketRuntime {
         this.shutdownDrainWaiters.delete(finish);
         resolve();
       };
-      graceTimer = setTimeout(() => {
+      const graceTimer = setTimeout(() => {
         graceExpired = true;
         finish();
       }, graceMs);

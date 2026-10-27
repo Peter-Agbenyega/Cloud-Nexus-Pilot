@@ -44,7 +44,7 @@ function makeVerifiedToken(userId = TEST_USER_ID, seconds = 60): VerifiedAuthTok
 
 function createFakeAuthVerifier(overrides: Record<string, VerifiedAuthToken | Error> = {}): AuthVerifier {
   return {
-    async verifyAccessToken(accessToken: string, _signal: AbortSignal): Promise<VerifiedAuthToken> {
+    async verifyAccessToken(accessToken: string): Promise<VerifiedAuthToken> {
       const configured = overrides[accessToken];
       if (configured instanceof Error) {
         throw configured;
@@ -1159,7 +1159,7 @@ test("pre-auth session.end is rejected", async (t) => {
 test("duplicate initial authentication is rejected", async (t) => {
   let resolveVerification: (token: VerifiedAuthToken) => void = () => {};
   const verifier: AuthVerifier = {
-    verifyAccessToken: (_accessToken: string, _signal: AbortSignal) =>
+    verifyAccessToken: () =>
       new Promise<VerifiedAuthToken>((resolve) => {
         resolveVerification = resolve;
       }),
@@ -1296,7 +1296,7 @@ test("reauthentication with a different sub is rejected", async (t) => {
 
 test("verifier exceptions fail closed", async (t) => {
   const verifier: AuthVerifier = {
-    async verifyAccessToken(_accessToken: string, _signal: AbortSignal) {
+    async verifyAccessToken() {
       throw new Error("network unavailable");
     },
   };

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CaptureDisclosure } from "./capture-disclosure";
 import { SavedSessionPicker } from "./saved-session-picker";
+import { captureFailureMessage } from "@/features/transcription/audio-capture";
 
 import { requestOwnedGuidance, readFinalGuidance } from "@/features/transcription/guidance-session-client";
 import { useTranscriptionWorkflow } from "@/features/transcription/use-transcription-workflow";
@@ -593,10 +594,9 @@ export function ReadyStateLaunchPanel() {
     } catch (error) {
       if (!ownership.isCurrent(token)) return;
       await handleEndSession();
-      const denied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "AbortError");
       setCaptureState({
         status: "failed",
-        detail: denied ? "Please allow access to start." : "Unable to start right now. Please try again.",
+        detail: captureFailureMessage(error),
         streamId: null,
       });
       setLaunchFlowStep("ready");

@@ -3,7 +3,14 @@ import { test } from "node:test";
 import { createPcm16Resampler, downsampleFloat32ToPcm16, encodePcm16ToWavBlob, mergeInt16Chunks } from "../../lib/audio/pcm-encoder";
 import { createLiveAudioPipeline, type LiveAudioPipelineChunk } from "../../lib/audio/live-audio-pipeline";
 import { cleanTranscriptText } from "../../features/transcription/transcript-bridge";
-import { createCaptureStream, requireActiveAudioTracks } from "../../features/transcription/audio-capture";
+import { captureFailureMessage, createCaptureStream, requireActiveAudioTracks } from "../../features/transcription/audio-capture";
+
+test("capture failures identify the browser boundary and do not expose arbitrary diagnostics", () => {
+  assert.match(captureFailureMessage(new DOMException("private diagnostic", "InvalidStateError")), /direct user click/);
+  assert.match(captureFailureMessage(new DOMException("private diagnostic", "NotReadableError")), /operating system/);
+  assert.match(captureFailureMessage(new DOMException("private diagnostic", "NotAllowedError")), /denied or sharing was cancelled/);
+  assert.doesNotMatch(captureFailureMessage(new Error("private diagnostic")), /private diagnostic/);
+});
 
 for (const rate of [44_100, 48_000]) {
   test(`${rate} Hz capture preserves sample count and fractional phase over arbitrary callback boundaries`, () => {

@@ -1,5 +1,19 @@
 export type LiveTranscriptionSource = "microphone" | "system-audio";
 
+/** Report the failed browser boundary without exposing arbitrary diagnostic text. */
+export function captureFailureMessage(error: unknown): string {
+  if (error instanceof DOMException) {
+    switch (error.name) {
+      case "NotAllowedError": return "Capture permission was denied or sharing was cancelled. Select the source again; no microphone fallback was started.";
+      case "InvalidStateError": return "The browser requires a focused page and a direct user click to open capture. Focus Pilot and press Start Session again.";
+      case "NotReadableError": return "The browser or operating system could not read the selected source. Check screen-sharing permissions, or explicitly choose Microphone or a completed WAV upload.";
+      case "NotFoundError": return "No supported capture source was found. Choose another source explicitly or upload a completed WAV file.";
+      case "AbortError": return "Capture was interrupted before it started. Select the source again or use a completed WAV upload.";
+    }
+  }
+  return "Capture or transcription setup failed. No capture is continuing. Check the transcript status, then retry or use a completed WAV upload.";
+}
+
 const MIME_TYPE_CANDIDATES = [
   "audio/webm;codecs=opus",
   "audio/webm",

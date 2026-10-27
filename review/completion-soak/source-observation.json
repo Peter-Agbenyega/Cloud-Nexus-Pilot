@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-10-27T14:32:48.343590+00:00",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "branch": "fix/pilot-quality-gates",
+  "sha256": {
+    "scripts/pilot/test-local-soak.mjs": "495be9531729becf19a0286f24aa0f32b51006c6cadfdc5a21341ba35bd04daf",
+    "package-lock.json": "505e81e87e0b90520315debb7fa498a9a7ff98bd50ee9c43a3dd3074a1810d0f",
+    "apps/cloud-nexus-pilot/lib/server/protected-transcription.ts": "dbf0f390385251e030862511569c4747c21aa131647018b6ab95d37a20b93a19",
+    "apps/cloud-nexus-pilot/lib/server/processing-repository.ts": "72658b0716a8f20cff082b831399725d000ed334ff71c3cf244d98c865de8efe",
+    "packages/db/migrations/postgres/003_pilot_durable_processing.sql": "7d76da0f8dccbdada5a957576c5162cec6f93ba3483bed8abce2116d98570652"
+  },
+  "next_build_id_file_observation": "lY1c4vCDtObGLCe7rfWW4",
+  "build_id_limitation": "The build-ID file can reflect a replacement build before the running process restarts. Lead retains running-process source transition records separately.",
+  "node": "v22.23.3",
+  "initial_dispatch_session_id": 5584,
+  "synthetic_only": true
+}

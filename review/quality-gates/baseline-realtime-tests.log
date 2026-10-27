@@ -1,0 +1,786 @@
+
+> @cloudnexus/pilot-realtime-api@0.1.0 test
+> npm run build && npm run test:run
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 test:run
+> node --test dist/*.test.js
+
+TAP version 13
+# Subtest: allows a configured production Origin
+not ok 1 - allows a configured production Origin
+  ---
+  duration_ms: 83.45175
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:265:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: rejects oversized WebSocket messages without crashing
+not ok 2 - rejects oversized WebSocket messages without crashing
+  ---
+  duration_ms: 4.064041
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:275:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: enforces the global active-session limit and decrements after close
+not ok 3 - enforces the global active-session limit and decrements after close
+  ---
+  duration_ms: 2.571042
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:292:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: enforces per-IP active-session limits without trusting forwarded headers
+not ok 4 - enforces per-IP active-session limits without trusting forwarded headers
+  ---
+  duration_ms: 2.482709
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:311:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: ignores forwarded client IP headers when trusted proxy is disabled
+ok 5 - ignores forwarded client IP headers when trusted proxy is disabled
+  ---
+  duration_ms: 11.465667
+  type: 'test'
+  ...
+# Subtest: uses forwarded client IP only from configured trusted proxy addresses
+ok 6 - uses forwarded client IP only from configured trusted proxy addresses
+  ---
+  duration_ms: 1.785375
+  type: 'test'
+  ...
+# Invalid environment configuration: {
+#   SUPABASE_URL: [
+#     'Production SUPABASE_URL is required for WebSocket authentication.'
+#   ],
+#   SUPABASE_PUBLISHABLE_KEY: [
+#     'Production SUPABASE_PUBLISHABLE_KEY is required for WebSocket authentication.'
+#   ]
+# }
+# Invalid environment configuration: { SUPABASE_URL: [ 'SUPABASE_URL must use HTTPS outside test mode.' ] }
+# Invalid environment configuration: {
+#   SUPABASE_PUBLISHABLE_KEY: [ 'SUPABASE_PUBLISHABLE_KEY must not be a service-role secret.' ]
+# }
+# Subtest: does not accept a spoofed forwarded client IP from an untrusted peer
+ok 7 - does not accept a spoofed forwarded client IP from an untrusted peer
+  ---
+  duration_ms: 1.468125
+  type: 'test'
+  ...
+# Subtest: production Supabase auth configuration fails closed when invalid
+ok 8 - production Supabase auth configuration fails closed when invalid
+  ---
+  duration_ms: 1.507333
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims require authenticated non-anonymous users from the expected issuer
+ok 9 - verified Supabase claims require authenticated non-anonymous users from the expected issuer
+  ---
+  duration_ms: 0.9295
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims reject expiration boundaries fail-closed
+ok 10 - verified Supabase claims reject expiration boundaries fail-closed
+  ---
+  duration_ms: 0.28
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch passes already-aborted attempt signals to base fetch
+ok 11 - signal-aware fetch passes already-aborted attempt signals to base fetch
+  ---
+  duration_ms: 15.762292
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch combines attempt, Request, and RequestInit signals
+ok 12 - signal-aware fetch combines attempt, Request, and RequestInit signals
+  ---
+  duration_ms: 0.951375
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch preserves init values and handles duplicate signals
+ok 13 - signal-aware fetch preserves init values and handles duplicate signals
+  ---
+  duration_ms: 0.10775
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch returns a generic synthetic response after aborted base fetch
+ok 14 - signal-aware fetch returns a generic synthetic response after aborted base fetch
+  ---
+  duration_ms: 0.730917
+  type: 'test'
+  ...
+# Subtest: per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+not ok 15 - per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+  ---
+  duration_ms: 1.843375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:508:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: terminates WebSocket sessions that miss native heartbeat pongs
+not ok 16 - terminates WebSocket sessions that miss native heartbeat pongs
+  ---
+  duration_ms: 1.993792
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:547:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: closes idle WebSocket sessions and resets idle timeout on valid client traffic
+not ok 17 - closes idle WebSocket sessions and resets idle timeout on valid client traffic
+  ---
+  duration_ms: 1.410625
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:566:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: graceful shutdown rejects new sessions and closes active sessions with 1012
+not ok 18 - graceful shutdown rejects new sessions and closes active sessions with 1012
+  ---
+  duration_ms: 1.103375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:589:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: graceful shutdown closes authenticated sessions with 1012
+not ok 19 - graceful shutdown closes authenticated sessions with 1012
+  ---
+  duration_ms: 1.448791
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:602:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: graceful shutdown completes as soon as active sessions drain
+ok 20 - graceful shutdown completes as soon as active sessions drain
+  ---
+  duration_ms: 2.273042
+  type: 'test'
+  ...
+# Subtest: graceful shutdown isolates throwing shutdown callbacks
+ok 21 - graceful shutdown isolates throwing shutdown callbacks
+  ---
+  duration_ms: 1.002
+  type: 'test'
+  ...
+# Subtest: graceful shutdown terminates sockets that remain after the grace period
+ok 22 - graceful shutdown terminates sockets that remain after the grace period
+  ---
+  duration_ms: 6.236042
+  type: 'test'
+  ...
+# Subtest: allows a second configured Origin
+not ok 23 - allows a second configured Origin
+  ---
+  duration_ms: 1.503416
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:767:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: rejects an unauthorized browser Origin with HTTP 403
+not ok 24 - rejects an unauthorized browser Origin with HTTP 403
+  ---
+  duration_ms: 1.125583
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:777:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: trims whitespace around configured Origins
+not ok 25 - trims whitespace around configured Origins
+  ---
+  duration_ms: 0.989791
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:781:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: allows any Origin when CORS_ORIGIN is wildcard
+not ok 26 - allows any Origin when CORS_ORIGIN is wildcard
+  ---
+  duration_ms: 0.89625
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:791:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: allows missing Origin for trusted non-browser clients
+not ok 27 - allows missing Origin for trusted non-browser clients
+  ---
+  duration_ms: 0.997792
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:801:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: sends session.auth_required first and does not send session.ready before authentication
+not ok 28 - sends session.auth_required first and does not send session.ready before authentication
+  ---
+  duration_ms: 1.32325
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:811:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: valid token authenticates and enables ping/pong
+not ok 29 - valid token authenticates and enables ping/pong
+  ---
+  duration_ms: 2.338417
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:824:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: missing authentication times out and closes with 1008
+not ok 30 - missing authentication times out and closes with 1008
+  ---
+  duration_ms: 1.206208
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:840:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: invalid token closes with a generic authentication error and 1008
+not ok 31 - invalid token closes with a generic authentication error and 1008
+  ---
+  duration_ms: 1.016375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:853:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: token is never echoed in responses or logs
+not ok 32 - token is never echoed in responses or logs
+  ---
+  duration_ms: 0.976875
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:870:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: pre-auth binary input is rejected with a generic authentication failure
+not ok 33 - pre-auth binary input is rejected with a generic authentication failure
+  ---
+  duration_ms: 0.868084
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:898:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+not ok 34 - malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+  ---
+  duration_ms: 0.867959
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:915:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: pre-auth ping is rejected
+not ok 35 - pre-auth ping is rejected
+  ---
+  duration_ms: 0.855792
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:930:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: pre-auth session.end is rejected
+not ok 36 - pre-auth session.end is rejected
+  ---
+  duration_ms: 0.871958
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:943:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: duplicate initial authentication is rejected
+not ok 37 - duplicate initial authentication is rejected
+  ---
+  duration_ms: 3.218125
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:956:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: authenticated session.end still works
+not ok 38 - authenticated session.end still works
+  ---
+  duration_ms: 1.101167
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:977:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: authenticated runtime events are acknowledged without echoing content
+not ok 39 - authenticated runtime events are acknowledged without echoing content
+  ---
+  duration_ms: 0.900917
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:992:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: token expiration closes the socket
+not ok 40 - token expiration closes the socket
+  ---
+  duration_ms: 0.851917
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1014:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: successful reauthentication extends the session
+not ok 41 - successful reauthentication extends the session
+  ---
+  duration_ms: 0.803833
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1029:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: replaced expiration timer cannot close a refreshed session at the old expiration
+not ok 42 - replaced expiration timer cannot close a refreshed session at the old expiration
+  ---
+  duration_ms: 0.811583
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1048:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: reauthentication with a different sub is rejected
+not ok 43 - reauthentication with a different sub is rejected
+  ---
+  duration_ms: 0.821792
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1068:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: verifier exceptions fail closed
+not ok 44 - verifier exceptions fail closed
+  ---
+  duration_ms: 0.789834
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1082:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: late verifier completion after auth timeout cannot authenticate the session
+not ok 45 - late verifier completion after auth timeout cannot authenticate the session
+  ---
+  duration_ms: 0.852042
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1100:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: auth timeout aborts in-flight authentication verification
+not ok 46 - auth timeout aborts in-flight authentication verification
+  ---
+  duration_ms: 0.802875
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1118:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: client disconnect aborts in-flight authentication verification
+not ok 47 - client disconnect aborts in-flight authentication verification
+  ---
+  duration_ms: 0.884542
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1135:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: socket cleanup after terminated client aborts in-flight authentication verification
+not ok 48 - socket cleanup after terminated client aborts in-flight authentication verification
+  ---
+  duration_ms: 0.860792
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1146:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: late verifier completion after client disconnect cannot authenticate the session
+not ok 49 - late verifier completion after client disconnect cannot authenticate the session
+  ---
+  duration_ms: 0.844709
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1157:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: graceful shutdown during in-flight authentication keeps shutdown close code
+not ok 50 - graceful shutdown during in-flight authentication keeps shutdown close code
+  ---
+  duration_ms: 0.821292
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1167:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: superseded initial authentication aborts the active verifier
+not ok 51 - superseded initial authentication aborts the active verifier
+  ---
+  duration_ms: 0.93775
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1183:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: aborted initial authentication cannot send session.ready
+not ok 52 - aborted initial authentication cannot send session.ready
+  ---
+  duration_ms: 0.886833
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1201:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: aborted reauthentication cannot send session.auth_refreshed
+not ok 53 - aborted reauthentication cannot send session.auth_refreshed
+  ---
+  duration_ms: 3.182833
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1218:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: abort rejection is handled without an unhandled rejection
+not ok 54 - abort rejection is handled without an unhandled rejection
+  ---
+  duration_ms: 1.511959
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1248:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: abort reason and logs do not include the access token
+not ok 55 - abort reason and logs do not include the access token
+  ---
+  duration_ms: 1.904375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1273:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: cleanup clears authentication and expiration timers
+not ok 56 - cleanup clears authentication and expiration timers
+  ---
+  duration_ms: 1.187458
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1300:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: preserves ping/pong and session.end behavior
+not ok 57 - preserves ping/pong and session.end behavior
+  ---
+  duration_ms: 1.070292
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/dist/server.test.js:1310:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+1..57
+# tests 57
+# suites 0
+# pass 13
+# fail 44
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 505.150458
+npm error Lifecycle script `test:run` failed with error:
+npm error code 1
+npm error path /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error workspace @cloudnexus/pilot-realtime-api@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error command failed
+npm error command sh -c node --test dist/*.test.js
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error workspace @cloudnexus/pilot-realtime-api@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error command failed
+npm error command sh -c npm run build && npm run test:run

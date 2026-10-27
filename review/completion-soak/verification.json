@@ -1,0 +1,69 @@
+{
+  "verified_at": "2026-10-27T15:02:14.257345+00:00",
+  "label": "Local evidence consistency checks only; not a release checker or additional product tests",
+  "actual_session_elapsed_ms": 1810498,
+  "acknowledged_indices_equal_durable_indices": true,
+  "duplicate_final_indices": 0,
+  "explicit_gap_indices": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101
+  ],
+  "expiry_zero_provider_calls": true,
+  "stop_responses_succeeded": 2,
+  "script_unchanged_during_execution": true,
+  "raw_log_sha256_verified": true,
+  "client_rss_max_bytes": 47894704,
+  "frontend_rss_max_bytes": 108576768,
+  "runtime_pids": [
+    25026,
+    50941
+  ],
+  "initial_source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "final_source_head": "20528db1c2d1f6da208a3bd4eb9375c4fd5fe312",
+  "observed_final_build_id_file": "lD8zbZ3uTLUATyjAHbLNh",
+  "artifact_sha256": {
+    "executed-runner.py": "a04291db5a4671ef64f7acac7b799e3667006c27d038ffccad964fe96d6209fe",
+    "sandbox-attempt-synthetic-30-minute-soak.log": "a005db246746daa87ea796d674be16b5a84c7b2b936defa83a99fa3726f5fce1",
+    "result.json": "4e0093574e7441d00485f220ab16c8c392b50e98f548971c26791d61f77ca620",
+    "README.md": "af263b6045866937fb495447e8453d23d2f3a707bcc94a47c0e648faf95688b2",
+    "sandbox-attempt-events.jsonl": "56f53fe6afabccf20213b9c8214ed167dd2de896edae4409e6faa1d2bfd42b8c",
+    "sandbox-attempt-synthetic-30-minute-soak.json": "1937729f3df30ea5cc340d1aca8b16644ff2b35642f569a988494def35801cf1",
+    "events.jsonl": "1c2993703f90256966cbaf1d92a487846a069f3ae7a2f786e03b2609ac8e82f9",
+    "source-observation.json": "559c7839f0b08d30d798d47d67f720b986215b7e5f1beb68aaf697d61f1980ba",
+    "synthetic-30-minute-soak.json": "6d4bfb26e428ad75d8d3985dda96cfbc83fe86d09c29fd7421feeb26ccc5173c",
+    "synthetic-30-minute-soak.log": "2bc3f54301b9154c3b22b5357c62c12f097e30e2a81a11fcadc2c0d4d53a48d8"
+  },
+  "auxiliary_commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/node@22/bin/node",
+        "--check",
+        "scripts/pilot/test-local-soak.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "scripts/pilot/test-local-soak.mjs",
+        "review/completion-soak"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

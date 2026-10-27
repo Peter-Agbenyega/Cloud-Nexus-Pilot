@@ -1,0 +1,198 @@
+TAP version 13
+# Subtest: unauthenticated transcription rejects before reading or provider work
+ok 1 - unauthenticated transcription rejects before reading or provider work
+  ---
+  duration_ms: 75.432166
+  type: 'test'
+  ...
+# Subtest: foreign user cannot chunk an owned session
+ok 2 - foreign user cannot chunk an owned session
+  ---
+  duration_ms: 24.99825
+  type: 'test'
+  ...
+# Subtest: foreign user cannot stop an owned session
+ok 3 - foreign user cannot stop an owned session
+  ---
+  duration_ms: 10.334416
+  type: 'test'
+  ...
+# Subtest: foreign user cannot events an owned session
+ok 4 - foreign user cannot events an owned session
+  ---
+  duration_ms: 8.265208
+  type: 'test'
+  ...
+# Subtest: foreign user cannot GET saved records/export
+ok 5 - foreign user cannot GET saved records/export
+  ---
+  duration_ms: 8.138167
+  type: 'test'
+  ...
+# Subtest: foreign user cannot DELETE saved records/export
+ok 6 - foreign user cannot DELETE saved records/export
+  ---
+  duration_ms: 6.752541
+  type: 'test'
+  ...
+# Subtest: oversize without Content-Length stops stream consumption and never invokes provider
+ok 7 - oversize without Content-Length stops stream consumption and never invokes provider
+  ---
+  duration_ms: 15.25025
+  type: 'test'
+  ...
+# Subtest: misleading Content-Length cannot bypass measured-byte bound
+ok 8 - misleading Content-Length cannot bypass measured-byte bound
+  ---
+  duration_ms: 9.685167
+  type: 'test'
+  ...
+# Subtest: malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+ok 9 - malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+  ---
+  duration_ms: 37.095958
+  type: 'test'
+  ...
+# Subtest: exhausted quota rejects valid audio with no provider work
+ok 10 - exhausted quota rejects valid audio with no provider work
+  ---
+  duration_ms: 7.571208
+  type: 'test'
+  ...
+# Subtest: authorized valid audio reaches provider and commits once; retry replays saved result
+ok 11 - authorized valid audio reaches provider and commits once; retry replays saved result
+  ---
+  duration_ms: 9.696458
+  type: 'test'
+  ...
+# Subtest: chunk retry is owner/idempotency-bound and changed bytes conflict
+ok 12 - chunk retry is owner/idempotency-bound and changed bytes conflict
+  ---
+  duration_ms: 8.05375
+  type: 'test'
+  ...
+# Subtest: parallel retry cannot start a second provider call
+ok 13 - parallel retry cannot start a second provider call
+  ---
+  duration_ms: 12.200583
+  type: 'test'
+  ...
+# Subtest: interrupted body is cancelled with zero provider invocation
+ok 14 - interrupted body is cancelled with zero provider invocation
+  ---
+  duration_ms: 19.830792
+  type: 'test'
+  ...
+# Subtest: provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+ok 15 - provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+  ---
+  duration_ms: 7.2215
+  type: 'test'
+  ...
+# Subtest: provider exception details never escape the boundary
+ok 16 - provider exception details never escape the boundary
+  ---
+  duration_ms: 7.516709
+  type: 'test'
+  ...
+# Subtest: stopped session cannot restart processing and stop is idempotent
+ok 17 - stopped session cannot restart processing and stop is idempotent
+  ---
+  duration_ms: 13.646583
+  type: 'test'
+  ...
+# Subtest: JSON reader bounds actual bytes and rejects non-object/malformed content
+ok 18 - JSON reader bounds actual bytes and rejects non-object/malformed content
+  ---
+  duration_ms: 3.863083
+  type: 'test'
+  ...
+# Subtest: guidance quota denial invokes no model, permitted path persists validated final once
+ok 19 - guidance quota denial invokes no model, permitted path persists validated final once
+  ---
+  duration_ms: 47.331791
+  type: 'test'
+  ...
+# Subtest: guidance malformed or oversized body causes zero model invocations
+ok 20 - guidance malformed or oversized body causes zero model invocations
+  ---
+  duration_ms: 22.297458
+  type: 'test'
+  ...
+# Subtest: server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+ok 21 - server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+  ---
+  duration_ms: 1.669125
+  type: 'test'
+  ...
+# Subtest: spoofed or inconsistent WAV containers never invoke the provider
+ok 22 - spoofed or inconsistent WAV containers never invoke the provider
+  ---
+  duration_ms: 62.776125
+  type: 'test'
+  ...
+# Subtest: invalid provider shape is not saved as a final transcript
+ok 23 - invalid provider shape is not saved as a final transcript
+  ---
+  duration_ms: 8.750375
+  type: 'test'
+  ...
+# Subtest: leading-zero chunk-index aliases replay the same saved operation
+ok 24 - leading-zero chunk-index aliases replay the same saved operation
+  ---
+  duration_ms: 6.474
+  type: 'test'
+  ...
+# Subtest: durable repository false deletion cannot be acknowledged as deleted
+ok 25 - durable repository false deletion cannot be acknowledged as deleted
+  ---
+  duration_ms: 11.49525
+  type: 'test'
+  ...
+# Subtest: identity verification is interrupted without accepting a stale cookie principal
+ok 26 - identity verification is interrupted without accepting a stale cookie principal
+  ---
+  duration_ms: 18.127125
+  type: 'test'
+  ...
+# [transcription][upload] verification-start { fileName: 'reference.txt', contentType: 'text/plain', size: 20 }
+# [transcription][upload] local-text-ingest-success { fileName: 'reference.txt', contentType: 'text/plain', chars: 20 }
+# Subtest: per-runtime ingress bounds concurrent buffers before reading another owned request
+ok 27 - per-runtime ingress bounds concurrent buffers before reading another owned request
+  ---
+  duration_ms: 13.225875
+  type: 'test'
+  ...
+# Subtest: origin verification uses configured public origin rather than internal Next/proxy host
+ok 28 - origin verification uses configured public origin rather than internal Next/proxy host
+  ---
+  duration_ms: 2.915833
+  type: 'test'
+  ...
+# Subtest: oversized file input is rejected before browser reads or provider fetches
+ok 29 - oversized file input is rejected before browser reads or provider fetches
+  ---
+  duration_ms: 4.552083
+  type: 'test'
+  ...
+# Subtest: account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+ok 30 - account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+  ---
+  duration_ms: 5.747292
+  type: 'test'
+  ...
+# Subtest: capability disclosure requires identity and never returns configured credential values
+ok 31 - capability disclosure requires identity and never returns configured credential values
+  ---
+  duration_ms: 2.192666
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 728.047334

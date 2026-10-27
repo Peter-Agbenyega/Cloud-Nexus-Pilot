@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-10-27T16:07:34.489416+00:00",
+  "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+  "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH node --env-file=/private/tmp/cnp-pilot-local-stack/pilot.env scripts/pilot/local.mjs start",
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "log_directory": "/var/folders/p5/5_8s8wg16173_g5w8g3z8kjw0000gn/T/pilot-runtime-jxJZjq",
+  "listeners": "COMMAND   PID                    USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nnode    18004 peterchristianagbenyega   14u  IPv4 0x15f2fd0458caaea0      0t0  TCP 127.0.0.1:58093 (LISTEN)\nnode    23212 peterchristianagbenyega   12u  IPv4 0xd8cb5b2884c23ff0      0t0  TCP 127.0.0.1:3100 (LISTEN)\nnode    23213 peterchristianagbenyega   14u  IPv4 0xf2bf77f033283aa6      0t0  TCP 127.0.0.1:3310 (LISTEN)\n",
+  "notes": "Readiness curl checks in final-health-checks.json; launcher still running at observation, no exit code invented."
+}

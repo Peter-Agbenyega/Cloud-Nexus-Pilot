@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "install",
+    "--package-lock-only",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--offline"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T00:02:51.511168+00:00",
+  "finished_at": "2026-10-27T00:02:52.089433+00:00",
+  "exit_code": 1,
+  "log": "update-lock.log",
+  "sha256": "cc2b4a686017943c792e19e76a6f3fce6e5d9b7648818b75f4c63c1314af8483"
+}

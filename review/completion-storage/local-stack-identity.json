@@ -1,0 +1,72 @@
+{
+  "recorded_at": "2026-10-27T14:18:00.876176+00:00",
+  "containers": {
+    "db": {
+      "id": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+      "name": "cnp-pilot-local-193fb1f9-db",
+      "image": "supabase/postgres@sha256:be60aee15997daca475b710b734bc6bfe52cd544dcd7e9fd2ff58210b6747d83",
+      "state": "running",
+      "ports": {
+        "5432/tcp": null
+      },
+      "networks": [
+        "cnp-pilot-local-193fb1f9"
+      ]
+    },
+    "auth": {
+      "id": "e064b09081464d83744f759d1be3104fdec08278c8939865accf408f7a16408f",
+      "name": "cnp-pilot-local-193fb1f9-auth",
+      "image": "supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "state": "running",
+      "ports": {
+        "9999/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "58091"
+          }
+        ]
+      },
+      "networks": [
+        "cnp-pilot-local-193fb1f9",
+        "cnp-pilot-local-193fb1f9-frontend"
+      ]
+    },
+    "rest": {
+      "id": "e75d14d2a5cb94e0949d9b72a5cfba15af6b772343067da2befb72f95c7e1f3a",
+      "name": "cnp-pilot-local-193fb1f9-rest",
+      "image": "postgrest/postgrest@sha256:1347d7552b88f17832912c06afbf7c43209af6eeeb60834b04aae12c9bd9d5cc",
+      "state": "running",
+      "ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "58092"
+          }
+        ]
+      },
+      "networks": [
+        "cnp-pilot-local-193fb1f9",
+        "cnp-pilot-local-193fb1f9-frontend"
+      ]
+    }
+  },
+  "old_pg_container_id": "e7051de50fe4a418d1eff3aaf22ac650e802383e4fb3cded020ddf0ba1efdae5",
+  "same_private_pg_mount_preserved": "/private/tmp/cnp-pilot-local-stack/postgres-data",
+  "gateway_pid": 39856,
+  "gateway_url": "http://127.0.0.1:58090",
+  "env_path": "/private/tmp/cnp-pilot-local-stack/pilot.env",
+  "env_mode": "0o600",
+  "private_sessions_path": "/private/tmp/cnp-pilot-local-stack/sessions.json",
+  "migration002_unmodified": true,
+  "migration003_sha256": "a0af33d4eedd322b10a417ed7c3cfaa290ee151d7999963339f742f36567647b",
+  "migration003_file_sha256": "7d76da0f8dccbdada5a957576c5162cec6f93ba3483bed8abce2116d98570652",
+  "shared_database_or_guest_changes": false,
+  "data_network_internal": true,
+  "api_frontend_bridge_egress_possible": true,
+  "all_host_api_ports_loopback_only": true,
+  "postgres_host_port_exposed": false,
+  "limitations": [
+    "Historical pinned GoTrue/Postgres versions reused for local compatibility, not production patch approval",
+    "LocalHTTP synthetic identity/provider fixtures, no paid-provider or physical-audio claim"
+  ]
+}

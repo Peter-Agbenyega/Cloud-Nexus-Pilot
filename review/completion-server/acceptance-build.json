@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/local.mjs",
+    "build"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "started_at": "2026-10-27T14:11:22.400557+00:00",
+  "finished_at": "2026-10-27T14:11:35.625803+00:00",
+  "exit_code": 0,
+  "log": "acceptance-build.log",
+  "sha256": "ff784c49ab2f8b329eb28d23af8298aa177ca15d2f61c764d30df7ce1ac6976b"
+}

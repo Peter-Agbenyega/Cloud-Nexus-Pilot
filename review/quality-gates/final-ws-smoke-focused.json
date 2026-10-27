@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "ops/realtime/tests/ws-smoke.test.mjs"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T00:30:48.051886+00:00",
+  "finished_at": "2026-10-27T00:30:48.473151+00:00",
+  "exit_code": 0,
+  "log": "final-ws-smoke-focused.log",
+  "sha256": "3da4ef122a4adfba5a0879c7a28c9866f7ac1983b2ba0340272ce0d78f29df74"
+}

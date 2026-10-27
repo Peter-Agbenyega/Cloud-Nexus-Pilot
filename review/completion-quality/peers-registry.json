@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "eslint-config-next@15.5.28",
+    "peerDependencies",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:07:24.291202+00:00",
+  "finished_at": "2026-10-27T01:07:24.926102+00:00",
+  "exit_code": 0,
+  "log": "peers-registry.log",
+  "sha256": "e7f9f1e7762d5e7cf878a6178cca7068dd84aa85ba230fa752c8b4110a60760f"
+}

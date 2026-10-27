@@ -1,0 +1,871 @@
+
+> cloud-nexus-pilot@0.1.0 test
+> npm run test:realtime && npm run test:intelligence && npm run test:routes && npm run test:connectivity && npm run test:provider-routes && npm run test:transcription-errors && npm run test:report-persistence && npm run test:security-boundary
+
+
+> cloud-nexus-pilot@0.1.0 test:realtime
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/realtime/*.test.js
+
+TAP version 13
+# Subtest: auth_required triggers session.authenticate
+ok 1 - auth_required triggers session.authenticate
+  ---
+  duration_ms: 1.37375
+  type: 'test'
+  ...
+# Subtest: session.ready changes state to ready
+ok 2 - session.ready changes state to ready
+  ---
+  duration_ms: 0.75
+  type: 'test'
+  ...
+# Subtest: token never appears in logs, URL, or non-auth state
+ok 3 - token never appears in logs, URL, or non-auth state
+  ---
+  duration_ms: 0.168417
+  type: 'test'
+  ...
+# Subtest: authentication failure closes without reconnect
+ok 4 - authentication failure closes without reconnect
+  ---
+  duration_ms: 0.134708
+  type: 'test'
+  ...
+# Subtest: 1008 does not reconnect
+ok 5 - 1008 does not reconnect
+  ---
+  duration_ms: 0.127959
+  type: 'test'
+  ...
+# Subtest: 1012 reconnects
+ok 6 - 1012 reconnects
+  ---
+  duration_ms: 0.121042
+  type: 'test'
+  ...
+# Subtest: reconnect obtains a fresh token
+ok 7 - reconnect obtains a fresh token
+  ---
+  duration_ms: 0.151041
+  type: 'test'
+  ...
+# Subtest: explicit disconnect prevents reconnect
+ok 8 - explicit disconnect prevents reconnect
+  ---
+  duration_ms: 0.067584
+  type: 'test'
+  ...
+# Subtest: token refresh sends session.reauthenticate
+ok 9 - token refresh sends session.reauthenticate
+  ---
+  duration_ms: 0.303959
+  type: 'test'
+  ...
+# Subtest: duplicate refresh is prevented
+ok 10 - duplicate refresh is prevented
+  ---
+  duration_ms: 0.342667
+  type: 'test'
+  ...
+# Subtest: auth_refreshed clears refresh-in-flight state
+ok 11 - auth_refreshed clears refresh-in-flight state
+  ---
+  duration_ms: 0.150792
+  type: 'test'
+  ...
+# Subtest: cleanup removes listeners and timers
+ok 12 - cleanup removes listeners and timers
+  ---
+  duration_ms: 0.084042
+  type: 'test'
+  ...
+# Subtest: Strict Mode-style setup and cleanup does not create duplicate live sockets
+ok 13 - Strict Mode-style setup and cleanup does not create duplicate live sockets
+  ---
+  duration_ms: 0.069167
+  type: 'test'
+  ...
+# Subtest: ping, session.end, and clean disconnect use protocol messages safely
+ok 14 - ping, session.end, and clean disconnect use protocol messages safely
+  ---
+  duration_ms: 0.086125
+  type: 'test'
+  ...
+# Subtest: runtime event acknowledgements parse and runtime events serialize without URL tokens
+ok 15 - runtime event acknowledgements parse and runtime events serialize without URL tokens
+  ---
+  duration_ms: 0.128542
+  type: 'test'
+  ...
+# Subtest: session.end prevents reconnect when the server close arrives first
+ok 16 - session.end prevents reconnect when the server close arrives first
+  ---
+  duration_ms: 0.09525
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT closes the active WebSocket
+ok 17 - SIGNED_OUT closes the active WebSocket
+  ---
+  duration_ms: 0.049833
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT prevents reconnect
+ok 18 - SIGNED_OUT prevents reconnect
+  ---
+  duration_ms: 0.039625
+  type: 'test'
+  ...
+# Subtest: a later normal session start can connect again after SIGNED_OUT
+ok 19 - a later normal session start can connect again after SIGNED_OUT
+  ---
+  duration_ms: 0.041583
+  type: 'test'
+  ...
+# Subtest: first live session start connects
+ok 20 - first live session start connects
+  ---
+  duration_ms: 0.031875
+  type: 'test'
+  ...
+# Subtest: endSession closes the active WebSocket
+ok 21 - endSession closes the active WebSocket
+  ---
+  duration_ms: 0.04175
+  type: 'test'
+  ...
+# Subtest: starting a second live session reconnects after session.end
+ok 22 - starting a second live session reconnects after session.end
+  ---
+  duration_ms: 0.043417
+  type: 'test'
+  ...
+# Subtest: only one live WebSocket exists when connect is called repeatedly
+ok 23 - only one live WebSocket exists when connect is called repeatedly
+  ---
+  duration_ms: 0.036625
+  type: 'test'
+  ...
+# Subtest: connect does nothing while connecting, authenticating, ready, or reconnecting
+ok 24 - connect does nothing while connecting, authenticating, ready, or reconnecting
+  ---
+  duration_ms: 0.053458
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 71.547583
+
+> cloud-nexus-pilot@0.1.0 test:intelligence
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js
+
+TAP version 13
+# Subtest: late permission grant after teardown closes fake tracks instead of adopting them
+ok 1 - late permission grant after teardown closes fake tracks instead of adopting them
+  ---
+  duration_ms: 1.3
+  type: 'test'
+  ...
+# Subtest: startup failure closes the acquired fake stream before a fresh start
+ok 2 - startup failure closes the acquired fake stream before a fresh start
+  ---
+  duration_ms: 0.101875
+  type: 'test'
+  ...
+# Subtest: stop during async startup keeps a lock until old startup settles
+ok 3 - stop during async startup keeps a lock until old startup settles
+  ---
+  duration_ms: 0.086125
+  type: 'test'
+  ...
+# Subtest: failed authenticated cloud deletes reject without writing unrelated local storage
+ok 4 - failed authenticated cloud deletes reject without writing unrelated local storage
+  ---
+  duration_ms: 4.267541
+  type: 'test'
+  ...
+# Subtest: ingests a plain text resume and extracts structured profile data
+ok 5 - ingests a plain text resume and extracts structured profile data
+  ---
+  duration_ms: 1.661125
+  type: 'test'
+  ...
+# Subtest: ingests markdown job descriptions and extracts job profile data
+ok 6 - ingests markdown job descriptions and extracts job profile data
+  ---
+  duration_ms: 0.598209
+  type: 'test'
+  ...
+# Subtest: rejects oversized profile uploads before parsing
+ok 7 - rejects oversized profile uploads before parsing
+  ---
+  duration_ms: 0.242583
+  type: 'test'
+  ...
+# Subtest: rejects unsupported profile file types
+ok 8 - rejects unsupported profile file types
+  ---
+  duration_ms: 0.071375
+  type: 'test'
+  ...
+# Subtest: interview persistence falls back to local session storage without Supabase credentials
+ok 9 - interview persistence falls back to local session storage without Supabase credentials
+  ---
+  duration_ms: 1.421708
+  type: 'test'
+  ...
+# Subtest: local interview persistence stores transcript, question, guidance, and end state
+ok 10 - local interview persistence stores transcript, question, guidance, and end state
+  ---
+  duration_ms: 0.618292
+  type: 'test'
+  ...
+# Subtest: selects OpenAI only when an OpenAI key is available
+ok 11 - selects OpenAI only when an OpenAI key is available
+  ---
+  duration_ms: 0.591
+  type: 'test'
+  ...
+# Subtest: OpenAI provider streams chat-completion delta content
+ok 12 - OpenAI provider streams chat-completion delta content
+  ---
+  duration_ms: 20.354042
+  type: 'test'
+  ...
+# Subtest: saved empty Prompt Vault stays empty across reads and subsequent writes
+ok 13 - saved empty Prompt Vault stays empty across reads and subsequent writes
+  ---
+  duration_ms: 1.080292
+  type: 'test'
+  ...
+# Subtest: missing and malformed Prompt Vault storage retain prior starter fallback
+ok 14 - missing and malformed Prompt Vault storage retain prior starter fallback
+  ---
+  duration_ms: 0.151583
+  type: 'test'
+  ...
+# Subtest: auth return paths cannot escape origin through URL normalization
+ok 15 - auth return paths cannot escape origin through URL normalization
+  ---
+  duration_ms: 0.2275
+  type: 'test'
+  ...
+# Subtest: local fallback eligibility preserves billing authentication and route boundaries
+ok 16 - local fallback eligibility preserves billing authentication and route boundaries
+  ---
+  duration_ms: 0.077875
+  type: 'test'
+  ...
+# Subtest: mock interview asks role-specific first question using shared profile context
+ok 17 - mock interview asks role-specific first question using shared profile context
+  ---
+  duration_ms: 6.09025
+  type: 'test'
+  ...
+# Subtest: mock interview scores candidate answers and asks follow-up prompts
+ok 18 - mock interview scores candidate answers and asks follow-up prompts
+  ---
+  duration_ms: 1.039459
+  type: 'test'
+  ...
+# Subtest: mock interview can finish with a report
+ok 19 - mock interview can finish with a report
+  ---
+  duration_ms: 0.603
+  type: 'test'
+  ...
+# Subtest: natural speaking policy rejects routine AI-style openings
+ok 20 - natural speaking policy rejects routine AI-style openings
+  ---
+  duration_ms: 1.63025
+  type: 'test'
+  ...
+# Subtest: technical prompt keeps speak-now concise while preserving deeper detail
+ok 21 - technical prompt keeps speak-now concise while preserving deeper detail
+  ---
+  duration_ms: 0.427625
+  type: 'test'
+  ...
+# Subtest: candidate evidence policy allows personalization without invented experience
+ok 22 - candidate evidence policy allows personalization without invented experience
+  ---
+  duration_ms: 0.345583
+  type: 'test'
+  ...
+# Subtest: debugging prompt starts with actionable diagnosis
+ok 23 - debugging prompt starts with actionable diagnosis
+  ---
+  duration_ms: 0.169125
+  type: 'test'
+  ...
+# Subtest: behavioral prompt stays natural and does not expose template labels
+ok 24 - behavioral prompt stays natural and does not expose template labels
+  ---
+  duration_ms: 0.119875
+  type: 'test'
+  ...
+# Subtest: system design prompt separates architecture direction from components
+ok 25 - system design prompt separates architecture direction from components
+  ---
+  duration_ms: 0.096
+  type: 'test'
+  ...
+# Subtest: user prompt carries context without asking to repeat the question
+ok 26 - user prompt carries context without asking to repeat the question
+  ---
+  duration_ms: 0.151291
+  type: 'test'
+  ...
+# Subtest: provider auth fails closed when authentication is unconfigured
+ok 27 - provider auth fails closed when authentication is unconfigured
+  ---
+  duration_ms: 20.04325
+  type: 'test'
+  ...
+# Subtest: provider auth rejects absent and invalid sessions
+ok 28 - provider auth rejects absent and invalid sessions
+  ---
+  duration_ms: 0.211292
+  type: 'test'
+  ...
+# Subtest: provider auth rejects service roles, anonymous accounts and role-less identities
+ok 29 - provider auth rejects service roles, anonymous accounts and role-less identities
+  ---
+  duration_ms: 0.174875
+  type: 'test'
+  ...
+# Subtest: provider auth returns the verified ordinary user's ID
+ok 30 - provider auth returns the verified ordinary user's ID
+  ---
+  duration_ms: 0.611166
+  type: 'test'
+  ...
+# Subtest: authentication outages do not authorize provider access or leak errors
+ok 31 - authentication outages do not authorize provider access or leak errors
+  ---
+  duration_ms: 0.638667
+  type: 'test'
+  ...
+# Subtest: detects implicit technical prompts and classifies cloud debugging context
+ok 32 - detects implicit technical prompts and classifies cloud debugging context
+  ---
+  duration_ms: 2.0505
+  type: 'test'
+  ...
+# Subtest: suppresses previously seen questions by normalized dedupe key
+ok 33 - suppresses previously seen questions by normalized dedupe key
+  ---
+  duration_ms: 0.128083
+  type: 'test'
+  ...
+# Subtest: extracts resume and job profiles, then packs only relevant evidence
+ok 34 - extracts resume and job profiles, then packs only relevant evidence
+  ---
+  duration_ms: 2.135084
+  type: 'test'
+  ...
+# Subtest: classifies screen text from terminal and extracts operational errors
+ok 35 - classifies screen text from terminal and extracts operational errors
+  ---
+  duration_ms: 0.367208
+  type: 'test'
+  ...
+# Subtest: diagnoses terminal debugging artifacts with safe next steps
+ok 36 - diagnoses terminal debugging artifacts with safe next steps
+  ---
+  duration_ms: 0.36425
+  type: 'test'
+  ...
+# Subtest: generates a post-interview report from transcript text
+ok 37 - generates a post-interview report from transcript text
+  ---
+  duration_ms: 0.914916
+  type: 'test'
+  ...
+# [transcription][stream-session] event-publish {
+#   sessionId: 'fc37c759-57db-4ef4-909a-ef146f1560fc',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: 'fc37c759-57db-4ef4-909a-ef146f1560fc',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '0092cdc5-5878-498a-a99d-173056c9bffb',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '0092cdc5-5878-498a-a99d-173056c9bffb',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# Subtest: a streaming session cannot be read, subscribed to or stopped by another account
+ok 38 - a streaming session cannot be read, subscribed to or stopped by another account
+  ---
+  duration_ms: 3.255
+  type: 'test'
+  ...
+# Subtest: cross-account chunk ingest is rejected before provider invocation
+ok 39 - cross-account chunk ingest is rejected before provider invocation
+  ---
+  duration_ms: 0.286375
+  type: 'test'
+  ...
+# Subtest: empty owners cannot create or access streaming sessions
+ok 40 - empty owners cannot create or access streaming sessions
+  ---
+  duration_ms: 0.147042
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 119.695334
+
+> cloud-nexus-pilot@0.1.0 test:routes
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/routes/*.test.js
+
+TAP version 13
+# Subtest: rejects non-object or malformed JSON: "null"
+ok 1 - rejects non-object or malformed JSON: "null"
+  ---
+  duration_ms: 2.866
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "[]"
+ok 2 - rejects non-object or malformed JSON: "[]"
+  ---
+  duration_ms: 0.238167
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "\\"text\\""
+ok 3 - rejects non-object or malformed JSON: "\\"text\\""
+  ---
+  duration_ms: 0.433542
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "42"
+ok 4 - rejects non-object or malformed JSON: "42"
+  ---
+  duration_ms: 0.244417
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "true"
+ok 5 - rejects non-object or malformed JSON: "true"
+  ---
+  duration_ms: 0.658917
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "{broken"
+ok 6 - rejects non-object or malformed JSON: "{broken"
+  ---
+  duration_ms: 0.289292
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: ""
+ok 7 - rejects non-object or malformed JSON: ""
+  ---
+  duration_ms: 0.184625
+  type: 'test'
+  ...
+# Subtest: accepts a synthetic interview object
+ok 8 - accepts a synthetic interview object
+  ---
+  duration_ms: 3.198708
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 120.2255
+
+> cloud-nexus-pilot@0.1.0 test:connectivity
+> node --test scripts/test-supabase-connectivity.mjs
+
+TAP version 13
+# Subtest: missing or invalid configuration does not issue a request
+ok 1 - missing or invalid configuration does not issue a request
+  ---
+  duration_ms: 0.763
+  type: 'test'
+  ...
+# Subtest: health probe uses only a credential-free GET and preserves HTTP success
+ok 2 - health probe uses only a credential-free GET and preserves HTTP success
+  ---
+  duration_ms: 16.362375
+  type: 'test'
+  ...
+# Subtest: HTTP 401 remains an HTTP failure, never a DNS claim
+ok 3 - HTTP 401 remains an HTTP failure, never a DNS claim
+  ---
+  duration_ms: 0.143916
+  type: 'test'
+  ...
+# Subtest: HTTP 503 remains an HTTP failure, never a DNS claim
+ok 4 - HTTP 503 remains an HTTP failure, never a DNS claim
+  ---
+  duration_ms: 0.101417
+  type: 'test'
+  ...
+# Subtest: generic failure TypeError: Failed to fetch keeps the cause unknown
+ok 5 - generic failure TypeError: Failed to fetch keeps the cause unknown
+  ---
+  duration_ms: 0.245958
+  type: 'test'
+  ...
+# Subtest: generic failure TypeError: fetch failed keeps the cause unknown
+ok 6 - generic failure TypeError: fetch failed keeps the cause unknown
+  ---
+  duration_ms: 0.084542
+  type: 'test'
+  ...
+# Subtest: generic failure opaque failure keeps the cause unknown
+ok 7 - generic failure opaque failure keeps the cause unknown
+  ---
+  duration_ms: 0.138166
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: lookup failed identifies only lookup failure
+ok 8 - specific DNS evidence Error: lookup failed identifies only lookup failure
+  ---
+  duration_ms: 0.069916
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence TypeError: fetch failed identifies only lookup failure
+ok 9 - specific DNS evidence TypeError: fetch failed identifies only lookup failure
+  ---
+  duration_ms: 0.25775
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: net::ERR_NAME_NOT_RESOLVED identifies only lookup failure
+ok 10 - specific DNS evidence Error: net::ERR_NAME_NOT_RESOLVED identifies only lookup failure
+  ---
+  duration_ms: 0.310459
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: temporary lookup failure identifies only lookup failure
+ok 11 - specific DNS evidence Error: temporary lookup failure identifies only lookup failure
+  ---
+  duration_ms: 0.117125
+  type: 'test'
+  ...
+# Subtest: TimeoutError is reported separately from DNS
+ok 12 - TimeoutError is reported separately from DNS
+  ---
+  duration_ms: 0.068666
+  type: 'test'
+  ...
+# Subtest: AbortError is reported separately from DNS
+ok 13 - AbortError is reported separately from DNS
+  ---
+  duration_ms: 0.040791
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 279.254416
+
+> cloud-nexus-pilot@0.1.0 test:provider-routes
+> node --test scripts/test-provider-routes.mjs
+
+TAP version 13
+# Subtest: interview-context rejects malformed and non-object bodies without a provider call
+ok 1 - interview-context rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 98.79625
+  type: 'test'
+  ...
+# Subtest: interview-report rejects malformed and non-object bodies without a provider call
+ok 2 - interview-report rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 21.512208
+  type: 'test'
+  ...
+# Subtest: debug-diagnosis rejects malformed and non-object bodies without a provider call
+ok 3 - debug-diagnosis rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 9.128042
+  type: 'test'
+  ...
+# Subtest: generate-guidance rejects malformed and non-object bodies without a provider call
+ok 4 - generate-guidance rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 51.646
+  type: 'test'
+  ...
+# Subtest: mock-interview rejects malformed and non-object bodies without a provider call
+ok 5 - mock-interview rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 16.485
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 401
+ok 6 - provider-backed routes stop before provider or session work on auth 401
+  ---
+  duration_ms: 38.314958
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 403
+ok 7 - provider-backed routes stop before provider or session work on auth 403
+  ---
+  duration_ms: 31.204917
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 503
+ok 8 - provider-backed routes stop before provider or session work on auth 503
+  ---
+  duration_ms: 32.169542
+  type: 'test'
+  ...
+# Subtest: guidance without a configured provider emits error and done, never a final answer
+ok 9 - guidance without a configured provider emits error and done, never a final answer
+  ---
+  duration_ms: 22.212834
+  type: 'test'
+  ...
+# Subtest: guidance provider exception finishes with an error and done
+not ok 10 - guidance provider exception finishes with an error and done
+  ---
+  duration_ms: 19.263333
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:49:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'done'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'done'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:58:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: guidance malformed model output finishes with an error and done
+not ok 11 - guidance malformed model output finishes with an error and done
+  ---
+  duration_ms: 21.075125
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:49:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'done'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'done'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:58:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: verified ordinary user guidance preserves token, final and done contracts
+not ok 12 - verified ordinary user guidance preserves token, final and done contracts
+  ---
+  duration_ms: 20.329583
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:65:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    +   undefined
+    -   'start',
+    -   'token',
+    -   'final',
+    -   'done'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'start'
+    1: 'token'
+    2: 'final'
+    3: 'done'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:72:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: stream creation binds the verified user and ignores a caller-supplied owner
+not ok 13 - stream creation binds the verified user and ignores a caller-supplied owner
+  ---
+  duration_ms: 8.057375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:77:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    503 !== 201
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 201
+  actual: 503
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:85:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: stream events passes verified ownership and denies foreign sessions
+not ok 14 - stream events passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 6.869
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:89:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    503 !== 404
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 404
+  actual: 503
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:110:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: stream stop passes verified ownership and denies foreign sessions
+not ok 15 - stream stop passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 4.912083
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:89:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    503 !== 404
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 404
+  actual: 503
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:110:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: stream chunk passes verified ownership and denies foreign sessions
+not ok 16 - stream chunk passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 16.391375
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:89:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    503 !== 404
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 404
+  actual: 503
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:110:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: transcription hides unexpected provider details
+not ok 17 - transcription hides unexpected provider details
+  ---
+  duration_ms: 7.017959
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:115:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    415 !== 500
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 500
+  actual: 415
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs:122:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: valid deterministic tools keep their response contracts
+ok 18 - valid deterministic tools keep their response contracts
+  ---
+  duration_ms: 19.7005
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 10
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 706.792625
+npm error Lifecycle script `test:provider-routes` failed with error:
+npm error code 1
+npm error path /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error workspace cloud-nexus-pilot@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error command failed
+npm error command sh -c node --test scripts/test-provider-routes.mjs
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error workspace cloud-nexus-pilot@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error command failed
+npm error command sh -c npm run test:realtime && npm run test:intelligence && npm run test:routes && npm run test:connectivity && npm run test:provider-routes && npm run test:transcription-errors && npm run test:report-persistence && npm run test:security-boundary

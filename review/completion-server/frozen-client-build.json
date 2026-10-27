@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/local.mjs",
+    "build"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "started_at": "2026-10-27T14:13:10.425798+00:00",
+  "finished_at": "2026-10-27T14:13:22.415611+00:00",
+  "exit_code": 0,
+  "log": "frozen-client-build.log",
+  "sha256": "4273d5c43fcfae26f96968c09b1f037287eba0d22e3369e4121932b53dfb8c98"
+}

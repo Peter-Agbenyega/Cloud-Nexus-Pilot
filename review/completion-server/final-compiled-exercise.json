@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/test-local-journey.mjs",
+    "exercise"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "2fcc3dcff5831a7e72931d174e88f09881ae053a",
+  "started_at": "2026-10-27T15:20:02.966559+00:00",
+  "finished_at": "2026-10-27T15:20:03.863903+00:00",
+  "exit_code": 0,
+  "log": "final-compiled-exercise.log",
+  "sha256": "1dc0b013a8a17212a491adcb267faa7cdab838c9fa56a7f9cba8c7cfe2413e66"
+}

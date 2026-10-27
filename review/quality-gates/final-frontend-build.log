@@ -1,0 +1,57 @@
+
+> cloud-nexus-pilot@0.1.0 build
+> next build
+
+   ▲ Next.js 15.2.6
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/15) ...
+   Generating static pages (3/15) 
+   Generating static pages (7/15) 
+   Generating static pages (11/15) 
+ ✓ Generating static pages (15/15)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                               Size  First Load JS
+┌ ○ /                                                    184 B         104 kB
+├ ○ /_not-found                                          170 B         101 kB
+├ ƒ /api/debug-diagnosis                                 170 B         101 kB
+├ ƒ /api/detect-question                                 170 B         101 kB
+├ ƒ /api/generate-guidance                               170 B         101 kB
+├ ƒ /api/ingest-profile                                  170 B         101 kB
+├ ƒ /api/interview-context                               170 B         101 kB
+├ ƒ /api/interview-report                                170 B         101 kB
+├ ƒ /api/mock-interview                                  170 B         101 kB
+├ ƒ /api/transcribe                                      170 B         101 kB
+├ ƒ /api/transcribe/stream/session                       170 B         101 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/chunk     170 B         101 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/events    170 B         101 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/stop      170 B         101 kB
+├ ○ /auth/login                                          142 B         173 kB
+├ ○ /auth/signup                                         141 B         173 kB
+├ ○ /billing                                             184 B         104 kB
+├ ○ /billing/cancel                                      184 B         104 kB
+├ ○ /billing/success                                     184 B         104 kB
+├ ○ /dashboard                                           170 B         101 kB
+├ ○ /pricing                                             170 B         101 kB
+├ ○ /prompt-library                                    8.32 kB         178 kB
+├ ○ /summary                                            1.9 kB         102 kB
+├ ○ /transcripts                                       3.74 kB         188 kB
+└ ƒ /workspace                                         18.3 kB         200 kB
++ First Load JS shared by all                           101 kB
+  ├ chunks/4bd1b696-63dbd4390ca36135.js                53.3 kB
+  ├ chunks/684-cadd411023fe7b16.js                     45.3 kB
+  └ other shared chunks (total)                         1.9 kB
+
+
+ƒ Middleware                                           89.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

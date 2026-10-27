@@ -1,0 +1,19 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "@typescript-eslint/eslint-plugin",
+    "version",
+    "peerDependencies",
+    "engines",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:06:01.286246+00:00",
+  "finished_at": "2026-10-27T01:06:01.718853+00:00",
+  "exit_code": 0,
+  "log": "typescript-eslint-registry.log",
+  "sha256": "14a3a22003001140562b89c4442132a0ab3dad125308aa8b84ddac8dc2b02a33"
+}

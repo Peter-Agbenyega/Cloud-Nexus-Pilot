@@ -1,0 +1,26 @@
+{
+  "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+  "checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "459d37",
+        "wall_time_seconds": 0.000004292,
+        "exit_code": 0,
+        "original_token_count": 43,
+        "output": "{\"ok\":true,\"service\":\"cloud-nexus-pilot-realtime-api\",\"environment\":\"test\",\"version\":\"0.1.0\",\"uptimeSeconds\":249,\"providers\":{\"deepgram\":\"missing\",\"openai\":\"configured\"}}"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "51f356",
+        "wall_time_seconds": 0.000007458,
+        "exit_code": 0,
+        "original_token_count": 16,
+        "output": "{\"synthetic\":true,\"transcriptionCalls\":175,\"guidanceCalls\":4}"
+      }
+    }
+  ],
+  "note": "Executed loopback curl commands; health does not prove live recognition."
+}

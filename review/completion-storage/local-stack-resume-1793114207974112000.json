@@ -1,0 +1,269 @@
+{
+  "recorded_at": "2026-10-27T15:16:46.842537+00:00",
+  "old_container_id": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+  "new_container_id": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+  "legacy_metadata_repaired": false,
+  "same_mount_preserved": "/private/tmp/cnp-pilot-local-stack/postgres-data",
+  "all_owned_labels_validated": true,
+  "old_gateway_pid": 39856,
+  "gateway_pid": 77856,
+  "gateway_started": true,
+  "auth_health_status": 200,
+  "rest_health_status": 200,
+  "migration003_reapplied": true,
+  "shared_resources_changed": false,
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "started_at": "2026-10-27T15:16:44.343149+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "ff85e61154762d3c6c474f7c8a125f5ce2fa1a0da92464162c37708540341605",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-auth"
+      ],
+      "started_at": "2026-10-27T15:16:44.370205+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "a1e48e91ee38bce546f65b21d891cf01e2cc3b0c4b48eb276f9f5aec0e35142c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-rest"
+      ],
+      "started_at": "2026-10-27T15:16:44.412233+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "b7e58d6ec79df082ef6058d226350c3cc7e586070bc31cc5ade08e72246bab22",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "network",
+        "inspect",
+        "cnp-pilot-local-193fb1f9"
+      ],
+      "started_at": "2026-10-27T15:16:44.431428+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "ac9fbef772b4e8341f38dba32e4b64351afaa94d09298675ad47a2deeca2910d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "network",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-frontend"
+      ],
+      "started_at": "2026-10-27T15:16:44.446406+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "4094d482e4ada4894ecf1fd61050b3709a73022645efbb9e59dcc1a3f8e1fd95",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "start",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "started_at": "2026-10-27T15:16:44.462742+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "274762c6c3cdcf653d16cf847e67367e9d0c514639207510df23dcc540c70105",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "pg_isready",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:44.569761+00:00",
+      "exit_code": 1,
+      "stdout_sha256": "38179d9120de1d5563cbb41e19a5a9dcc88526b5169e7b8b12e194bd43646754",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "pg_isready",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:45.138874+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "67c06d5e9b18aab83d15dbd85b6ff4a9f0ef945311df82ed47525a89f9e03d34",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:45.219785+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": "4f982f976382a819a466eeaf379d41903a5822adb78cc60b76880f7f5209fa5e"
+    },
+    {
+      "command": [
+        "docker",
+        "start",
+        "cnp-pilot-local-193fb1f9-auth"
+      ],
+      "started_at": "2026-10-27T15:16:45.281915+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "a02768c9f50e4b42677e4e99940f1e7aff52f782295e94a5bc1205d86322a27a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "docker",
+        "start",
+        "cnp-pilot-local-193fb1f9-rest"
+      ],
+      "started_at": "2026-10-27T15:16:45.380016+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "43abaad079f62a0c2ad744648cfae8657528ae1b79ac7bf9e004dbb7fe048d05",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "command": [
+        "ps",
+        "-p",
+        "39856",
+        "-o",
+        "command="
+      ],
+      "started_at": "2026-10-27T15:16:45.489463+00:00",
+      "exit_code": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": null
+    },
+    {
+      "spawn": [
+        "python3",
+        "scripts/db-test/local_pilot_gateway.py"
+      ],
+      "pid": 77856,
+      "exit_code": null
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:46.033823+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": "d67e1c2d5dd50ad00952207c80c34ff470c6b107f69f39038a5fd0166853224b"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:46.113099+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "990c0a948b0ac59d2446f5a3fad4f41245cbffbc5ae1f93a6f256632f5ac29b4",
+      "stdin_sha256": "7d76da0f8dccbdada5a957576c5162cec6f93ba3483bed8abce2116d98570652"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres"
+      ],
+      "started_at": "2026-10-27T15:16:46.198227+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdin_sha256": "b60a164f91943602f5d9ffc66f3d781df7a8ab6322710f2493fbbcaec0295055"
+    }
+  ],
+  "exit_code": 0,
+  "script_sha256": "af6ef44d9564b5d06b4f3c9f5ca38fe4de1acee06c90a19a5d6dfc931496c665"
+}

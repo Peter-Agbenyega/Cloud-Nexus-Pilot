@@ -1,0 +1,403 @@
+{
+  "recorded_at": "2026-10-27T14:40:26.735248+00:00",
+  "command": [
+    "python3",
+    "scripts/db-test/test_pilot_backup_restore.py"
+  ],
+  "run_id": "cc69cff79a6e4dbfa7533e24978d7028",
+  "source_database": "postgres",
+  "restore_database": "pilot_restore_cc69cff79a6e4dbf",
+  "archive_path": "/private/tmp/cnp-pilot-local-stack/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump",
+  "provider_calls": 0,
+  "shared_or_production_changes": false,
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:26.735397+00:00",
+      "finished_at": "2026-10-27T14:40:26.778356+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "2a8059b67c8afb75353e0269d27d5f0bc76f674e476a4f453dddf73f7c280f88",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "http_method": "POST",
+      "path": "/auth/v1/token",
+      "status": 200
+    },
+    {
+      "http_method": "GET",
+      "path": "/auth/v1/user",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/auth/v1/token",
+      "status": 200
+    },
+    {
+      "http_method": "GET",
+      "path": "/auth/v1/user",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_create_session",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_create_session",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_delete_session",
+      "status": 200
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "/bin/sh",
+        "-c",
+        "umask 077; exec pg_dump --host /tmp --username postgres --dbname postgres --format=custom --no-password --file \"$1\"",
+        "pilot-owned-dump",
+        "/pilot-data/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:27.053615+00:00",
+      "finished_at": "2026-10-27T14:40:27.202393+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_binary_copy_from": "/private/tmp/cnp-pilot-local-stack/postgres-data/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump",
+      "to": "/private/tmp/cnp-pilot-local-stack/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "createdb",
+        "--host",
+        "/tmp",
+        "--username",
+        "postgres",
+        "--template",
+        "template0",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:27.203453+00:00",
+      "finished_at": "2026-10-27T14:40:27.510877+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "pg_restore",
+        "--host",
+        "/tmp",
+        "--username",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf",
+        "--exit-on-error",
+        "--no-password",
+        "/pilot-data/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:27.510981+00:00",
+      "finished_at": "2026-10-27T14:40:27.973960+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "2e498fdd97563679a078e9fd1ceaccc06fe2b2156fd997d65fb4073d6274787e",
+      "started_at": "2026-10-27T14:40:27.974159+00:00",
+      "finished_at": "2026-10-27T14:40:28.054402+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "15ab66532273c8d9aff67a5457885638b738a5bca60dc8c8c3ca39f0e19a1655",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "bd03a5b4a707ef0d6d378e0db5404021b53e499b0f5026f90843f88ac3af6530",
+      "started_at": "2026-10-27T14:40:28.054658+00:00",
+      "finished_at": "2026-10-27T14:40:28.122649+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "54cf651ff89f6b65b929171878e9f17ca21bb49d13285f241336574d26fc7b63",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "56822a227fbbe239e78fd15647e0fe9a90d88e45274769eaff4e44bb73598983",
+      "started_at": "2026-10-27T14:40:28.122860+00:00",
+      "finished_at": "2026-10-27T14:40:28.198067+00:00",
+      "exit_code": 3,
+      "stdout_sha256": "5f2d66b751fdbc6cd18afe9e53f6c0d8a9e7269f6b985c71a7ebf9941147ffff",
+      "stderr_sha256": "b8e54994d4e0211f1c4ec02809f840d1d77aa995dfbf4ab892eda6f7e20a8000"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "f4c1f0125e11e2039b6603114733f397591b1ea7ee9b8e9f4f2d4bf3f12cc503",
+      "started_at": "2026-10-27T14:40:28.198156+00:00",
+      "finished_at": "2026-10-27T14:40:28.268527+00:00",
+      "exit_code": 3,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "26caaf5917b8b57eb2de2b77d85bf264b93927f32fdebe101d0431c37176fe2b"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "08069eddc29f8ff47db68c66da283c2d129bb32683c2a3115fb809f78cd3ac3b",
+      "started_at": "2026-10-27T14:40:28.268628+00:00",
+      "finished_at": "2026-10-27T14:40:28.333870+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "cnp-pilot-local-193fb1f9-db",
+        "psql",
+        "-X",
+        "-qAt",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "/tmp",
+        "-U",
+        "postgres",
+        "--dbname",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": "f1036b5cc310ea8718d75e3922dbd91a9b67554fc69a297907737158a0ca1a6e",
+      "started_at": "2026-10-27T14:40:28.334015+00:00",
+      "finished_at": "2026-10-27T14:40:28.404397+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_read_session",
+      "status": 200
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "dropdb",
+        "--host",
+        "/tmp",
+        "--username",
+        "postgres",
+        "pilot_restore_cc69cff79a6e4dbf"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:28.410288+00:00",
+      "finished_at": "2026-10-27T14:40:28.574830+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_delete_session",
+      "status": 200
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "/bin/rm",
+        "-f",
+        "--",
+        "/pilot-data/pilot-backup-cc69cff79a6e4dbfa7533e24978d7028.dump"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:40:28.582154+00:00",
+      "finished_at": "2026-10-27T14:40:28.643560+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "checks": [
+    "exact fixture container ID",
+    "exact fixture label",
+    "source fixture database running",
+    "a actual GoTrue signin",
+    "a principal verified",
+    "b actual GoTrue signin",
+    "b principal verified",
+    "owned fixture session created 1",
+    "bounded fixture operation acquired 1",
+    "trusted fixture final committed 1",
+    "bounded fixture operation acquired 2",
+    "trusted fixture final committed 2",
+    "owned fixture session created 2",
+    "bounded fixture operation acquired 3",
+    "trusted fixture final committed 3",
+    "separate owned deleted fixture removed before dump",
+    "nonempty protected archive",
+    "restored owner retained",
+    "restored final text order",
+    "restored final unique ordered identities",
+    "restored cursor resumes only later event",
+    "restored userB denied userA session",
+    "restored anonymous denied",
+    "deleted fixture session absent from restore",
+    "deleted fixture final event absent from restore",
+    "source owned fixture remains readable during restoration"
+  ],
+  "cleanup": {
+    "temporary_restored_database_dropped": true,
+    "owned_source_fixture_deleted": true,
+    "container_archive_copy_removed": true
+  },
+  "exit_code": 0,
+  "source_container_id": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+  "postgres_image": "supabase/postgres@sha256:be60aee15997daca475b710b734bc6bfe52cd544dcd7e9fd2ff58210b6747d83",
+  "fixture_session_id": "3b08bbc5-a5da-4c05-a42f-998571af1cd1",
+  "deleted_fixture_id": "a806f527-b5a8-4d38-aef5-f0e3dddb415d",
+  "fixture_settled_units": 160,
+  "archive_bytes": 185008,
+  "archive_sha256": "481ea53009da749929eb9d93ef4dcbca59c80ad5f2db42be1fbe35faa3c0886d",
+  "archive_mode": "0o600",
+  "retained": "Owned session metadata, ordered final transcript events/provider results, operation/quota state, actual auth records and schema at the consistent fixture snapshot.",
+  "not_retained": "Raw audio was never stored. Writes committed to the source after the dump snapshot are intentionally not part of this archive. No zero-loss or production RPO claim.",
+  "restored_identity_scope": "Actual GoTrue verified synthetic user IDs; restored DB assertions use authenticated/anon database roles and explicit JWT claims, not a separate restored GoTrue HTTP service.",
+  "finished_at": "2026-10-27T14:40:28.643670+00:00",
+  "script_sha256": "572ad03c55ee06ea95dd6ff7d490c7790a3d440fb3e7d41243eb332dcde45ae8"
+}

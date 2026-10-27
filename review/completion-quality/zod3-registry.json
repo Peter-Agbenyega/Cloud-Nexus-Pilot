@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "zod@3",
+    "version",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:07:25.762214+00:00",
+  "finished_at": "2026-10-27T01:07:26.082438+00:00",
+  "exit_code": 0,
+  "log": "zod3-registry.log",
+  "sha256": "4d8e52237456652e1bbba8184204e9075355baf8a2b44756630c6f54a1c68752"
+}

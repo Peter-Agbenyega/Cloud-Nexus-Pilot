@@ -1,0 +1,571 @@
+{
+  "base_sha": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca",
+  "branch": "fix/pilot-quality-gates",
+  "worktree": "/private/tmp/cnp-quality-gates",
+  "patch_committed": false,
+  "source_file_sha256": {
+    ".github/workflows/ci.yml": "e5f852e7ed088a2cd412b38155a530af69fb18ce6ee9ab36b9f255358f0a21b6",
+    ".nvmrc": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
+    "package.json": "c3938a5021fd7618c6e8e6470b56b6eb1002e02ef572f5b167df9d416c0aded9",
+    "package-lock.json": "c5be986154e57b8d9130bf6761a9f911e3bf8ad5b2d0580fcc5b029353ba999c",
+    "apps/pilot-realtime-api/package.json": "96c06d121f0bbbd8fc5c21b2ea4c282718bd63272cd4f1d40e40cc5701fb3f3f",
+    "apps/pilot-realtime-api/eslint.config.mjs": "ae8d08e4c6127d2de2a55553f19d732d579770a539558759ea72d93313c8640b",
+    "apps/pilot-realtime-api/src/server.test.ts": "551631c0ae713a0cbf4ff56483444bd36e86760f3fc3081f7349c7868c56a9a2",
+    "apps/pilot-realtime-api/src/wsRuntime.ts": "d4354adc88caa83b9b62ad3d85f7e589ee5b2e311b145ea5f5edf9a073255f1e"
+  },
+  "execution_records": [
+    {
+      "record": "baseline-ci-retry.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:05.669695+00:00",
+      "finished_at": "2026-10-26T23:51:39.954457+00:00",
+      "exit_code": 0,
+      "log": "baseline-ci-retry.log",
+      "sha256": "fbb58bc92325d65e0b1d5ea78c93eea8835dc1bcae0db19cc3cad89931068c30"
+    },
+    {
+      "record": "baseline-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:46:15.928677+00:00",
+      "finished_at": "2026-10-26T23:46:22.813453+00:00",
+      "exit_code": 1,
+      "log": "baseline-ci.log",
+      "sha256": "4f4518e297406872523c3c99d350a2b63fce4b42f100dc5e8cedd9fda49ad19a"
+    },
+    {
+      "record": "baseline-frontend-build-retry.json",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:02:39.265362+00:00",
+      "finished_at": "2026-10-27T00:02:51.142312+00:00",
+      "exit_code": 0,
+      "log": "baseline-frontend-build-retry.log",
+      "sha256": "bb8d84471b4d59bb20e9114cac093bcc80273f55ad050bae9946ec7cb20bcd64"
+    },
+    {
+      "record": "baseline-frontend-build.json",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:55:38.342884+00:00",
+      "finished_at": "2026-10-26T23:55:42.607456+00:00",
+      "exit_code": 1,
+      "log": "baseline-frontend-build.log",
+      "sha256": "bba672ff8a105117df1186b34be4cd249a3b92bd24cc6743976802cb431c402a"
+    },
+    {
+      "record": "baseline-frontend-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:45.598161+00:00",
+      "finished_at": "2026-10-26T23:51:47.502918+00:00",
+      "exit_code": 0,
+      "log": "baseline-frontend-lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "record": "baseline-frontend-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:45.598214+00:00",
+      "finished_at": "2026-10-26T23:51:48.884677+00:00",
+      "exit_code": 0,
+      "log": "baseline-frontend-tests.log",
+      "sha256": "8a6fa47d96653a6190828c97e413a3813e2c97df0d8d2bfa7521df2f97abc6b8"
+    },
+    {
+      "record": "baseline-frontend-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:51.253249+00:00",
+      "finished_at": "2026-10-26T23:51:54.289719+00:00",
+      "exit_code": 0,
+      "log": "baseline-frontend-typecheck.log",
+      "sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+    },
+    {
+      "record": "baseline-install-no-hooks-retry.json",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:45:35.173800+00:00",
+      "finished_at": "2026-10-26T23:46:05.417660+00:00",
+      "exit_code": 0,
+      "log": "baseline-install-no-hooks-retry.log",
+      "sha256": "45b18896ad1b3617e5e797b6ffdbd9b81a1adf6014a3d0518174a703908b9557"
+    },
+    {
+      "record": "baseline-operations-tests-retry.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:55:37.261731+00:00",
+      "finished_at": "2026-10-26T23:55:39.722568+00:00",
+      "exit_code": 1,
+      "log": "baseline-operations-tests-retry.log",
+      "sha256": "296546d82d29fca9780735376970505a8728d5ab28fa932c788a0ddcddb4ffc2"
+    },
+    {
+      "record": "baseline-operations-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:45.598105+00:00",
+      "finished_at": "2026-10-26T23:51:48.829219+00:00",
+      "exit_code": 1,
+      "log": "baseline-operations-tests.log",
+      "sha256": "5603bdecd4885f30af1e1e950ee4796d59db7ac573d96ed64036d75a0041c11b"
+    },
+    {
+      "record": "baseline-realtime-tests-retry.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:53:51.642717+00:00",
+      "finished_at": "2026-10-26T23:53:56.399678+00:00",
+      "exit_code": 0,
+      "log": "baseline-realtime-tests-retry.log",
+      "sha256": "5f875cfe74cb574bc4cda3b9ba2161ee8d6f84c2bbb4d8a35ad43defd0e02172"
+    },
+    {
+      "record": "baseline-realtime-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:45.598098+00:00",
+      "finished_at": "2026-10-26T23:51:48.154158+00:00",
+      "exit_code": 1,
+      "log": "baseline-realtime-tests.log",
+      "sha256": "6ebb54ede85a5d159e0efe7d7da38e6803cfdb4aee93d955870cc513357e4e2d"
+    },
+    {
+      "record": "baseline-realtime-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:51:51.253506+00:00",
+      "finished_at": "2026-10-26T23:51:52.596638+00:00",
+      "exit_code": 0,
+      "log": "baseline-realtime-typecheck.log",
+      "sha256": "cdac84b73011f90d264fc574f36da4d3ed007b107b1b325c299c71a022afae13"
+    },
+    {
+      "record": "baseline-runtime-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-26T23:55:48.615620+00:00",
+      "finished_at": "2026-10-26T23:55:50.872836+00:00",
+      "exit_code": 1,
+      "log": "baseline-runtime-audit.log",
+      "sha256": "286943c2d78a67fa1996ab3da32fd2a1b3c99436a798c985b1562eef1663ffdb"
+    },
+    {
+      "record": "final-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:08:31.626922+00:00",
+      "finished_at": "2026-10-27T00:08:56.375104+00:00",
+      "exit_code": 0,
+      "log": "final-ci.log",
+      "sha256": "167d654dd14aba9c249c5ba85778664b4af6fb1802d680ad640dbb52bcaf4291"
+    },
+    {
+      "record": "final-frontend-build.json",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:19:08.525246+00:00",
+      "finished_at": "2026-10-27T00:19:17.998215+00:00",
+      "exit_code": 0,
+      "log": "final-frontend-build.log",
+      "sha256": "35186a0269bbb12c06a8aaefca9e4114a8a4c6b11ea4a71547d3d4e512f2cfcd"
+    },
+    {
+      "record": "final-frontend-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:41.123039+00:00",
+      "finished_at": "2026-10-27T00:09:42.936916+00:00",
+      "exit_code": 0,
+      "log": "final-frontend-lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "record": "final-frontend-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:41.121511+00:00",
+      "finished_at": "2026-10-27T00:09:44.442748+00:00",
+      "exit_code": 0,
+      "log": "final-frontend-tests.log",
+      "sha256": "a45cba01789b77b080fe06f3c7fc07142e81dc7b45848df97ce2c232780b986f"
+    },
+    {
+      "record": "final-frontend-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:41.121536+00:00",
+      "finished_at": "2026-10-27T00:09:44.431838+00:00",
+      "exit_code": 0,
+      "log": "final-frontend-typecheck.log",
+      "sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+    },
+    {
+      "record": "final-operations-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:19:21.436336+00:00",
+      "finished_at": "2026-10-27T00:19:23.919165+00:00",
+      "exit_code": 1,
+      "log": "final-operations-tests.log",
+      "sha256": "494c0581857267ce2fa20fbad109b1e88571c68fb14b91421b658e1cc67ee3eb"
+    },
+    {
+      "record": "final-realtime-build.json",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:41.123890+00:00",
+      "finished_at": "2026-10-27T00:09:42.956451+00:00",
+      "exit_code": 0,
+      "log": "final-realtime-build.log",
+      "sha256": "e4b38aa3a1bbcc0271b9843cd4b63e6b454dc9c16bc9caeb71614c74e6be230e"
+    },
+    {
+      "record": "final-realtime-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:33.602953+00:00",
+      "finished_at": "2026-10-27T00:09:34.215133+00:00",
+      "exit_code": 0,
+      "log": "final-realtime-lint.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "final-realtime-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test:run",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:19:18.033406+00:00",
+      "finished_at": "2026-10-27T00:19:21.394204+00:00",
+      "exit_code": 0,
+      "log": "final-realtime-tests.log",
+      "sha256": "1eb2704264eb7fdc65ce5583a06b8e260d1ae0ac1bfd243b5c43eda0f259c1f1"
+    },
+    {
+      "record": "final-realtime-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:41.121491+00:00",
+      "finished_at": "2026-10-27T00:09:42.886474+00:00",
+      "exit_code": 0,
+      "log": "final-realtime-typecheck.log",
+      "sha256": "cdac84b73011f90d264fc574f36da4d3ed007b107b1b325c299c71a022afae13"
+    },
+    {
+      "record": "final-runtime-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:19:05.595542+00:00",
+      "finished_at": "2026-10-27T00:19:08.497715+00:00",
+      "exit_code": 1,
+      "log": "final-runtime-audit.log",
+      "sha256": "19703f15c594b2be34d716a0198da50cb602b9435e602f7c3d6a4dd38be662bd"
+    },
+    {
+      "record": "final-ws-smoke-focused.json",
+      "command": [
+        "node",
+        "--test",
+        "ops/realtime/tests/ws-smoke.test.mjs"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:30:48.051886+00:00",
+      "finished_at": "2026-10-27T00:30:48.473151+00:00",
+      "exit_code": 0,
+      "log": "final-ws-smoke-focused.log",
+      "sha256": "3da4ef122a4adfba5a0879c7a28c9866f7ac1983b2ba0340272ce0d78f29df74"
+    },
+    {
+      "record": "first-real-realtime-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:00.207472+00:00",
+      "finished_at": "2026-10-27T00:09:01.419364+00:00",
+      "exit_code": 1,
+      "log": "first-real-realtime-lint.log",
+      "sha256": "01fe0f43ae325f0d05d893569c74f5617a042b31682c3c507815eeb6f8b6ab22"
+    },
+    {
+      "record": "lint-negative-probe.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:32.643330+00:00",
+      "finished_at": "2026-10-27T00:09:33.571648+00:00",
+      "exit_code": 1,
+      "log": "lint-negative-probe.log",
+      "sha256": "abf05e53117474bae12f7f4652a8e432e23050ec34daa2b1a563c2ed30bed5cb"
+    },
+    {
+      "record": "repaired-realtime-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:09:18.765479+00:00",
+      "finished_at": "2026-10-27T00:09:19.784967+00:00",
+      "exit_code": 0,
+      "log": "repaired-realtime-lint.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "update-lock-nested-retry.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:08:12.564182+00:00",
+      "finished_at": "2026-10-27T00:08:14.080458+00:00",
+      "exit_code": 0,
+      "log": "update-lock-nested-retry.log",
+      "sha256": "b125771fda8addd462adfe7f7b03299feb35e28badbb2d16ae8589e371216f8f"
+    },
+    {
+      "record": "update-lock-nested.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--offline"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:04:48.481286+00:00",
+      "finished_at": "2026-10-27T00:04:49.002370+00:00",
+      "exit_code": 1,
+      "log": "update-lock-nested.log",
+      "sha256": "cc2b4a686017943c792e19e76a6f3fce6e5d9b7648818b75f4c63c1314af8483"
+    },
+    {
+      "record": "update-lock-retry.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-retries=0",
+        "--fetch-timeout=30000"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:04:26.964642+00:00",
+      "finished_at": "2026-10-27T00:04:31.166183+00:00",
+      "exit_code": 0,
+      "log": "update-lock-retry.log",
+      "sha256": "4c2a0edc189edd72682ff8adda87e72f27972256071a3d6d6047b99e6aa11b40"
+    },
+    {
+      "record": "update-lock.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--offline"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T00:02:51.511168+00:00",
+      "finished_at": "2026-10-27T00:02:52.089433+00:00",
+      "exit_code": 1,
+      "log": "update-lock.log",
+      "sha256": "cc2b4a686017943c792e19e76a6f3fce6e5d9b7648818b75f4c63c1314af8483"
+    }
+  ],
+  "assertions": {
+    "log_hashes_verified": true,
+    "ci_gate_steps_preserved_byte_for_byte": true,
+    "one_locked_ci_install_per_matrix_job": true,
+    "sibling_lock_entries_unchanged": true,
+    "lint_fixture_removed": true,
+    "git_diff_check_exit": 0
+  },
+  "product_tests": {
+    "frontend_realtime": 24,
+    "frontend_intelligence": 40,
+    "realtime_api": 57
+  },
+  "release_ready": false
+}

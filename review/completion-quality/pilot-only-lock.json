@@ -1,0 +1,19 @@
+{
+  "command": [
+    "npm",
+    "install",
+    "--package-lock-only",
+    "--install-strategy=nested",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:17:56.443199+00:00",
+  "finished_at": "2026-10-27T01:18:05.373061+00:00",
+  "exit_code": 0,
+  "log": "pilot-only-lock.log",
+  "sha256": "91611fabb007911708a8410de0ddce40abdc2789273d37f60035859002061d4c"
+}

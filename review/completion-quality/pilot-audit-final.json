@@ -1,0 +1,20 @@
+{
+  "command": [
+    "npm",
+    "audit",
+    "--omit=dev",
+    "--workspace",
+    "apps/cloud-nexus-pilot",
+    "--workspace",
+    "apps/pilot-realtime-api",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:14:07.924886+00:00",
+  "finished_at": "2026-10-27T01:14:08.501530+00:00",
+  "exit_code": 0,
+  "log": "pilot-audit-final.log",
+  "sha256": "be1e2dd62b53c4871f7abaee9397943b4161ba013f4513ccc910859ed96f3b39"
+}

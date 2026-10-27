@@ -1,0 +1,15 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "typecheck",
+    "--workspace",
+    "apps/pilot-realtime-api"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:13:37.804241+00:00",
+  "finished_at": "2026-10-27T01:13:38.993934+00:00",
+  "exit_code": 2,
+  "log": "realtime-zod4-typecheck.log",
+  "sha256": "72fa58839223a0905b90b805a5f97ab5c43ace736575593436b0672597c2fa6e"
+}

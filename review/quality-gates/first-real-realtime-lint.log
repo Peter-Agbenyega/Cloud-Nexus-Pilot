@@ -1,0 +1,24 @@
+
+> @cloudnexus/pilot-realtime-api@0.1.0 lint
+> eslint src --max-warnings=0
+
+
+/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/src/server.test.ts
+    47:50  error  '_signal' is defined but never used       @typescript-eslint/no-unused-vars
+  1162:25  error  '_accessToken' is defined but never used  @typescript-eslint/no-unused-vars
+  1162:47  error  '_signal' is defined but never used       @typescript-eslint/no-unused-vars
+  1299:29  error  '_accessToken' is defined but never used  @typescript-eslint/no-unused-vars
+  1299:51  error  '_signal' is defined but never used       @typescript-eslint/no-unused-vars
+
+/private/tmp/cnp-quality-gates/apps/pilot-realtime-api/src/wsRuntime.ts
+  257:11  error  'graceTimer' is never reassigned. Use 'const' instead  prefer-const
+
+✖ 6 problems (6 errors, 0 warnings)
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error workspace @cloudnexus/pilot-realtime-api@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error command failed
+npm error command sh -c eslint src --max-warnings=0

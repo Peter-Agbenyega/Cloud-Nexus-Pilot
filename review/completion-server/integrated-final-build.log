@@ -1,0 +1,72 @@
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /private/tmp/cnp-quality-gates/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/package-lock.json
+
+   ▲ Next.js 15.5.28
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ Compiled with warnings in 657ms
+
+../../node_modules/@supabase/supabase-js/dist/index.mjs
+A Node.js API is used (process.version at line: 27) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+../../node_modules/@supabase/supabase-js/dist/index.mjs
+../../node_modules/@supabase/ssr/dist/module/createServerClient.js
+
+ ✓ Compiled successfully in 4.3s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/15) ...
+   Generating static pages (3/15) 
+   Generating static pages (7/15) 
+   Generating static pages (11/15) 
+ ✓ Generating static pages (15/15)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                               Size  First Load JS
+┌ ○ /                                                    174 B         106 kB
+├ ○ /_not-found                                          162 B         103 kB
+├ ƒ /api/debug-diagnosis                                 162 B         103 kB
+├ ƒ /api/detect-question                                 162 B         103 kB
+├ ƒ /api/generate-guidance                               162 B         103 kB
+├ ƒ /api/ingest-profile                                  162 B         103 kB
+├ ƒ /api/interview-context                               162 B         103 kB
+├ ƒ /api/interview-report                                162 B         103 kB
+├ ƒ /api/mock-interview                                  162 B         103 kB
+├ ƒ /api/processing-capabilities                         162 B         103 kB
+├ ƒ /api/transcribe                                      162 B         103 kB
+├ ƒ /api/transcribe/stream/session                       162 B         103 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]           162 B         103 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/chunk     162 B         103 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/events    162 B         103 kB
+├ ƒ /api/transcribe/stream/session/[sessionId]/stop      162 B         103 kB
+├ ○ /auth/login                                          130 B         176 kB
+├ ○ /auth/signup                                         129 B         176 kB
+├ ○ /billing                                             174 B         106 kB
+├ ○ /billing/cancel                                      174 B         106 kB
+├ ○ /billing/success                                     174 B         106 kB
+├ ○ /dashboard                                           162 B         103 kB
+├ ○ /pricing                                             162 B         103 kB
+├ ○ /prompt-library                                    8.81 kB         180 kB
+├ ○ /summary                                           6.69 kB         175 kB
+├ ○ /transcripts                                       4.46 kB         198 kB
+└ ƒ /workspace                                         19.3 kB         210 kB
++ First Load JS shared by all                           103 kB
+  ├ chunks/255-60a177d18be2fec4.js                     46.5 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js                54.2 kB
+  └ other shared chunks (total)                        1.92 kB
+
+
+ƒ Middleware                                             92 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

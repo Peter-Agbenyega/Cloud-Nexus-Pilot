@@ -1,0 +1,84 @@
+{
+  "recorded_at": "2026-10-27T14:20:19.091508+00:00",
+  "worker": "/root/infrastructure_review",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "source_sha256": {
+    "packages/db/migrations/postgres/003_pilot_durable_processing.sql": "7d76da0f8dccbdada5a957576c5162cec6f93ba3483bed8abce2116d98570652",
+    "scripts/db-test/test_pilot_durable_storage.py": "65b2e7ee581fa3b62d4bd9accbd438bae3af7c92f8f05d81ed1f571f31dc3c62",
+    "scripts/db-test/test_local_pilot_http.py": "cb6d1ab7453cbb6566bb4eaafe0f46c1ff1dae49ad34b07f22e43b6e61f3b7b3",
+    "scripts/db-test/local_pilot_gateway.py": "284c0321b3129cd40b5ba3897acceb06a1bb8c0f236af2ace1a6c50befb0137a",
+    "scripts/db-test/start_local_pilot_stack.py": "3120fcbff80ba96279938350b6571403c133aacebe90b4059f74f3c37da2853f",
+    "scripts/db-test/resume_local_pilot_stack.py": "af6ef44d9564b5d06b4f3c9f5ca38fe4de1acee06c90a19a5d6dfc931496c665",
+    "scripts/db-test/stop_local_pilot_stack.py": "6f723c48c531a4ae0e10618916074e4b9eed53f8a67c554465b151dd094ff1fa",
+    "apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs": "e7c0741f45270e5fcbb626413d8103bfdb1f717ac908b10cd0285cbe203ea67d",
+    "apps/cloud-nexus-pilot/scripts/test-transcription-errors.mjs": "b678c88c17164a459287a85bcf87bdb94bde17932bb67f5aab895b449cf3cd89",
+    "scripts/db-test/test_pilot_backup_restore.py": "572ad03c55ee06ea95dd6ff7d490c7790a3d440fb3e7d41243eb332dcde45ae8"
+  },
+  "raw_log_sha256": {
+    "local-http-final.log": "eee5cc6052d884bca77c1be6c395f1bd09ee74c33a427391abf89c90d142461e",
+    "postgres-contract-r4.log": "5fbc375e6a0086907455780b5525053978e881c4f5950710a71feb160e7c9c18",
+    "postgres-integrity-final.log": "ab50a83505bda5e1f9ed6966ee16892bb019304d4be3b1b041d78dbfdb6c5289",
+    "postgres-contract-sandbox.log": "5b9da5a4492ffe4b68ccbbb1e7800a9823e2a403329683eb0edbbfb158d3f575",
+    "postgres-contract-approved.log": "eb4cbc3e9bc09376bc6ae6fde96a13c62771b3ff3cb410a6b9915d490073cff7",
+    "postgres-integrity.log": "29bbe0ef5f769c60df1a2a0b61e842c523389a293f95f4c22888894054e896ce",
+    "local-stack-resume.log": "f789446471a80e60d3ddf61f9a05a02ddbfbdf395ec693852ba3ee25ebaab956",
+    "postgres-contract.log": "94ca861ece9516dc0e8b263a82943617dbedb9b0ef7258277a238d5f7d335c44",
+    "local-stack-start.log": "1153e32d5f36ab8dae76e112266f90e181224257cbaa8e625a95cb829a1ef03b",
+    "postgres-contract-final.log": "294e85cd103154e5e1b66c9b790a0aa45153e76511d738633f07965d7113890d",
+    "local-http-first.log": "eee5cc6052d884bca77c1be6c395f1bd09ee74c33a427391abf89c90d142461e",
+    "postgres-contract-approved-r2.log": "6ed7320cb8f7e8c53a4d898cae3fa19b3dba4d24aecb0e393105622bfaa66f63",
+    "route-adaptations-first.log": "c6209b07c20caf07246d98ec2141c00c5d6cb93b3f7f21a221c9ababcad1e9d9",
+    "backup-restore-first.log": "cea48abf4a2178228d17c1f61277348d5362466ec7c1c9c93e0d1ba1700c45f2",
+    "backup-restore-final.log": "e01f3fd7114e23ee9f70d00debdd66c2086ccf97a4fb3a96d86ca4317b253deb",
+    "verified-lifecycle-cycle.log": "755329edc32e3c3cd30eba1c2f9a91a75c7940d5401a7b6dd2224b5246e4c1ae",
+    "verified-stack-stop.log": "f3a5d2fc9f004cc8b0f24a121eab05c58c27fd5e074e4e8815fe57ec41ef7977",
+    "verified-stack-resume.log": "39ca81a4b8c73c8e1a0c34d7cb3645243ceb6b00ee57ba197a85e4fc8b56695e",
+    "verified-stack-resume-idempotent.log": "39ca81a4b8c73c8e1a0c34d7cb3645243ceb6b00ee57ba197a85e4fc8b56695e"
+  },
+  "final_results": [
+    {
+      "command": "python3 scripts/db-test/test_pilot_durable_storage.py",
+      "exit_code": 0,
+      "passed": 28,
+      "log": "postgres-integrity-final.log",
+      "layer": "real nativePG17, migration003verbatim, related002fixture adjusted solely for absentpgvector"
+    },
+    {
+      "command": "node --test apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs apps/cloud-nexus-pilot/scripts/test-transcription-errors.mjs",
+      "exit_code": 0,
+      "passed": 33,
+      "log": "route-adaptations-first.log",
+      "layer": "actual route source, synthetic repository/provider doubles; root integrated rerun still required"
+    },
+    {
+      "command": "python3 scripts/db-test/test_local_pilot_http.py",
+      "exit_code": 0,
+      "passed": 33,
+      "log": "local-http-final.log",
+      "layer": "actual localGoTrue/PostgREST/Postgres, full002+003, syntheticaccounts, no provider calls"
+    },
+    {
+      "command": "python3 scripts/db-test/test_pilot_backup_restore.py",
+      "exit_code": 0,
+      "passed": 26,
+      "log": "backup-restore-final.log",
+      "envelope": "backup-restore.json",
+      "layer": "actual pg_dump/pg_restore in same uniquely labeled localPGcluster, realGoTrueverified syntheticactors, restored-role/RLS/cursor assertions"
+    },
+    {
+      "command": "python3 /private/tmp/cnp-local-lifecycle-check.py",
+      "exit_code": 0,
+      "envelope": "verified-lifecycle-cycle.json",
+      "layer": "actual owned localstack stop/resume/idempotentresume; pre-stopGoTrue token still verified;169soakfinals/quota/data/config preserved"
+    }
+  ],
+  "shared_mutations": false,
+  "hosted_acceptance": false,
+  "production_approval": false,
+  "running_resources_record": "local-stack-identity.json",
+  "limitations": [
+    "No physical microphone or paid provider acceptance",
+    "No approved Proxmoxallocation newly inferred",
+    "Initial fresh bootstrap helper reflects executed setup but has not been repeated from a second empty stack; final existing-stack stop/resume helpers were actually executed and passed."
+  ]
+}

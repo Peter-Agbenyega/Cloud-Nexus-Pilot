@@ -1,0 +1,14 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test:realtime-ops"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "2fcc3dcff5831a7e72931d174e88f09881ae053a",
+  "started_at": "2026-10-27T15:16:50.182153+00:00",
+  "finished_at": "2026-10-27T15:17:10.909098+00:00",
+  "exit_code": 1,
+  "log": "final-source-ops.log",
+  "sha256": "0b62235643b8a45941f6a27f449109a340a2fa47158ef7f1f3bfc0e828db8047"
+}

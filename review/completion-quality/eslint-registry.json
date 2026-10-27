@@ -1,0 +1,18 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "eslint",
+    "version",
+    "engines",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:06:00.761210+00:00",
+  "finished_at": "2026-10-27T01:06:01.255850+00:00",
+  "exit_code": 0,
+  "log": "eslint-registry.log",
+  "sha256": "85d0d9b0cb93405f849da6f02df2cea657d2683e01dc231964a28b5eb6a5b4d4"
+}

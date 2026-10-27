@@ -1,0 +1,19 @@
+{
+  "command": [
+    "npm",
+    "install",
+    "--package-lock-only",
+    "--install-strategy=nested",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:09:13.124454+00:00",
+  "finished_at": "2026-10-27T01:09:18.983721+00:00",
+  "exit_code": 0,
+  "log": "update-supported-families.log",
+  "sha256": "f7bed42a2825de3edc01854228204e8095bd8b23576a174ac66435b135530bba"
+}

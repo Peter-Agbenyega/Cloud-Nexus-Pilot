@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/test-local-soak.mjs"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "started_at": "2026-10-27T14:30:06.005608+00:00",
+  "finished_at": "2026-10-27T14:30:06.156495+00:00",
+  "exit_code": 1,
+  "log": "synthetic-30-minute-soak.log",
+  "sha256": "a005db246746daa87ea796d674be16b5a84c7b2b936defa83a99fa3726f5fce1"
+}

@@ -1,0 +1,40 @@
+{
+  "reason": "Preserve historical own attempts outside deliverable; unrelated candidate manifests/lock snapshots excluded from staging. Source sibling manifests unchanged.",
+  "artifacts": [
+    {
+      "former_path": "review/completion-quality/ai-automation-agency-attempt-package.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/ai-automation-agency-attempt-package.json",
+      "sha256": "61f2969d7b9f4768a8527c2903c7412b64302113ea84f739d35a1b2e214f8859"
+    },
+    {
+      "former_path": "review/completion-quality/api-attempt-package.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/api-attempt-package.json",
+      "sha256": "e255dce3c72a9c06ff27c55c1d20ee5ed180b252cc836bdc4362d700bedd075b"
+    },
+    {
+      "former_path": "review/completion-quality/cloud-nexus-market-attempt-package.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/cloud-nexus-market-attempt-package.json",
+      "sha256": "463df3fb502df585bbc8d3442882d117f57ead1838959b755caf8e54d30ca7dd"
+    },
+    {
+      "former_path": "review/completion-quality/cloud-security-digital-factory-attempt-package.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/cloud-security-digital-factory-attempt-package.json",
+      "sha256": "f5b90a6b8f48ed41bfd35531a09c60a77d756af4deb68aae841add66778b2c8a"
+    },
+    {
+      "former_path": "review/completion-quality/devops-automation-agency-attempt-package.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/devops-automation-agency-attempt-package.json",
+      "sha256": "080ad480f3edc78f35138ead984bcbd1dc55224a061ca74462592742b617f849"
+    },
+    {
+      "former_path": "review/completion-quality/broader-attempt-lock.json",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/broader-attempt-lock.json",
+      "sha256": "a6abfb9831466658ae4747239e6c7620fc431c4e7b0b0d2e899c5fed8b5b7ce2"
+    },
+    {
+      "former_path": "review/completion-server/next-second-instance-auto-lock.patch",
+      "preserved_outside_worktree": "/private/tmp/cnp-prior-attempt-artifacts/next-second-instance-auto-lock.patch",
+      "sha256": "9b8f6d5aca4891c8b172e5e1055f8acd102dbc2e14b5079a3efcb1da780c22ed"
+    }
+  ]
+}

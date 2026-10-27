@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "fastify",
+    "version",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:06:02.790042+00:00",
+  "finished_at": "2026-10-27T01:06:03.179803+00:00",
+  "exit_code": 0,
+  "log": "fastify-registry.log",
+  "sha256": "ff32361127945f9e804e5bade9c884a2520fd3a98dce99fcca14ad28112fdcde"
+}

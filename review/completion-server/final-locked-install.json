@@ -1,0 +1,13 @@
+{
+  "command": [
+    "npm",
+    "ci"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+  "started_at": "2026-10-27T15:54:38.500051+00:00",
+  "finished_at": "2026-10-27T15:55:11.262881+00:00",
+  "exit_code": 0,
+  "log": "final-locked-install.log",
+  "sha256": "f0692b73066b5ed8a58e61a25010bb330244361520f267f68699f8d1830c66be"
+}

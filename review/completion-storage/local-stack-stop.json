@@ -1,0 +1,102 @@
+{
+  "recorded_at": "2026-10-27T15:16:44.146926+00:00",
+  "exit_code": 0,
+  "all_owned_labels_validated": true,
+  "container_ids": {
+    "db": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+    "auth": "e064b09081464d83744f759d1be3104fdec08278c8939865accf408f7a16408f",
+    "rest": "e75d14d2a5cb94e0949d9b72a5cfba15af6b772343067da2befb72f95c7e1f3a"
+  },
+  "gateway_pid": 39856,
+  "owned_gateway_stopped": true,
+  "container_metadata_removed": false,
+  "private_data_preserved": true,
+  "private_configuration_preserved": true,
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "a3c141b540599164a686b528f093d4d62443ea8d549256bc0dc0de77c579c566",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-auth"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "42eeddd2fe709e58a52780590e86def8f67cc50f0fb98fcf4b7fc30042ee9c9a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-rest"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "85a86559b11c37c2c7a61f3fd3a31f757d5133ecacf4c2b13ac21456dd5ec483",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "ps",
+        "-p",
+        "39856",
+        "-o",
+        "command="
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "6fc836c7d0a02a89177664dfcba9ce438b179059b20ca84b3bdee96b3ceba3b5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "ps",
+        "-p",
+        "39856",
+        "-o",
+        "command="
+      ],
+      "exit_code": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "stop",
+        "cnp-pilot-local-193fb1f9-auth"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "a02768c9f50e4b42677e4e99940f1e7aff52f782295e94a5bc1205d86322a27a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "stop",
+        "cnp-pilot-local-193fb1f9-rest"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "43abaad079f62a0c2ad744648cfae8657528ae1b79ac7bf9e004dbb7fe048d05",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "stop",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "274762c6c3cdcf653d16cf847e67367e9d0c514639207510df23dcc540c70105",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "script_sha256": "6f723c48c531a4ae0e10618916074e4b9eed53f8a67c554465b151dd094ff1fa"
+}

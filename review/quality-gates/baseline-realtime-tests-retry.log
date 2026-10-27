@@ -1,0 +1,551 @@
+
+> @cloudnexus/pilot-realtime-api@0.1.0 test
+> npm run build && npm run test:run
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 test:run
+> node --test dist/*.test.js
+
+TAP version 13
+# {"level":30,"time":1793058833562,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60213"}
+# {"level":30,"time":1793058833571,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"94fef7a2-ca1f-4bdb-99be-fb37047049cf","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833573,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"94fef7a2-ca1f-4bdb-99be-fb37047049cf","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: allows a configured production Origin
+ok 1 - allows a configured production Origin
+  ---
+  duration_ms: 83.063542
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833577,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60215"}
+# {"level":30,"time":1793058833579,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1696890c-6a96-439d-906f-328d9eeae3ad","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":50,"time":1793058833580,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","err":{"type":"RangeError","message":"Max payload size exceeded","stack":"RangeError: Max payload size exceeded\\n    at Receiver.haveLength (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:442:28)\\n    at Receiver.getInfo (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:377:15)\\n    at Receiver.startLoop (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:178:16)\\n    at Receiver._write (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:117:10)\\n    at writeOrBuffer (node:internal/streams/writable:572:12)\\n    at _write (node:internal/streams/writable:501:10)\\n    at Writable.write (node:internal/streams/writable:510:10)\\n    at Socket.socketOnData (/private/tmp/cnp-quality-gates/node_modules/ws/lib/websocket.js:1374:35)\\n    at Socket.emit (node:events:519:28)\\n    at addChunk (node:internal/streams/readable:561:12)","code":"WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"},"msg":"Max payload size exceeded"}
+# {"level":50,"time":1793058833580,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1696890c-6a96-439d-906f-328d9eeae3ad","clientIp":"127.0.0.1","err":{"type":"RangeError","message":"Max payload size exceeded","stack":"RangeError: Max payload size exceeded\\n    at Receiver.haveLength (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:442:28)\\n    at Receiver.getInfo (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:377:15)\\n    at Receiver.startLoop (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:178:16)\\n    at Receiver._write (/private/tmp/cnp-quality-gates/node_modules/ws/lib/receiver.js:117:10)\\n    at writeOrBuffer (node:internal/streams/writable:572:12)\\n    at _write (node:internal/streams/writable:501:10)\\n    at Writable.write (node:internal/streams/writable:510:10)\\n    at Socket.socketOnData (/private/tmp/cnp-quality-gates/node_modules/ws/lib/websocket.js:1374:35)\\n    at Socket.emit (node:events:519:28)\\n    at addChunk (node:internal/streams/readable:561:12)","code":"WS_ERR_UNSUPPORTED_MESSAGE_LENGTH"},"msg":"Realtime WebSocket session error"}
+# Subtest: rejects oversized WebSocket messages without crashing
+ok 2 - rejects oversized WebSocket messages without crashing
+  ---
+  duration_ms: 6.772791
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833583,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60217"}
+# {"level":30,"time":1793058833584,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1696890c-6a96-439d-906f-328d9eeae3ad","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833584,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"04ae6205-2580-48bc-a35d-b4269e2f1e19","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833586,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","sessionId":"74c51d8d-3ebc-4ee7-9cb9-a37eb9f7e3e9","clientIp":"127.0.0.1","activeSessions":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because global connection limit was reached"}
+# {"level":30,"time":1793058833587,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"04ae6205-2580-48bc-a35d-b4269e2f1e19","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833596,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-3","sessionId":"e41149c2-fa56-4226-af93-c86e3c6eba1b","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833597,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-3","sessionId":"e41149c2-fa56-4226-af93-c86e3c6eba1b","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: enforces the global active-session limit and decrements after close
+ok 3 - enforces the global active-session limit and decrements after close
+  ---
+  duration_ms: 16.245792
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833598,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60221"}
+# {"level":30,"time":1793058833600,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"844ebef5-0199-4937-86c9-455045f1d2e1","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833601,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","sessionId":"4d693791-ef3d-4c9b-91c0-2570c3e40f75","clientIp":"127.0.0.1","activeSessionsForIp":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because per-IP connection limit was reached"}
+# Subtest: enforces per-IP active-session limits without trusting forwarded headers
+ok 4 - enforces per-IP active-session limits without trusting forwarded headers
+  ---
+  duration_ms: 4.756958
+  type: 'test'
+  ...
+# Subtest: ignores forwarded client IP headers when trusted proxy is disabled
+ok 5 - ignores forwarded client IP headers when trusted proxy is disabled
+  ---
+  duration_ms: 7.125958
+  type: 'test'
+  ...
+# Subtest: uses forwarded client IP only from configured trusted proxy addresses
+ok 6 - uses forwarded client IP only from configured trusted proxy addresses
+  ---
+  duration_ms: 1.7635
+  type: 'test'
+  ...
+# Invalid environment configuration: {
+#   SUPABASE_URL: [
+#     'Production SUPABASE_URL is required for WebSocket authentication.'
+#   ],
+#   SUPABASE_PUBLISHABLE_KEY: [
+#     'Production SUPABASE_PUBLISHABLE_KEY is required for WebSocket authentication.'
+#   ]
+# }
+# Invalid environment configuration: { SUPABASE_URL: [ 'SUPABASE_URL must use HTTPS outside test mode.' ] }
+# Invalid environment configuration: {
+#   SUPABASE_PUBLISHABLE_KEY: [ 'SUPABASE_PUBLISHABLE_KEY must not be a service-role secret.' ]
+# }
+# Subtest: does not accept a spoofed forwarded client IP from an untrusted peer
+ok 7 - does not accept a spoofed forwarded client IP from an untrusted peer
+  ---
+  duration_ms: 1.958625
+  type: 'test'
+  ...
+# Subtest: production Supabase auth configuration fails closed when invalid
+ok 8 - production Supabase auth configuration fails closed when invalid
+  ---
+  duration_ms: 1.363958
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims require authenticated non-anonymous users from the expected issuer
+ok 9 - verified Supabase claims require authenticated non-anonymous users from the expected issuer
+  ---
+  duration_ms: 0.838042
+  type: 'test'
+  ...
+# Subtest: verified Supabase claims reject expiration boundaries fail-closed
+ok 10 - verified Supabase claims reject expiration boundaries fail-closed
+  ---
+  duration_ms: 0.169083
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833629,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60224"}
+# Subtest: signal-aware fetch passes already-aborted attempt signals to base fetch
+ok 11 - signal-aware fetch passes already-aborted attempt signals to base fetch
+  ---
+  duration_ms: 10.452292
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch combines attempt, Request, and RequestInit signals
+ok 12 - signal-aware fetch combines attempt, Request, and RequestInit signals
+  ---
+  duration_ms: 0.872209
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch preserves init values and handles duplicate signals
+ok 13 - signal-aware fetch preserves init values and handles duplicate signals
+  ---
+  duration_ms: 0.093042
+  type: 'test'
+  ...
+# Subtest: signal-aware fetch returns a generic synthetic response after aborted base fetch
+ok 14 - signal-aware fetch returns a generic synthetic response after aborted base fetch
+  ---
+  duration_ms: 0.681375
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833631,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"844ebef5-0199-4937-86c9-455045f1d2e1","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833631,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"31f0c951-37cf-4734-a7f4-7dda14f4a427","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833633,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","sessionId":"ec35ebac-040a-474f-a13a-849a3af240ee","clientIp":"127.0.0.1","activeSessionsForIp":1,"limit":1,"closeCode":1013,"msg":"Rejected WebSocket session because per-IP connection limit was reached"}
+# {"level":30,"time":1793058833635,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60227"}
+# {"level":30,"time":1793058833636,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"31f0c951-37cf-4734-a7f4-7dda14f4a427","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833636,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1b6ed574-8644-48ef-bf64-f641e578d363","clientIp":"203.0.113.10","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833637,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","sessionId":"45a66387-d86d-4c4a-99da-221b85ff1d1c","clientIp":"203.0.113.11","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833637,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","sessionId":"45a66387-d86d-4c4a-99da-221b85ff1d1c","clientIp":"203.0.113.11","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+ok 15 - per-IP limits distinguish forwarded clients only when trusted proxy is enabled
+  ---
+  duration_ms: 10.046167
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833639,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60230"}
+# {"level":30,"time":1793058833639,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1b6ed574-8644-48ef-bf64-f641e578d363","clientIp":"203.0.113.10","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833640,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"8b24b479-fd68-49cc-b43f-a9d7d1b39bb2","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833682,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"8b24b479-fd68-49cc-b43f-a9d7d1b39bb2","clientIp":"127.0.0.1","closeCode":1006,"msg":"Terminating stale WebSocket session after missed heartbeat"}
+# {"level":30,"time":1793058833683,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"8b24b479-fd68-49cc-b43f-a9d7d1b39bb2","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: terminates WebSocket sessions that miss native heartbeat pongs
+ok 16 - terminates WebSocket sessions that miss native heartbeat pongs
+  ---
+  duration_ms: 45.557292
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833685,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60233"}
+# {"level":30,"time":1793058833687,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"62d9ff55-3342-462b-8780-5e7abe6e1bd7","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833688,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"62d9ff55-3342-462b-8780-5e7abe6e1bd7","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058833770,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"62d9ff55-3342-462b-8780-5e7abe6e1bd7","clientIp":"127.0.0.1","closeCode":1001,"msg":"Closing idle WebSocket session"}
+# {"level":30,"time":1793058833770,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"62d9ff55-3342-462b-8780-5e7abe6e1bd7","clientIp":"127.0.0.1","closeCode":1001,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: closes idle WebSocket sessions and resets idle timeout on valid client traffic
+ok 17 - closes idle WebSocket sessions and resets idle timeout on valid client traffic
+  ---
+  duration_ms: 87.4435
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833772,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60235"}
+# {"level":30,"time":1793058833775,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c6e216e2-e24f-4668-add2-7f65c085f24b","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833775,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793058833775,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","sessionId":"c6e216e2-e24f-4668-add2-7f65c085f24b","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793058833776,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-2","msg":"Rejected WebSocket session while server is shutting down"}
+# {"level":30,"time":1793058833777,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c6e216e2-e24f-4668-add2-7f65c085f24b","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833777,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Realtime API graceful shutdown completed"}
+# Subtest: graceful shutdown rejects new sessions and closes active sessions with 1012
+ok 18 - graceful shutdown rejects new sessions and closes active sessions with 1012
+  ---
+  duration_ms: 6.504125
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833779,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60238"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ae452eca-b1c7-42ff-9680-81ddab529dc0","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ae452eca-b1c7-42ff-9680-81ddab529dc0","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","sessionId":"ae452eca-b1c7-42ff-9680-81ddab529dc0","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ae452eca-b1c7-42ff-9680-81ddab529dc0","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833781,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Realtime API graceful shutdown completed"}
+# Subtest: graceful shutdown closes authenticated sessions with 1012
+ok 19 - graceful shutdown closes authenticated sessions with 1012
+  ---
+  duration_ms: 4.339542
+  type: 'test'
+  ...
+# Subtest: graceful shutdown completes as soon as active sessions drain
+ok 20 - graceful shutdown completes as soon as active sessions drain
+  ---
+  duration_ms: 0.347708
+  type: 'test'
+  ...
+# Subtest: graceful shutdown isolates throwing shutdown callbacks
+ok 21 - graceful shutdown isolates throwing shutdown callbacks
+  ---
+  duration_ms: 0.662458
+  type: 'test'
+  ...
+# Subtest: graceful shutdown terminates sockets that remain after the grace period
+ok 22 - graceful shutdown terminates sockets that remain after the grace period
+  ---
+  duration_ms: 6.140666
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833790,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60240"}
+# {"level":30,"time":1793058833791,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4d306f65-22ab-4c75-b5c0-e2927ac7a03f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: allows a second configured Origin
+ok 23 - allows a second configured Origin
+  ---
+  duration_ms: 3.180958
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833793,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60242"}
+# {"level":30,"time":1793058833794,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4d306f65-22ab-4c75-b5c0-e2927ac7a03f","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":40,"time":1793058833794,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","msg":"Rejected WebSocket session from unauthorized origin"}
+# Subtest: rejects an unauthorized browser Origin with HTTP 403
+ok 24 - rejects an unauthorized browser Origin with HTTP 403
+  ---
+  duration_ms: 3.152958
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833796,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60244"}
+# {"level":30,"time":1793058833798,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e964c39e-cccf-454b-874a-a77ba4e087ba","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: trims whitespace around configured Origins
+ok 25 - trims whitespace around configured Origins
+  ---
+  duration_ms: 3.259125
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833799,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60246"}
+# {"level":30,"time":1793058833800,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e964c39e-cccf-454b-874a-a77ba4e087ba","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833800,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e91f3f83-8d80-4861-a3a0-a6c2af1c98ae","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: allows any Origin when CORS_ORIGIN is wildcard
+ok 26 - allows any Origin when CORS_ORIGIN is wildcard
+  ---
+  duration_ms: 2.070875
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833801,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60248"}
+# {"level":30,"time":1793058833802,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e91f3f83-8d80-4861-a3a0-a6c2af1c98ae","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833802,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"6e412657-2e95-4119-8d90-d9f32d871997","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: allows missing Origin for trusted non-browser clients
+ok 27 - allows missing Origin for trusted non-browser clients
+  ---
+  duration_ms: 1.953416
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833803,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60250"}
+# {"level":30,"time":1793058833804,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"6e412657-2e95-4119-8d90-d9f32d871997","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833804,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"09ebcdc4-8a7d-42d4-8fd3-fe274c60221a","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# Subtest: sends session.auth_required first and does not send session.ready before authentication
+ok 28 - sends session.auth_required first and does not send session.ready before authentication
+  ---
+  duration_ms: 33.560417
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833837,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60252"}
+# {"level":30,"time":1793058833838,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"09ebcdc4-8a7d-42d4-8fd3-fe274c60221a","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833838,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"cea1eb3c-e237-48f0-b30b-328cb3cbdd1e","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833839,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"cea1eb3c-e237-48f0-b30b-328cb3cbdd1e","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# Subtest: valid token authenticates and enables ping/pong
+ok 29 - valid token authenticates and enables ping/pong
+  ---
+  duration_ms: 3.274083
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833840,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60254"}
+# {"level":30,"time":1793058833841,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"cea1eb3c-e237-48f0-b30b-328cb3cbdd1e","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833842,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4825c78b-7b13-404e-bb56-e94907f1ba60","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833863,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4825c78b-7b13-404e-bb56-e94907f1ba60","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: missing authentication times out and closes with 1008
+ok 30 - missing authentication times out and closes with 1008
+  ---
+  duration_ms: 24.992958
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833867,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60257"}
+# {"level":30,"time":1793058833869,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4825c78b-7b13-404e-bb56-e94907f1ba60","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833872,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"25ae95d8-d19b-4627-ab44-fcff7e1b4ae5","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833873,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"25ae95d8-d19b-4627-ab44-fcff7e1b4ae5","clientIp":"127.0.0.1","authErrorCategory":"unverifiable","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: invalid token closes with a generic authentication error and 1008
+ok 31 - invalid token closes with a generic authentication error and 1008
+  ---
+  duration_ms: 9.22425
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833877,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"25ae95d8-d19b-4627-ab44-fcff7e1b4ae5","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: token is never echoed in responses or logs
+ok 32 - token is never echoed in responses or logs
+  ---
+  duration_ms: 3.985625
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833879,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60261"}
+# {"level":30,"time":1793058833880,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"7ca88b89-75b8-4803-a03d-21101a092df7","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833880,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"7ca88b89-75b8-4803-a03d-21101a092df7","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: pre-auth binary input is rejected with a generic authentication failure
+ok 33 - pre-auth binary input is rejected with a generic authentication failure
+  ---
+  duration_ms: 2.846958
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833881,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60263"}
+# {"level":30,"time":1793058833883,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"da36cc41-04a8-439f-9c71-f8de9bae5bcc","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833904,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"da36cc41-04a8-439f-9c71-f8de9bae5bcc","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+ok 34 - malformed JSON before authentication returns invalid_json and remains bounded by auth timeout
+  ---
+  duration_ms: 24.467375
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833907,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60265"}
+# {"level":30,"time":1793058833908,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"da36cc41-04a8-439f-9c71-f8de9bae5bcc","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833909,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"0d7914ab-f670-4257-8140-7bf5eb237fc3","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833910,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"0d7914ab-f670-4257-8140-7bf5eb237fc3","clientIp":"127.0.0.1","authErrorCategory":"pre_auth_message","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: pre-auth ping is rejected
+ok 35 - pre-auth ping is rejected
+  ---
+  duration_ms: 7.038042
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833914,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60267"}
+# {"level":30,"time":1793058833915,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"0d7914ab-f670-4257-8140-7bf5eb237fc3","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833916,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ba8bcf62-ca63-46dd-b4c8-55aae361c989","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833916,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ba8bcf62-ca63-46dd-b4c8-55aae361c989","clientIp":"127.0.0.1","authErrorCategory":"pre_auth_message","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# {"level":30,"time":1793058833916,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"ba8bcf62-ca63-46dd-b4c8-55aae361c989","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: pre-auth session.end is rejected
+ok 36 - pre-auth session.end is rejected
+  ---
+  duration_ms: 4.448875
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833917,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60269"}
+# {"level":30,"time":1793058833919,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e2101b93-57d6-4682-beda-87401ab1e96c","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058833919,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e2101b93-57d6-4682-beda-87401ab1e96c","clientIp":"127.0.0.1","authErrorCategory":"duplicate_authentication","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# {"level":30,"time":1793058833919,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e2101b93-57d6-4682-beda-87401ab1e96c","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: duplicate initial authentication is rejected
+ok 37 - duplicate initial authentication is rejected
+  ---
+  duration_ms: 2.671958
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833920,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60271"}
+# {"level":30,"time":1793058833921,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1bb55a40-ab06-404d-866f-7ef14db9a404","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833921,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1bb55a40-ab06-404d-866f-7ef14db9a404","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058833921,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"1bb55a40-ab06-404d-866f-7ef14db9a404","clientIp":"127.0.0.1","closeCode":1000,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: authenticated session.end still works
+ok 38 - authenticated session.end still works
+  ---
+  duration_ms: 2.409
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833923,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60273"}
+# {"level":30,"time":1793058833924,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e0b8ba78-5d94-4bdf-a72e-5208dfff9936","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833924,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e0b8ba78-5d94-4bdf-a72e-5208dfff9936","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058833924,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e0b8ba78-5d94-4bdf-a72e-5208dfff9936","clientIp":"127.0.0.1","userId":"user-123","eventType":"transcript.final","clientEventId":"segment-123","msg":"Realtime WebSocket runtime event accepted"}
+# Subtest: authenticated runtime events are acknowledged without echoing content
+ok 39 - authenticated runtime events are acknowledged without echoing content
+  ---
+  duration_ms: 2.913792
+  type: 'test'
+  ...
+# {"level":30,"time":1793058833926,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60275"}
+# {"level":30,"time":1793058833926,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"e0b8ba78-5d94-4bdf-a72e-5208dfff9936","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058833927,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c5f0a28d-1025-4f5a-a7d5-aa79e30d3527","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058833927,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c5f0a28d-1025-4f5a-a7d5-aa79e30d3527","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058834001,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c5f0a28d-1025-4f5a-a7d5-aa79e30d3527","clientIp":"127.0.0.1","userId":"user-123","closeCode":1008,"msg":"Closing WebSocket session because authentication token expired"}
+# Subtest: token expiration closes the socket
+ok 40 - token expiration closes the socket
+  ---
+  duration_ms: 77.970334
+  type: 'test'
+  ...
+# {"level":30,"time":1793058834005,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60277"}
+# {"level":30,"time":1793058834007,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c5f0a28d-1025-4f5a-a7d5-aa79e30d3527","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058834008,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"64a4229d-6465-496b-af79-a925860f6007","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058834009,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"64a4229d-6465-496b-af79-a925860f6007","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# Subtest: successful reauthentication extends the session
+ok 41 - successful reauthentication extends the session
+  ---
+  duration_ms: 1210.853125
+  type: 'test'
+  ...
+# {"level":30,"time":1793058835217,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60283"}
+# {"level":30,"time":1793058835219,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"64a4229d-6465-496b-af79-a925860f6007","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058835220,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c450e6b7-73de-49ca-9147-221a70427037","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058835220,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c450e6b7-73de-49ca-9147-221a70427037","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058836105,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"c450e6b7-73de-49ca-9147-221a70427037","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: replaced expiration timer cannot close a refreshed session at the old expiration
+ok 42 - replaced expiration timer cannot close a refreshed session at the old expiration
+  ---
+  duration_ms: 891.797125
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836108,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60289"}
+# {"level":30,"time":1793058836110,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"932c4e5d-2518-4851-8cc0-18c4e18c3ac8","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836110,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"932c4e5d-2518-4851-8cc0-18c4e18c3ac8","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":40,"time":1793058836111,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"932c4e5d-2518-4851-8cc0-18c4e18c3ac8","clientIp":"127.0.0.1","userId":"user-123","authErrorCategory":"identity_switch","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: reauthentication with a different sub is rejected
+ok 43 - reauthentication with a different sub is rejected
+  ---
+  duration_ms: 5.94675
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836114,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60292"}
+# {"level":30,"time":1793058836115,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"932c4e5d-2518-4851-8cc0-18c4e18c3ac8","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058836119,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"456e8f5c-2fbe-4e42-acd5-3656a419b1da","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058836120,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"456e8f5c-2fbe-4e42-acd5-3656a419b1da","clientIp":"127.0.0.1","authErrorCategory":"verifier_exception","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# {"level":30,"time":1793058836120,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"456e8f5c-2fbe-4e42-acd5-3656a419b1da","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: verifier exceptions fail closed
+ok 44 - verifier exceptions fail closed
+  ---
+  duration_ms: 9.202084
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836123,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60294"}
+# {"level":30,"time":1793058836125,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4ca561fc-aded-4884-8bbd-b303d9a2f15a","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058836146,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4ca561fc-aded-4884-8bbd-b303d9a2f15a","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# {"level":30,"time":1793058836147,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4ca561fc-aded-4884-8bbd-b303d9a2f15a","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: late verifier completion after auth timeout cannot authenticate the session
+ok 45 - late verifier completion after auth timeout cannot authenticate the session
+  ---
+  duration_ms: 27.870625
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836152,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60296"}
+# {"level":30,"time":1793058836155,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4d6a26f3-f5ab-4a17-a677-c00b99f392fb","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058836176,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4d6a26f3-f5ab-4a17-a677-c00b99f392fb","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# Subtest: auth timeout aborts in-flight authentication verification
+ok 46 - auth timeout aborts in-flight authentication verification
+  ---
+  duration_ms: 28.681333
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836182,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60298"}
+# {"level":30,"time":1793058836184,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"4d6a26f3-f5ab-4a17-a677-c00b99f392fb","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058836185,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"12217aec-3390-41bb-aac3-a9cab35cfa83","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836192,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"12217aec-3390-41bb-aac3-a9cab35cfa83","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: client disconnect aborts in-flight authentication verification
+ok 47 - client disconnect aborts in-flight authentication verification
+  ---
+  duration_ms: 15.305125
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836197,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60300"}
+# {"level":30,"time":1793058836200,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d50420d4-5e51-4555-806e-ec33e08a41f1","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836207,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d50420d4-5e51-4555-806e-ec33e08a41f1","clientIp":"127.0.0.1","closeCode":1006,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: socket cleanup after terminated client aborts in-flight authentication verification
+ok 48 - socket cleanup after terminated client aborts in-flight authentication verification
+  ---
+  duration_ms: 19.06725
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836216,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60302"}
+# {"level":30,"time":1793058836219,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"44980ba4-5678-4625-b10f-a5ac852c86d9","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836220,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"44980ba4-5678-4625-b10f-a5ac852c86d9","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: late verifier completion after client disconnect cannot authenticate the session
+ok 49 - late verifier completion after client disconnect cannot authenticate the session
+  ---
+  duration_ms: 14.552875
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836230,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60304"}
+# {"level":30,"time":1793058836232,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"16644afb-2c23-497d-b774-0c6d873bffd4","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836239,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","activeSessions":1,"graceMs":100,"msg":"Realtime API graceful shutdown started"}
+# {"level":30,"time":1793058836239,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","sessionId":"16644afb-2c23-497d-b774-0c6d873bffd4","clientIp":"127.0.0.1","closeCode":1012,"msg":"Closing WebSocket session for shutdown"}
+# {"level":30,"time":1793058836240,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"16644afb-2c23-497d-b774-0c6d873bffd4","clientIp":"127.0.0.1","closeCode":1012,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: graceful shutdown during in-flight authentication keeps shutdown close code
+ok 50 - graceful shutdown during in-flight authentication keeps shutdown close code
+  ---
+  duration_ms: 13.575667
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836243,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60306"}
+# {"level":30,"time":1793058836240,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Realtime API graceful shutdown completed"}
+# {"level":30,"time":1793058836245,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"fb57c1d4-1046-4d25-9f20-cf52d8a5ae21","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058836252,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"fb57c1d4-1046-4d25-9f20-cf52d8a5ae21","clientIp":"127.0.0.1","authErrorCategory":"duplicate_authentication","closeCode":1008,"msg":"Realtime WebSocket authentication failed"}
+# Subtest: superseded initial authentication aborts the active verifier
+ok 51 - superseded initial authentication aborts the active verifier
+  ---
+  duration_ms: 12.416083
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836255,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60308"}
+# {"level":30,"time":1793058836258,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"fb57c1d4-1046-4d25-9f20-cf52d8a5ae21","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# {"level":30,"time":1793058836259,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"87a255b0-7eab-469b-ac5c-dcc3b2500042","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836266,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"87a255b0-7eab-469b-ac5c-dcc3b2500042","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: aborted initial authentication cannot send session.ready
+ok 52 - aborted initial authentication cannot send session.ready
+  ---
+  duration_ms: 13.98875
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836269,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60310"}
+# {"level":30,"time":1793058836271,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d56a4c17-494f-494a-91fd-19a6bd0d431f","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836272,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d56a4c17-494f-494a-91fd-19a6bd0d431f","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058836278,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d56a4c17-494f-494a-91fd-19a6bd0d431f","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: aborted reauthentication cannot send session.auth_refreshed
+ok 53 - aborted reauthentication cannot send session.auth_refreshed
+  ---
+  duration_ms: 17.098041
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836287,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60312"}
+# {"level":30,"time":1793058836289,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"9950ebf2-525c-4fa3-8262-b857531e6491","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":40,"time":1793058836309,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"9950ebf2-525c-4fa3-8262-b857531e6491","clientIp":"127.0.0.1","closeCode":1008,"msg":"Closing WebSocket session because authentication timed out"}
+# {"level":30,"time":1793058836310,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"9950ebf2-525c-4fa3-8262-b857531e6491","clientIp":"127.0.0.1","closeCode":1008,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: abort rejection is handled without an unhandled rejection
+ok 54 - abort rejection is handled without an unhandled rejection
+  ---
+  duration_ms: 27.490209
+  type: 'test'
+  ...
+# Subtest: abort reason and logs do not include the access token
+ok 55 - abort reason and logs do not include the access token
+  ---
+  duration_ms: 30.644916
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836346,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60316"}
+# {"level":30,"time":1793058836348,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"66a16fbc-ce66-429c-8d45-a82c17e5dcdb","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836349,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"66a16fbc-ce66-429c-8d45-a82c17e5dcdb","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# {"level":30,"time":1793058836350,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"66a16fbc-ce66-429c-8d45-a82c17e5dcdb","clientIp":"127.0.0.1","closeCode":1005,"msg":"Realtime WebSocket session disconnected"}
+# Subtest: cleanup clears authentication and expiration timers
+ok 56 - cleanup clears authentication and expiration timers
+  ---
+  duration_ms: 14.330667
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836360,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:60318"}
+# {"level":30,"time":1793058836371,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d242df6b-def4-4fa9-b292-e9e2d4bfe914","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+# {"level":30,"time":1793058836372,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d242df6b-def4-4fa9-b292-e9e2d4bfe914","clientIp":"127.0.0.1","userId":"user-123","msg":"Realtime WebSocket session authenticated"}
+# Subtest: preserves ping/pong and session.end behavior
+ok 57 - preserves ping/pong and session.end behavior
+  ---
+  duration_ms: 16.518208
+  type: 'test'
+  ...
+# {"level":30,"time":1793058836373,"pid":58810,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d242df6b-def4-4fa9-b292-e9e2d4bfe914","clientIp":"127.0.0.1","closeCode":1000,"msg":"Realtime WebSocket session disconnected"}
+1..57
+# tests 57
+# suites 0
+# pass 57
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3093.80225

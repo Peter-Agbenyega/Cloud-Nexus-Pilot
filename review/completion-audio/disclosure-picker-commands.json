@@ -1,0 +1,47 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:intelligence",
+      "--workspace",
+      "apps/cloud-nexus-pilot"
+    ],
+    "cwd": "/private/tmp/cnp-quality-gates",
+    "started_at": "2026-10-27T14:43:07.795040+00:00",
+    "finished_at": "2026-10-27T14:43:09.541296+00:00",
+    "exit_code": 0,
+    "log": "disclosure-picker-intelligence.log",
+    "log_sha256": "75618770d7e85d57def80d476b75263df749271df05875812addacc250906193"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint",
+      "--workspace",
+      "apps/cloud-nexus-pilot"
+    ],
+    "cwd": "/private/tmp/cnp-quality-gates",
+    "started_at": "2026-10-27T14:43:09.541699+00:00",
+    "finished_at": "2026-10-27T14:43:10.795047+00:00",
+    "exit_code": 0,
+    "log": "disclosure-picker-lint.log",
+    "log_sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck",
+      "--workspace",
+      "apps/cloud-nexus-pilot"
+    ],
+    "cwd": "/private/tmp/cnp-quality-gates",
+    "started_at": "2026-10-27T14:43:10.795256+00:00",
+    "finished_at": "2026-10-27T14:43:13.309759+00:00",
+    "exit_code": 0,
+    "log": "disclosure-picker-typecheck.log",
+    "log_sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+  }
+]

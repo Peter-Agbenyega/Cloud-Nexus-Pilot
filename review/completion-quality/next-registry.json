@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "next@15",
+    "version",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:06:01.748810+00:00",
+  "finished_at": "2026-10-27T01:06:02.762174+00:00",
+  "exit_code": 0,
+  "log": "next-registry.log",
+  "sha256": "027efd794d75e5c46130003a590d1c8ac588c05faf078ddfa582247c95f2fe87"
+}

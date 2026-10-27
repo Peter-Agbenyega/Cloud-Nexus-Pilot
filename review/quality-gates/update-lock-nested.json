@@ -1,0 +1,18 @@
+{
+  "command": [
+    "npm",
+    "install",
+    "--package-lock-only",
+    "--install-strategy=nested",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--offline"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T00:04:48.481286+00:00",
+  "finished_at": "2026-10-27T00:04:49.002370+00:00",
+  "exit_code": 1,
+  "log": "update-lock-nested.log",
+  "sha256": "cc2b4a686017943c792e19e76a6f3fce6e5d9b7648818b75f4c63c1314af8483"
+}

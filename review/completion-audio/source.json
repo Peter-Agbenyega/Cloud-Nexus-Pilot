@@ -1,0 +1,21 @@
+{
+  "worker": "/root/audio_journey",
+  "worktree": "/private/tmp/cnp-quality-gates",
+  "branch": "fix/pilot-quality-gates",
+  "base_at_checks": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "committed": false,
+  "files_sha256": {
+    "apps/cloud-nexus-pilot/lib/audio/pcm-encoder.ts": "e8046943cb6c1035b8002b82bde313eddac323a0f14b2543324fb1396f6b5cc8",
+    "apps/cloud-nexus-pilot/lib/audio/live-audio-pipeline.ts": "72c35eb74100af7ec052e8c7e7ae9329573c8c7711a04286fbe807b4708bb4a7",
+    "apps/cloud-nexus-pilot/features/transcription/audio-capture.ts": "995d726547952bdd6d325c1b006052902296fbc6ee8a419eb3367a3c892c96aa",
+    "apps/cloud-nexus-pilot/features/transcription/streaming-transcript-service.ts": "de8dd5163d0424fe60a7a084b19f8a1a1b4c37349a6b81a37a5394c16acc57e2",
+    "apps/cloud-nexus-pilot/features/transcription/saved-session-service.ts": "40ad09b0fa7842f72f0f1cdaf73be1029adcba859d4b746089366a9f37188a64",
+    "apps/cloud-nexus-pilot/features/transcription/transcript-bridge.ts": "e22ee2ef52a2939eb526d6f144559ccafd4c69a1cb99f13ae15cd45bb7d7f3d2",
+    "apps/cloud-nexus-pilot/features/transcription/use-transcription-workflow.ts": "5c7a21cd27a2a8a242c0be9f353fa45f993618fbd4fcd98db5cdac42ffbdfea4",
+    "apps/cloud-nexus-pilot/features/transcription/transcription-runtime-surface.tsx": "797604568df29d6fa126341ea6d10ed05cb883618b10e4454629ed5a98fecb62",
+    "apps/cloud-nexus-pilot/components/session-workspace-shell.tsx": "236c72ffe6c25cef96ab3e70b29c61bdbdf8ba4c773b1aa076263efdaa66d576",
+    "apps/cloud-nexus-pilot/tests/intelligence/audio-pcm.test.ts": "85b7c4896e2861477a7878418014b2f07ab502ca261946b35b5357884f09001c",
+    "apps/cloud-nexus-pilot/tests/intelligence/streaming-transcript-client.test.ts": "ad182dce803b40f2096ba12973ddbc48e887fe76c8ba12afaf7ef1df39983f1c"
+  },
+  "patch_sha256": "bf18b1764cd927c28d541dbbdefdcfec97432d33997131e80cc40138d035e13d"
+}

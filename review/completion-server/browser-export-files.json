@@ -1,0 +1,21 @@
+{
+  "observed_download_files": [
+    {
+      "file": "pilot-session (1).json",
+      "sha256": "8099becaf1d620e65cef88aae38bf4fb69cbfc1bc8d2bb91f3609ff6b130350a",
+      "bytes": 1884,
+      "modified_utc": "2026-10-27T14:53:21.441442+00:00",
+      "events": 0,
+      "guidance": 1
+    },
+    {
+      "file": "pilot-session.json",
+      "sha256": "32645ce01141d5e020392995de0d604fc2116ade4ae670287378424a4ea0da17",
+      "bytes": 1567,
+      "modified_utc": "2026-10-27T15:21:15.902159+00:00",
+      "events": 0,
+      "guidance": 1
+    }
+  ],
+  "note": "Download event automation timed out; saved browser JSON files independently verified, including final clean-install UI export."
+}

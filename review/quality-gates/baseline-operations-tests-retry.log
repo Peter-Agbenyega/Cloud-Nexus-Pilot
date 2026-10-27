@@ -1,0 +1,346 @@
+
+> cloud-nexus-pilot@0.1.0 test:realtime-ops
+> node --test ops/realtime/tests/*.test.mjs
+
+TAP version 13
+# Subtest: successful deploy records candidate and actual last-good release
+not ok 1 - successful deploy records candidate and actual last-good release
+  ---
+  duration_ms: 23.392958
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:88:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    
+    Required command missing: flock
+    
+    
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    expectStatus (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:85:10)
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:89:25)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: failed up restores A and preserves B instead of skipping A
+ok 2 - failed up restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 14.003209
+  type: 'test'
+  ...
+# Subtest: failed health restores A and preserves B instead of skipping A
+ok 3 - failed health restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 13.423584
+  type: 'test'
+  ...
+# Subtest: failed tls restores A and preserves B instead of skipping A
+ok 4 - failed tls restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 14.572125
+  type: 'test'
+  ...
+# Subtest: failed origin restores A and preserves B instead of skipping A
+ok 5 - failed origin restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 14.3895
+  type: 'test'
+  ...
+# Subtest: failed worker restores A and preserves B instead of skipping A
+ok 6 - failed worker restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 14.047833
+  type: 'test'
+  ...
+# Subtest: failed binding restores A and preserves B instead of skipping A
+ok 7 - failed binding restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 11.223833
+  type: 'test'
+  ...
+# Subtest: same-SHA retry preserves previous release and reuses its image
+not ok 8 - same-SHA retry preserves previous release and reuses its image
+  ---
+  duration_ms: 17.680541
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:100:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    
+    Required command missing: flock
+    
+    
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    expectStatus (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:85:10)
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:101:38)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed recovery retains pending journal; rollback recovers A without skipping to B
+not ok 9 - failed recovery retains pending journal; rollback recovers A without skipping to B
+  ---
+  duration_ms: 11.380667
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:105:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+      'CURRENT_RELEASE=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n' +
+        'PREVIOUS_RELEASE=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n' +
+    +   'PENDING_RELEASE=\n'
+    -   'PENDING_RELEASE=cccccccccccccccccccccccccccccccccccccccc\n'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: |-
+    CURRENT_RELEASE=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    PREVIOUS_RELEASE=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    PENDING_RELEASE=cccccccccccccccccccccccccccccccccccccccc
+    
+  actual: |-
+    CURRENT_RELEASE=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    PREVIOUS_RELEASE=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    PENDING_RELEASE=
+    
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:107:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normal rollback swaps releases and never builds
+not ok 10 - normal rollback swaps releases and never builds
+  ---
+  duration_ms: 22.920417
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:112:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    
+    Required command missing: flock
+    
+    
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    expectStatus (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:85:10)
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:113:25)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed rollback restores the original current release
+ok 11 - failed rollback restores the original current release
+  ---
+  duration_ms: 14.028916
+  type: 'test'
+  ...
+# Subtest: first deployment succeeds without inventing previous release
+not ok 12 - first deployment succeeds without inventing previous release
+  ---
+  duration_ms: 12.522875
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:121:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    
+    Required command missing: flock
+    
+    
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    expectStatus (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:85:10)
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:122:56)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed first deployment keeps pending state and refuses fictitious rollback
+not ok 13 - failed first deployment keeps pending state and refuses fictitious rollback
+  ---
+  duration_ms: 11.720417
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:125:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/var/folders/p5/5_8s8wg16173_g5w8g3z8kjw0000gn/T/pilot-release-test-Df4ToB/state/releases.env'"
+  code: 'ENOENT'
+  stack: |-
+    readFileSync (node:fs:440:20)
+    Object.saved (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:80:18)
+    TestContext.<anonymous> (file:///private/tmp/cnp-quality-gates/ops/realtime/tests/release.test.mjs:127:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: dirty worktree fails before replacing the container
+ok 14 - dirty worktree fails before replacing the container
+  ---
+  duration_ms: 11.915083
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores previous fragment and preserves main Caddyfile
+ok 15 - caddy-validation restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 92.957458
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores absence of fragment and preserves main Caddyfile
+ok 16 - caddy-validation restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 83.562958
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores previous fragment and preserves main Caddyfile
+ok 17 - caddy-reload restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 241.56275
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores absence of fragment and preserves main Caddyfile
+ok 18 - caddy-reload restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 241.682083
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores previous fragment and preserves main Caddyfile
+ok 19 - caddy-endpoint restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 283.283541
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores absence of fragment and preserves main Caddyfile
+ok 20 - caddy-endpoint restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 263.417208
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores previous fragment and preserves main Caddyfile
+ok 21 - caddy-recovery restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 311.020167
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores absence of fragment and preserves main Caddyfile
+ok 22 - caddy-recovery restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 231.299416
+  type: 'test'
+  ...
+# Subtest: successful Caddy install preserves worker configuration
+ok 23 - successful Caddy install preserves worker configuration
+  ---
+  duration_ms: 235.8715
+  type: 'test'
+  ...
+# Subtest: requires session.ready after sending authentication
+ok 24 - requires session.ready after sending authentication
+  ---
+  duration_ms: 12.943875
+  type: 'test'
+  ...
+# Subtest: fails on silent timeout
+ok 25 - fails on silent timeout
+  ---
+  duration_ms: 152.715208
+  type: 'test'
+  ...
+# Subtest: fails on premature close
+ok 26 - fails on premature close
+  ---
+  duration_ms: 2.576666
+  type: 'test'
+  ...
+# Subtest: fails on malformed JSON
+ok 27 - fails on malformed JSON
+  ---
+  duration_ms: 1.569
+  type: 'test'
+  ...
+# Subtest: fails on null JSON
+ok 28 - fails on null JSON
+  ---
+  duration_ms: 1.764042
+  type: 'test'
+  ...
+# Subtest: fails on authentication rejection
+ok 29 - fails on authentication rejection
+  ---
+  duration_ms: 1.459916
+  type: 'test'
+  ...
+# Subtest: fails on unsolicited readiness
+ok 30 - fails on unsolicited readiness
+  ---
+  duration_ms: 1.75775
+  type: 'test'
+  ...
+# Subtest: CLI exits nonzero on premature close without printing credentials
+ok 31 - CLI exits nonzero on premature close without printing credentials
+  ---
+  duration_ms: 72.733167
+  type: 'test'
+  ...
+# Subtest: missing JWT fails before opening a connection
+ok 32 - missing JWT fails before opening a connection
+  ---
+  duration_ms: 0.200417
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 26
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2267.652792

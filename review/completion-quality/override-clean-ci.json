@@ -1,0 +1,16 @@
+{
+  "command": [
+    "npm",
+    "ci",
+    "--no-audit",
+    "--no-fund",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:12:58.201056+00:00",
+  "finished_at": "2026-10-27T01:13:24.509622+00:00",
+  "exit_code": 0,
+  "log": "override-clean-ci.log",
+  "sha256": "be3ff375567793107119cfbd9b83c11a026edebb151336df81e5e7b69bcb33e9"
+}

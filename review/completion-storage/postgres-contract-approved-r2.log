@@ -1,0 +1,21 @@
+test_allowance_is_privileged_and_missing_account_fails_closed (__main__.DurableStorage.test_allowance_is_privileged_and_missing_account_fails_closed) ... ok
+test_anonymous_cannot_create_or_reserve (__main__.DurableStorage.test_anonymous_cannot_create_or_reserve) ... ok
+test_authenticated_cannot_forge_settlement (__main__.DurableStorage.test_authenticated_cannot_forge_settlement) ... ok
+test_delete_owned_records_and_charge_pending_bound (__main__.DurableStorage.test_delete_owned_records_and_charge_pending_bound) ... ok
+test_expired_reservation_charges_unknown_without_repeating (__main__.DurableStorage.test_expired_reservation_charges_unknown_without_repeating) ... ok
+test_failed_and_unknown_outcomes_do_not_release_unknown_cost (__main__.DurableStorage.test_failed_and_unknown_outcomes_do_not_release_unknown_cost) ... ok
+test_foreign_session_read_stop_delete_reserve (__main__.DurableStorage.test_foreign_session_read_stop_delete_reserve) ... ok
+test_guidance_association_is_durable (__main__.DurableStorage.test_guidance_association_is_durable) ... ok
+test_new_database_connection_restores_owned_cursor (__main__.DurableStorage.test_new_database_connection_restores_owned_cursor) ... ok
+test_owned_create_and_idempotent_same_id (__main__.DurableStorage.test_owned_create_and_idempotent_same_id) ... ok
+test_pending_retry_never_reacquires_and_hash_mismatch_rejects (__main__.DurableStorage.test_pending_retry_never_reacquires_and_hash_mismatch_rejects) ... ok
+test_quota_and_concurrency_are_atomic (__main__.DurableStorage.test_quota_and_concurrency_are_atomic) ... ok
+test_reapplying_additive_migration_preserves_existing_data (__main__.DurableStorage.test_reapplying_additive_migration_preserves_existing_data) ... ok
+test_stop_idempotent_and_prevents_new_processing (__main__.DurableStorage.test_stop_idempotent_and_prevents_new_processing) ... ok
+test_success_settles_and_deduplicates_final_record (__main__.DurableStorage.test_success_settles_and_deduplicates_final_record) ... ok
+test_usage_rows_are_owner_scoped (__main__.DurableStorage.test_usage_rows_are_owner_scoped) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 9.586s
+
+OK

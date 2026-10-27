@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint",
+      "--workspace",
+      "apps/cloud-nexus-pilot"
+    ],
+    "cwd": "/private/tmp/cnp-quality-gates",
+    "started_at": "2026-10-27T14:49:00.134324+00:00",
+    "finished_at": "2026-10-27T14:49:01.450432+00:00",
+    "exit_code": 0,
+    "log": "recovery-epoch-lint.log",
+    "log_sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck",
+      "--workspace",
+      "apps/cloud-nexus-pilot"
+    ],
+    "cwd": "/private/tmp/cnp-quality-gates",
+    "started_at": "2026-10-27T14:49:01.450815+00:00",
+    "finished_at": "2026-10-27T14:49:04.077450+00:00",
+    "exit_code": 0,
+    "log": "recovery-epoch-typecheck.log",
+    "log_sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+  }
+]

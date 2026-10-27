@@ -1,0 +1,17 @@
+{
+  "command": [
+    "npm",
+    "ci",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--fetch-retries=0",
+    "--fetch-timeout=30000"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-26T23:45:35.173800+00:00",
+  "finished_at": "2026-10-26T23:46:05.417660+00:00",
+  "exit_code": 0,
+  "log": "baseline-install-no-hooks-retry.log",
+  "sha256": "45b18896ad1b3617e5e797b6ffdbd9b81a1adf6014a3d0518174a703908b9557"
+}

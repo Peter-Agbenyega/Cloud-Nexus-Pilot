@@ -1,0 +1,4 @@
+{"level":30,"time":1793116986592,"pid":23213,"hostname":"PETERs-MacBook-Pro.local","msg":"Server listening at http://127.0.0.1:3310"}
+{"level":30,"time":1793116986592,"pid":23213,"hostname":"PETERs-MacBook-Pro.local","host":"127.0.0.1","port":3310,"msg":"Cloud Nexus Pilot realtime API started"}
+{"level":30,"time":1793117006141,"pid":23213,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d455774f-aba7-4e88-bd6d-2bcba84e9aa1","clientIp":"127.0.0.1","msg":"Realtime WebSocket session connected"}
+{"level":30,"time":1793117006244,"pid":23213,"hostname":"PETERs-MacBook-Pro.local","reqId":"req-1","sessionId":"d455774f-aba7-4e88-bd6d-2bcba84e9aa1","clientIp":"127.0.0.1","userId":"9e76d948-842a-41e0-a1cb-e73d1cbfedb6","msg":"Realtime WebSocket session authenticated"}

@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: interview-context rejects malformed and non-object bodies without a provider call
+ok 1 - interview-context rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 128.672625
+  type: 'test'
+  ...
+# Subtest: interview-report rejects malformed and non-object bodies without a provider call
+ok 2 - interview-report rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 22.036083
+  type: 'test'
+  ...
+# Subtest: debug-diagnosis rejects malformed and non-object bodies without a provider call
+ok 3 - debug-diagnosis rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 10.891417
+  type: 'test'
+  ...
+# Subtest: generate-guidance rejects malformed and non-object bodies without a provider call
+ok 4 - generate-guidance rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 79.638917
+  type: 'test'
+  ...
+# Subtest: mock-interview rejects malformed and non-object bodies without a provider call
+ok 5 - mock-interview rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 17.152125
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 401
+ok 6 - provider-backed routes stop before provider or session work on auth 401
+  ---
+  duration_ms: 33.301375
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 403
+ok 7 - provider-backed routes stop before provider or session work on auth 403
+  ---
+  duration_ms: 30.212833
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 503
+ok 8 - provider-backed routes stop before provider or session work on auth 503
+  ---
+  duration_ms: 27.613416
+  type: 'test'
+  ...
+# Subtest: guidance without a configured provider emits error and done, never a final answer
+ok 9 - guidance without a configured provider emits error and done, never a final answer
+  ---
+  duration_ms: 21.373667
+  type: 'test'
+  ...
+# Subtest: guidance provider exception finishes with an error and done
+ok 10 - guidance provider exception finishes with an error and done
+  ---
+  duration_ms: 18.1685
+  type: 'test'
+  ...
+# Subtest: guidance malformed model output finishes with an error and done
+ok 11 - guidance malformed model output finishes with an error and done
+  ---
+  duration_ms: 16.246625
+  type: 'test'
+  ...
+# Subtest: verified ordinary user guidance publishes validated final and done contracts
+ok 12 - verified ordinary user guidance publishes validated final and done contracts
+  ---
+  duration_ms: 15.101542
+  type: 'test'
+  ...
+# Subtest: stream creation binds the verified user and ignores a caller-supplied owner
+ok 13 - stream creation binds the verified user and ignores a caller-supplied owner
+  ---
+  duration_ms: 2.803667
+  type: 'test'
+  ...
+# Subtest: stream events passes verified ownership and denies foreign sessions
+ok 14 - stream events passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 3.7135
+  type: 'test'
+  ...
+# Subtest: stream stop passes verified ownership and denies foreign sessions
+ok 15 - stream stop passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 3.887209
+  type: 'test'
+  ...
+# Subtest: stream chunk passes verified ownership and denies foreign sessions
+ok 16 - stream chunk passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 12.061208
+  type: 'test'
+  ...
+# Subtest: transcription hides unexpected provider details
+ok 17 - transcription hides unexpected provider details
+  ---
+  duration_ms: 5.275417
+  type: 'test'
+  ...
+# Subtest: valid deterministic tools keep their response contracts
+ok 18 - valid deterministic tools keep their response contracts
+  ---
+  duration_ms: 20.398834
+  type: 'test'
+  ...
+# Subtest: deepgram upstream string failure is absent from HTTP, SSE and logs
+ok 19 - deepgram upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 847.420084
+  type: 'test'
+  ...
+# Subtest: deepgram upstream object failure is absent from HTTP, SSE and logs
+ok 20 - deepgram upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 809.503042
+  type: 'test'
+  ...
+# Subtest: openai upstream string failure is absent from HTTP, SSE and logs
+ok 21 - openai upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 806.392083
+  type: 'test'
+  ...
+# Subtest: openai upstream object failure is absent from HTTP, SSE and logs
+ok 22 - openai upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 798.968041
+  type: 'test'
+  ...
+# Subtest: unknown transport exception fields cannot become public errors or logs
+ok 23 - unknown transport exception fields cannot become public errors or logs
+  ---
+  duration_ms: 797.46025
+  type: 'test'
+  ...
+# Subtest: known provider error codes never authorize upstream message/detail text
+ok 24 - known provider error codes never authorize upstream message/detail text
+  ---
+  duration_ms: 2336.77375
+  type: 'test'
+  ...
+# Subtest: provider HTTP failures retain their existing file-route status
+ok 25 - provider HTTP failures retain their existing file-route status
+  ---
+  duration_ms: 150.924166
+  type: 'test'
+  ...
+# Subtest: exported provider exceptions sanitize caller-supplied diagnostic fields
+ok 26 - exported provider exceptions sanitize caller-supplied diagnostic fields
+  ---
+  duration_ms: 9.209208
+  type: 'test'
+  ...
+# Subtest: SSE boundary closes safely on raw repository errors without exposing payloads
+ok 27 - SSE boundary closes safely on raw repository errors without exposing payloads
+  ---
+  duration_ms: 5.875167
+  type: 'test'
+  ...
+# Subtest: chunk HTTP boundary sanitizes raw repository errors and error logs
+ok 28 - chunk HTTP boundary sanitizes raw repository errors and error logs
+  ---
+  duration_ms: 8.651292
+  type: 'test'
+  ...
+# Subtest: unknown and hostile error fields fail closed without being stringified
+ok 29 - unknown and hostile error fields fail closed without being stringified
+  ---
+  duration_ms: 2.3995
+  type: 'test'
+  ...
+# Subtest: missing provider and empty audio retain 503/400 behavior without provider work
+ok 30 - missing provider and empty audio retain 503/400 behavior without provider work
+  ---
+  duration_ms: 2283.862125
+  type: 'test'
+  ...
+# Subtest: foreign stream rejection remains 404 before provider work
+ok 31 - foreign stream rejection remains 404 before provider work
+  ---
+  duration_ms: 40.766
+  type: 'test'
+  ...
+# Subtest: deepgram successful HTTP and streamed transcript contracts are preserved
+ok 32 - deepgram successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 772.531708
+  type: 'test'
+  ...
+# Subtest: openai successful HTTP and streamed transcript contracts are preserved
+ok 33 - openai successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 784.847375
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10765.000417

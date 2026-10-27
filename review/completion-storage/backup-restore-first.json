@@ -1,0 +1,183 @@
+{
+  "recorded_at": "2026-10-27T14:38:33.589140+00:00",
+  "command": [
+    "python3",
+    "scripts/db-test/test_pilot_backup_restore.py"
+  ],
+  "run_id": "f233a72ac94d4893ae47f1b0f5295282",
+  "source_database": "postgres",
+  "restore_database": "pilot_restore_f233a72ac94d4893",
+  "archive_path": "/private/tmp/cnp-pilot-local-stack/pilot-backup-f233a72ac94d4893ae47f1b0f5295282.dump",
+  "provider_calls": 0,
+  "shared_or_production_changes": false,
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "cnp-pilot-local-193fb1f9-db"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:38:33.589289+00:00",
+      "finished_at": "2026-10-27T14:38:33.620431+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "c1bed70c4d568d428f20bb7bfe246fac67334dce828c1b67ca67719c118fb645",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "http_method": "POST",
+      "path": "/auth/v1/token",
+      "status": 200
+    },
+    {
+      "http_method": "GET",
+      "path": "/auth/v1/user",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/auth/v1/token",
+      "status": 200
+    },
+    {
+      "http_method": "GET",
+      "path": "/auth/v1/user",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_create_session",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_create_session",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_reserve_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_complete_operation",
+      "status": 200
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_delete_session",
+      "status": 200
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "pg_dump",
+        "--host",
+        "/tmp",
+        "--username",
+        "postgres",
+        "--dbname",
+        "postgres",
+        "--format=custom",
+        "--file",
+        "/tmp/pilot-backup-f233a72ac94d4893ae47f1b0f5295282.dump",
+        "--no-password"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:38:33.987328+00:00",
+      "finished_at": "2026-10-27T14:38:34.200437+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "docker",
+        "cp",
+        "cnp-pilot-local-193fb1f9-db:/tmp/pilot-backup-f233a72ac94d4893ae47f1b0f5295282.dump",
+        "/private/tmp/cnp-pilot-local-stack/pilot-backup-f233a72ac94d4893ae47f1b0f5295282.dump"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:38:34.200573+00:00",
+      "finished_at": "2026-10-27T14:38:34.241844+00:00",
+      "exit_code": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "12c0155fd5844cf7513ea7d1d69a9ad964537de64dc0eee4ce62abe9228c43af"
+    },
+    {
+      "http_method": "POST",
+      "path": "/rest/v1/rpc/pilot_delete_session",
+      "status": 200
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "cnp-pilot-local-193fb1f9-db",
+        "/bin/rm",
+        "-f",
+        "--",
+        "/tmp/pilot-backup-f233a72ac94d4893ae47f1b0f5295282.dump"
+      ],
+      "stdin_sha256": null,
+      "started_at": "2026-10-27T14:38:34.248195+00:00",
+      "finished_at": "2026-10-27T14:38:34.307459+00:00",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "checks": [
+    "exact fixture container ID",
+    "exact fixture label",
+    "source fixture database running",
+    "a actual GoTrue signin",
+    "a principal verified",
+    "b actual GoTrue signin",
+    "b principal verified",
+    "owned fixture session created 1",
+    "bounded fixture operation acquired 1",
+    "trusted fixture final committed 1",
+    "bounded fixture operation acquired 2",
+    "trusted fixture final committed 2",
+    "owned fixture session created 2",
+    "bounded fixture operation acquired 3",
+    "trusted fixture final committed 3",
+    "separate owned deleted fixture removed before dump"
+  ],
+  "cleanup": {
+    "owned_source_fixture_deleted": true,
+    "container_archive_copy_removed": true
+  },
+  "exit_code": 1,
+  "source_container_id": "f773105acbd1747d0aa619970d6b186a5038e58820ccfbb442d5c77bcd3deaee",
+  "postgres_image": "supabase/postgres@sha256:be60aee15997daca475b710b734bc6bfe52cd544dcd7e9fd2ff58210b6747d83",
+  "fixture_session_id": "f5261dbf-814e-4cb5-93d0-098dcc9a34cf",
+  "deleted_fixture_id": "f7fa5c67-989f-4692-a5c5-60f2efb1b52f",
+  "fixture_settled_units": 160,
+  "finished_at": "2026-10-27T14:38:34.307568+00:00",
+  "script_sha256": "cfe6f21774275d4946891bed01e67b5e7cfc1887ed1cf5bed1486b181ed0e70b"
+}

@@ -1,0 +1,15 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "lint",
+    "--workspace",
+    "apps/pilot-realtime-api"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T00:09:32.643330+00:00",
+  "finished_at": "2026-10-27T00:09:33.571648+00:00",
+  "exit_code": 1,
+  "log": "lint-negative-probe.log",
+  "sha256": "abf05e53117474bae12f7f4652a8e432e23050ec34daa2b1a563c2ed30bed5cb"
+}

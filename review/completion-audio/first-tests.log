@@ -1,0 +1,356 @@
+
+> cloud-nexus-pilot@0.1.0 test:intelligence
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js
+
+TAP version 13
+# Subtest: 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 1 - 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 36.424333
+  type: 'test'
+  ...
+# Subtest: 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 2 - 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 7.3235
+  type: 'test'
+  ...
+# Subtest: PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+ok 3 - PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+  ---
+  duration_ms: 1.305542
+  type: 'test'
+  ...
+# Subtest: first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+ok 4 - first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+  ---
+  duration_ms: 2.181292
+  type: 'test'
+  ...
+# Subtest: pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+ok 5 - pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+  ---
+  duration_ms: 1.21675
+  type: 'test'
+  ...
+# Subtest: throwing final consumer and failed startup cannot leave audio nodes or contexts running
+ok 6 - throwing final consumer and failed startup cannot leave audio nodes or contexts running
+  ---
+  duration_ms: 1.05075
+  type: 'test'
+  ...
+# Subtest: video-only sharing releases acquired tracks and never silently acquires a microphone
+ok 7 - video-only sharing releases acquired tracks and never silently acquires a microphone
+  ---
+  duration_ms: 1.004917
+  type: 'test'
+  ...
+# Subtest: late permission grant after teardown closes fake tracks instead of adopting them
+ok 8 - late permission grant after teardown closes fake tracks instead of adopting them
+  ---
+  duration_ms: 2.043833
+  type: 'test'
+  ...
+# Subtest: startup failure closes the acquired fake stream before a fresh start
+ok 9 - startup failure closes the acquired fake stream before a fresh start
+  ---
+  duration_ms: 0.61
+  type: 'test'
+  ...
+# Subtest: stop during async startup keeps a lock until old startup settles
+ok 10 - stop during async startup keeps a lock until old startup settles
+  ---
+  duration_ms: 0.115208
+  type: 'test'
+  ...
+# Subtest: failed authenticated cloud deletes reject without writing unrelated local storage
+ok 11 - failed authenticated cloud deletes reject without writing unrelated local storage
+  ---
+  duration_ms: 13.626625
+  type: 'test'
+  ...
+# Subtest: ingests a plain text resume and extracts structured profile data
+ok 12 - ingests a plain text resume and extracts structured profile data
+  ---
+  duration_ms: 2.105792
+  type: 'test'
+  ...
+# Subtest: ingests markdown job descriptions and extracts job profile data
+ok 13 - ingests markdown job descriptions and extracts job profile data
+  ---
+  duration_ms: 0.744625
+  type: 'test'
+  ...
+# Subtest: rejects oversized profile uploads before parsing
+ok 14 - rejects oversized profile uploads before parsing
+  ---
+  duration_ms: 0.38525
+  type: 'test'
+  ...
+# Subtest: rejects unsupported profile file types
+ok 15 - rejects unsupported profile file types
+  ---
+  duration_ms: 0.262125
+  type: 'test'
+  ...
+# Subtest: interview persistence falls back to local session storage without Supabase credentials
+ok 16 - interview persistence falls back to local session storage without Supabase credentials
+  ---
+  duration_ms: 1.953334
+  type: 'test'
+  ...
+# Subtest: local interview persistence stores transcript, question, guidance, and end state
+ok 17 - local interview persistence stores transcript, question, guidance, and end state
+  ---
+  duration_ms: 0.607541
+  type: 'test'
+  ...
+# Subtest: selects OpenAI only when an OpenAI key is available
+ok 18 - selects OpenAI only when an OpenAI key is available
+  ---
+  duration_ms: 2.134416
+  type: 'test'
+  ...
+# Subtest: OpenAI provider streams chat-completion delta content
+ok 19 - OpenAI provider streams chat-completion delta content
+  ---
+  duration_ms: 38.502666
+  type: 'test'
+  ...
+# Subtest: saved empty Prompt Vault stays empty across reads and subsequent writes
+ok 20 - saved empty Prompt Vault stays empty across reads and subsequent writes
+  ---
+  duration_ms: 2.557667
+  type: 'test'
+  ...
+# Subtest: missing and malformed Prompt Vault storage retain prior starter fallback
+ok 21 - missing and malformed Prompt Vault storage retain prior starter fallback
+  ---
+  duration_ms: 1.171333
+  type: 'test'
+  ...
+# Subtest: auth return paths cannot escape origin through URL normalization
+ok 22 - auth return paths cannot escape origin through URL normalization
+  ---
+  duration_ms: 0.529417
+  type: 'test'
+  ...
+# Subtest: local fallback eligibility preserves billing authentication and route boundaries
+ok 23 - local fallback eligibility preserves billing authentication and route boundaries
+  ---
+  duration_ms: 0.164875
+  type: 'test'
+  ...
+# Subtest: mock interview asks role-specific first question using shared profile context
+ok 24 - mock interview asks role-specific first question using shared profile context
+  ---
+  duration_ms: 15.299833
+  type: 'test'
+  ...
+# Subtest: mock interview scores candidate answers and asks follow-up prompts
+ok 25 - mock interview scores candidate answers and asks follow-up prompts
+  ---
+  duration_ms: 1.825209
+  type: 'test'
+  ...
+# Subtest: mock interview can finish with a report
+ok 26 - mock interview can finish with a report
+  ---
+  duration_ms: 0.54675
+  type: 'test'
+  ...
+# Subtest: natural speaking policy rejects routine AI-style openings
+ok 27 - natural speaking policy rejects routine AI-style openings
+  ---
+  duration_ms: 1.011583
+  type: 'test'
+  ...
+# Subtest: technical prompt keeps speak-now concise while preserving deeper detail
+ok 28 - technical prompt keeps speak-now concise while preserving deeper detail
+  ---
+  duration_ms: 0.172
+  type: 'test'
+  ...
+# Subtest: candidate evidence policy allows personalization without invented experience
+ok 29 - candidate evidence policy allows personalization without invented experience
+  ---
+  duration_ms: 0.134667
+  type: 'test'
+  ...
+# Subtest: debugging prompt starts with actionable diagnosis
+ok 30 - debugging prompt starts with actionable diagnosis
+  ---
+  duration_ms: 0.129833
+  type: 'test'
+  ...
+# Subtest: behavioral prompt stays natural and does not expose template labels
+ok 31 - behavioral prompt stays natural and does not expose template labels
+  ---
+  duration_ms: 0.094834
+  type: 'test'
+  ...
+# Subtest: system design prompt separates architecture direction from components
+ok 32 - system design prompt separates architecture direction from components
+  ---
+  duration_ms: 0.08225
+  type: 'test'
+  ...
+# Subtest: user prompt carries context without asking to repeat the question
+ok 33 - user prompt carries context without asking to repeat the question
+  ---
+  duration_ms: 0.138542
+  type: 'test'
+  ...
+# Subtest: provider auth fails closed when authentication is unconfigured
+ok 34 - provider auth fails closed when authentication is unconfigured
+  ---
+  duration_ms: 37.726083
+  type: 'test'
+  ...
+# Subtest: provider auth rejects absent and invalid sessions
+ok 35 - provider auth rejects absent and invalid sessions
+  ---
+  duration_ms: 0.244875
+  type: 'test'
+  ...
+# Subtest: provider auth rejects service roles, anonymous accounts and role-less identities
+ok 36 - provider auth rejects service roles, anonymous accounts and role-less identities
+  ---
+  duration_ms: 0.178959
+  type: 'test'
+  ...
+# Subtest: provider auth returns the verified ordinary user's ID
+ok 37 - provider auth returns the verified ordinary user's ID
+  ---
+  duration_ms: 0.693333
+  type: 'test'
+  ...
+# Subtest: authentication outages do not authorize provider access or leak errors
+ok 38 - authentication outages do not authorize provider access or leak errors
+  ---
+  duration_ms: 1.049375
+  type: 'test'
+  ...
+# Subtest: detects implicit technical prompts and classifies cloud debugging context
+ok 39 - detects implicit technical prompts and classifies cloud debugging context
+  ---
+  duration_ms: 6.667666
+  type: 'test'
+  ...
+# Subtest: suppresses previously seen questions by normalized dedupe key
+ok 40 - suppresses previously seen questions by normalized dedupe key
+  ---
+  duration_ms: 0.139375
+  type: 'test'
+  ...
+# Subtest: extracts resume and job profiles, then packs only relevant evidence
+ok 41 - extracts resume and job profiles, then packs only relevant evidence
+  ---
+  duration_ms: 6.253459
+  type: 'test'
+  ...
+# Subtest: classifies screen text from terminal and extracts operational errors
+ok 42 - classifies screen text from terminal and extracts operational errors
+  ---
+  duration_ms: 0.846625
+  type: 'test'
+  ...
+# Subtest: diagnoses terminal debugging artifacts with safe next steps
+ok 43 - diagnoses terminal debugging artifacts with safe next steps
+  ---
+  duration_ms: 0.852583
+  type: 'test'
+  ...
+# Subtest: generates a post-interview report from transcript text
+ok 44 - generates a post-interview report from transcript text
+  ---
+  duration_ms: 2.225292
+  type: 'test'
+  ...
+# [transcription][stream-session] event-publish {
+#   sessionId: '23eedae7-3b65-4464-86f7-bd3d67f81baa',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '23eedae7-3b65-4464-86f7-bd3d67f81baa',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '8fb1c36e-283a-4cfa-b6de-5e63e7512a34',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '8fb1c36e-283a-4cfa-b6de-5e63e7512a34',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# Subtest: a streaming session cannot be read, subscribed to or stopped by another account
+ok 45 - a streaming session cannot be read, subscribed to or stopped by another account
+  ---
+  duration_ms: 3.332458
+  type: 'test'
+  ...
+# Subtest: cross-account chunk ingest is rejected before provider invocation
+ok 46 - cross-account chunk ingest is rejected before provider invocation
+  ---
+  duration_ms: 0.35775
+  type: 'test'
+  ...
+# Subtest: empty owners cannot create or access streaming sessions
+ok 47 - empty owners cannot create or access streaming sessions
+  ---
+  duration_ms: 0.165792
+  type: 'test'
+  ...
+# Subtest: transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+ok 48 - transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+  ---
+  duration_ms: 22.657833
+  type: 'test'
+  ...
+# Subtest: durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+ok 49 - durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+  ---
+  duration_ms: 0.875
+  type: 'test'
+  ...
+# Subtest: chunk deadline aborts its upload; repeated stop closes resources without new uploads
+ok 50 - chunk deadline aborts its upload; repeated stop closes resources without new uploads
+  ---
+  duration_ms: 22.544167
+  type: 'test'
+  ...
+# Subtest: pre-open event failure rejects immediately and stops the orphaned owned session
+ok 51 - pre-open event failure rejects immediately and stops the orphaned owned session
+  ---
+  duration_ms: 0.414709
+  type: 'test'
+  ...
+# Subtest: recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+ok 52 - recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+  ---
+  duration_ms: 1.870583
+  type: 'test'
+  ...
+# Subtest: cross-account recovery/deletion denial never falls back to another account's local record
+ok 53 - cross-account recovery/deletion denial never falls back to another account's local record
+  ---
+  duration_ms: 0.174375
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 249.841958

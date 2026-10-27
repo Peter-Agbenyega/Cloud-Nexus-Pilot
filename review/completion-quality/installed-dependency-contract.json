@@ -1,0 +1,13 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "check:pilot-dependencies"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:23:38.273912+00:00",
+  "finished_at": "2026-10-27T01:23:38.517759+00:00",
+  "exit_code": 0,
+  "log": "installed-dependency-contract.log",
+  "sha256": "413a8526083ab904c9b32b8e29ca21c195624f73a8168b60776dcdf5a3b48cc6"
+}

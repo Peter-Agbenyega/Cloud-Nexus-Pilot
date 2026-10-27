@@ -1,0 +1,165 @@
+test_allowance_is_privileged_and_missing_account_fails_closed (__main__.DurableStorage.test_allowance_is_privileged_and_missing_account_fails_closed) ... FAIL
+test_anonymous_cannot_create_or_reserve (__main__.DurableStorage.test_anonymous_cannot_create_or_reserve) ... FAIL
+test_authenticated_cannot_forge_settlement (__main__.DurableStorage.test_authenticated_cannot_forge_settlement) ... FAIL
+test_delete_owned_records_and_charge_pending_bound (__main__.DurableStorage.test_delete_owned_records_and_charge_pending_bound) ... FAIL
+test_expired_reservation_charges_unknown_without_repeating (__main__.DurableStorage.test_expired_reservation_charges_unknown_without_repeating) ... FAIL
+test_failed_and_unknown_outcomes_do_not_release_unknown_cost (__main__.DurableStorage.test_failed_and_unknown_outcomes_do_not_release_unknown_cost) ... FAIL
+test_foreign_session_read_stop_delete_reserve (__main__.DurableStorage.test_foreign_session_read_stop_delete_reserve) ... FAIL
+test_guidance_association_is_durable (__main__.DurableStorage.test_guidance_association_is_durable) ... FAIL
+test_new_database_connection_restores_owned_cursor (__main__.DurableStorage.test_new_database_connection_restores_owned_cursor) ... FAIL
+test_owned_create_and_idempotent_same_id (__main__.DurableStorage.test_owned_create_and_idempotent_same_id) ... FAIL
+test_pending_retry_never_reacquires_and_hash_mismatch_rejects (__main__.DurableStorage.test_pending_retry_never_reacquires_and_hash_mismatch_rejects) ... FAIL
+test_quota_and_concurrency_are_atomic (__main__.DurableStorage.test_quota_and_concurrency_are_atomic) ... FAIL
+test_reapplying_additive_migration_preserves_existing_data (__main__.DurableStorage.test_reapplying_additive_migration_preserves_existing_data) ... FAIL
+test_stop_idempotent_and_prevents_new_processing (__main__.DurableStorage.test_stop_idempotent_and_prevents_new_processing) ... FAIL
+test_success_settles_and_deduplicates_final_record (__main__.DurableStorage.test_success_settles_and_deduplicates_final_record) ... FAIL
+test_usage_rows_are_owner_scoped (__main__.DurableStorage.test_usage_rows_are_owner_scoped) ... FAIL
+
+======================================================================
+FAIL: test_allowance_is_privileged_and_missing_account_fails_closed (__main__.DurableStorage.test_allowance_is_privileged_and_missing_account_fails_closed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_anonymous_cannot_create_or_reserve (__main__.DurableStorage.test_anonymous_cannot_create_or_reserve)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_authenticated_cannot_forge_settlement (__main__.DurableStorage.test_authenticated_cannot_forge_settlement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_delete_owned_records_and_charge_pending_bound (__main__.DurableStorage.test_delete_owned_records_and_charge_pending_bound)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_expired_reservation_charges_unknown_without_repeating (__main__.DurableStorage.test_expired_reservation_charges_unknown_without_repeating)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_failed_and_unknown_outcomes_do_not_release_unknown_cost (__main__.DurableStorage.test_failed_and_unknown_outcomes_do_not_release_unknown_cost)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_foreign_session_read_stop_delete_reserve (__main__.DurableStorage.test_foreign_session_read_stop_delete_reserve)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_guidance_association_is_durable (__main__.DurableStorage.test_guidance_association_is_durable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_new_database_connection_restores_owned_cursor (__main__.DurableStorage.test_new_database_connection_restores_owned_cursor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_owned_create_and_idempotent_same_id (__main__.DurableStorage.test_owned_create_and_idempotent_same_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_pending_retry_never_reacquires_and_hash_mismatch_rejects (__main__.DurableStorage.test_pending_retry_never_reacquires_and_hash_mismatch_rejects)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_quota_and_concurrency_are_atomic (__main__.DurableStorage.test_quota_and_concurrency_are_atomic)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_reapplying_additive_migration_preserves_existing_data (__main__.DurableStorage.test_reapplying_additive_migration_preserves_existing_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_stop_idempotent_and_prevents_new_processing (__main__.DurableStorage.test_stop_idempotent_and_prevents_new_processing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_success_settles_and_deduplicates_final_record (__main__.DurableStorage.test_success_settles_and_deduplicates_final_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_usage_rows_are_owner_scoped (__main__.DurableStorage.test_usage_rows_are_owner_scoped)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 68, in setUp
+    self.assertEqual(baseline.count("embedding vector(1536)"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 16 tests in 3.209s
+
+FAILED (failures=16)

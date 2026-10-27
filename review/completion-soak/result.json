@@ -1,0 +1,921 @@
+{
+  "passed": true,
+  "sessionId": "f1b99ba1-3db0-4f57-98fe-d21e065295ba",
+  "startedAt": "2026-10-27T14:30:17.111Z",
+  "finishedAt": "2026-10-27T15:00:27.930Z",
+  "actualSessionElapsedMs": 1810498,
+  "layer": "30-minute SYNTHETIC service-path soak; not microphone, browser capture, speech recognition or live provider acceptance",
+  "scheduledChunks": 179,
+  "acknowledgedChunks": 169,
+  "distinctSavedFinals": 169,
+  "unknownChunkIndexes": [
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101
+  ],
+  "interruptions": 10,
+  "recoveries": 1,
+  "cursor": 179,
+  "maxConcurrentRequests": 1,
+  "clientAudioQueueBytes": 32044,
+  "requestTimeoutMs": 12000,
+  "requestLatencyMs": {
+    "samples": 395,
+    "p95": 116,
+    "max": 203
+  },
+  "expiry": {
+    "httpStatus": 409,
+    "code": "operation_not_replayable",
+    "providerCallsDelta": 0
+  },
+  "stopRequestsSucceeded": 2,
+  "fixtureCounterObservation": {
+    "before": {
+      "synthetic": true,
+      "transcriptionCalls": 2,
+      "guidanceCalls": 2
+    },
+    "after": {
+      "synthetic": true,
+      "transcriptionCalls": 171,
+      "guidanceCalls": 2
+    },
+    "note": "Global fixture counters may include lead tests; expiry paired sample must show zero new calls."
+  },
+  "resourceSamples": [
+    {
+      "at": "2026-10-27T14:30:17.469Z",
+      "clientRssBytes": 47894704,
+      "frontendPid": 25026,
+      "frontendRssBytes": 77479936
+    },
+    {
+      "at": "2026-10-27T14:31:27.616Z",
+      "clientRssBytes": 26808136,
+      "frontendPid": 25026,
+      "frontendRssBytes": 75677696
+    },
+    {
+      "at": "2026-10-27T14:32:37.597Z",
+      "clientRssBytes": 27774840,
+      "frontendPid": 25026,
+      "frontendRssBytes": 76414976
+    },
+    {
+      "at": "2026-10-27T14:33:47.622Z",
+      "clientRssBytes": 28151744,
+      "frontendPid": 25026,
+      "frontendRssBytes": 72663040
+    },
+    {
+      "at": "2026-10-27T14:34:57.562Z",
+      "clientRssBytes": 28479424,
+      "frontendPid": 25026,
+      "frontendRssBytes": 74711040
+    },
+    {
+      "at": "2026-10-27T14:35:57.576Z",
+      "clientRssBytes": 28807200,
+      "frontendPid": 25026,
+      "frontendRssBytes": 78839808
+    },
+    {
+      "at": "2026-10-27T14:37:07.580Z",
+      "clientRssBytes": 29347920,
+      "frontendPid": 25026,
+      "frontendRssBytes": 77873152
+    },
+    {
+      "at": "2026-10-27T14:38:07.622Z",
+      "clientRssBytes": 29675648,
+      "frontendPid": 25026,
+      "frontendRssBytes": 76677120
+    },
+    {
+      "at": "2026-10-27T14:39:17.555Z",
+      "clientRssBytes": 30347464,
+      "frontendPid": 25026,
+      "frontendRssBytes": 75923456
+    },
+    {
+      "at": "2026-10-27T14:40:17.665Z",
+      "clientRssBytes": 31346936,
+      "frontendPid": 25026,
+      "frontendRssBytes": 75464704
+    },
+    {
+      "at": "2026-10-27T14:41:17.589Z",
+      "clientRssBytes": 31625464,
+      "frontendPid": 25026,
+      "frontendRssBytes": 77905920
+    },
+    {
+      "at": "2026-10-27T14:42:27.594Z",
+      "clientRssBytes": 32199048,
+      "frontendPid": 25026,
+      "frontendRssBytes": 101416960
+    },
+    {
+      "at": "2026-10-27T14:43:27.597Z",
+      "clientRssBytes": 32510368,
+      "frontendPid": 25026,
+      "frontendRssBytes": 75661312
+    },
+    {
+      "at": "2026-10-27T14:44:37.567Z",
+      "clientRssBytes": 32887248,
+      "frontendPid": 25026,
+      "frontendRssBytes": 77414400
+    },
+    {
+      "at": "2026-10-27T14:45:37.459Z",
+      "clientRssBytes": 33067472,
+      "frontendMetricUnavailable": true
+    },
+    {
+      "at": "2026-10-27T14:46:47.464Z",
+      "clientRssBytes": 33444328,
+      "frontendMetricUnavailable": true
+    },
+    {
+      "at": "2026-10-27T14:47:47.612Z",
+      "clientRssBytes": 33985072,
+      "frontendPid": 50941,
+      "frontendRssBytes": 84754432
+    },
+    {
+      "at": "2026-10-27T14:48:57.552Z",
+      "clientRssBytes": 34542128,
+      "frontendPid": 50941,
+      "frontendRssBytes": 87015424
+    },
+    {
+      "at": "2026-10-27T14:49:57.602Z",
+      "clientRssBytes": 34935440,
+      "frontendPid": 50941,
+      "frontendRssBytes": 108576768
+    },
+    {
+      "at": "2026-10-27T14:51:07.601Z",
+      "clientRssBytes": 35230352,
+      "frontendPid": 50941,
+      "frontendRssBytes": 87719936
+    },
+    {
+      "at": "2026-10-27T14:52:17.614Z",
+      "clientRssBytes": 35738400,
+      "frontendPid": 50941,
+      "frontendRssBytes": 86130688
+    },
+    {
+      "at": "2026-10-27T14:53:17.611Z",
+      "clientRssBytes": 36098896,
+      "frontendPid": 50941,
+      "frontendRssBytes": 87261184
+    },
+    {
+      "at": "2026-10-27T14:54:17.587Z",
+      "clientRssBytes": 36475824,
+      "frontendPid": 50941,
+      "frontendRssBytes": 88244224
+    },
+    {
+      "at": "2026-10-27T14:55:27.558Z",
+      "clientRssBytes": 36819936,
+      "frontendPid": 50941,
+      "frontendRssBytes": 79740928
+    },
+    {
+      "at": "2026-10-27T14:56:27.567Z",
+      "clientRssBytes": 37098464,
+      "frontendPid": 50941,
+      "frontendRssBytes": 100270080
+    },
+    {
+      "at": "2026-10-27T14:57:27.577Z",
+      "clientRssBytes": 37114848,
+      "frontendPid": 50941,
+      "frontendRssBytes": 80232448
+    },
+    {
+      "at": "2026-10-27T14:58:27.578Z",
+      "clientRssBytes": 37032928,
+      "frontendPid": 50941,
+      "frontendRssBytes": 79085568
+    },
+    {
+      "at": "2026-10-27T14:59:27.526Z",
+      "clientRssBytes": 37180384,
+      "frontendPid": 50941,
+      "frontendRssBytes": 99287040
+    },
+    {
+      "at": "2026-10-27T15:00:27.835Z",
+      "clientRssBytes": 37475296,
+      "frontendPid": 50941,
+      "frontendRssBytes": 80494592
+    }
+  ],
+  "frontendGrowthByPid": [
+    {
+      "pid": 25026,
+      "samples": 14,
+      "firstRssBytes": 77479936,
+      "lastRssBytes": 77414400,
+      "growthBytes": -65536
+    },
+    {
+      "pid": 50941,
+      "samples": 13,
+      "firstRssBytes": 84754432,
+      "lastRssBytes": 80494592,
+      "growthBytes": -4259840
+    }
+  ],
+  "finalEvents": [
+    {
+      "sequence": 5,
+      "chunkIndex": 0
+    },
+    {
+      "sequence": 6,
+      "chunkIndex": 1
+    },
+    {
+      "sequence": 7,
+      "chunkIndex": 2
+    },
+    {
+      "sequence": 8,
+      "chunkIndex": 3
+    },
+    {
+      "sequence": 9,
+      "chunkIndex": 4
+    },
+    {
+      "sequence": 10,
+      "chunkIndex": 5
+    },
+    {
+      "sequence": 11,
+      "chunkIndex": 6
+    },
+    {
+      "sequence": 12,
+      "chunkIndex": 7
+    },
+    {
+      "sequence": 13,
+      "chunkIndex": 8
+    },
+    {
+      "sequence": 14,
+      "chunkIndex": 9
+    },
+    {
+      "sequence": 15,
+      "chunkIndex": 10
+    },
+    {
+      "sequence": 16,
+      "chunkIndex": 11
+    },
+    {
+      "sequence": 17,
+      "chunkIndex": 12
+    },
+    {
+      "sequence": 18,
+      "chunkIndex": 13
+    },
+    {
+      "sequence": 19,
+      "chunkIndex": 14
+    },
+    {
+      "sequence": 20,
+      "chunkIndex": 15
+    },
+    {
+      "sequence": 21,
+      "chunkIndex": 16
+    },
+    {
+      "sequence": 22,
+      "chunkIndex": 17
+    },
+    {
+      "sequence": 23,
+      "chunkIndex": 18
+    },
+    {
+      "sequence": 24,
+      "chunkIndex": 19
+    },
+    {
+      "sequence": 25,
+      "chunkIndex": 20
+    },
+    {
+      "sequence": 26,
+      "chunkIndex": 21
+    },
+    {
+      "sequence": 27,
+      "chunkIndex": 22
+    },
+    {
+      "sequence": 28,
+      "chunkIndex": 23
+    },
+    {
+      "sequence": 29,
+      "chunkIndex": 24
+    },
+    {
+      "sequence": 30,
+      "chunkIndex": 25
+    },
+    {
+      "sequence": 31,
+      "chunkIndex": 26
+    },
+    {
+      "sequence": 32,
+      "chunkIndex": 27
+    },
+    {
+      "sequence": 33,
+      "chunkIndex": 28
+    },
+    {
+      "sequence": 34,
+      "chunkIndex": 29
+    },
+    {
+      "sequence": 35,
+      "chunkIndex": 30
+    },
+    {
+      "sequence": 36,
+      "chunkIndex": 31
+    },
+    {
+      "sequence": 37,
+      "chunkIndex": 32
+    },
+    {
+      "sequence": 38,
+      "chunkIndex": 33
+    },
+    {
+      "sequence": 39,
+      "chunkIndex": 34
+    },
+    {
+      "sequence": 40,
+      "chunkIndex": 35
+    },
+    {
+      "sequence": 41,
+      "chunkIndex": 36
+    },
+    {
+      "sequence": 42,
+      "chunkIndex": 37
+    },
+    {
+      "sequence": 43,
+      "chunkIndex": 38
+    },
+    {
+      "sequence": 44,
+      "chunkIndex": 39
+    },
+    {
+      "sequence": 45,
+      "chunkIndex": 40
+    },
+    {
+      "sequence": 46,
+      "chunkIndex": 41
+    },
+    {
+      "sequence": 47,
+      "chunkIndex": 42
+    },
+    {
+      "sequence": 48,
+      "chunkIndex": 43
+    },
+    {
+      "sequence": 49,
+      "chunkIndex": 44
+    },
+    {
+      "sequence": 50,
+      "chunkIndex": 45
+    },
+    {
+      "sequence": 51,
+      "chunkIndex": 46
+    },
+    {
+      "sequence": 52,
+      "chunkIndex": 47
+    },
+    {
+      "sequence": 53,
+      "chunkIndex": 48
+    },
+    {
+      "sequence": 54,
+      "chunkIndex": 49
+    },
+    {
+      "sequence": 58,
+      "chunkIndex": 50
+    },
+    {
+      "sequence": 59,
+      "chunkIndex": 51
+    },
+    {
+      "sequence": 60,
+      "chunkIndex": 52
+    },
+    {
+      "sequence": 61,
+      "chunkIndex": 53
+    },
+    {
+      "sequence": 62,
+      "chunkIndex": 54
+    },
+    {
+      "sequence": 63,
+      "chunkIndex": 55
+    },
+    {
+      "sequence": 64,
+      "chunkIndex": 56
+    },
+    {
+      "sequence": 65,
+      "chunkIndex": 57
+    },
+    {
+      "sequence": 66,
+      "chunkIndex": 58
+    },
+    {
+      "sequence": 67,
+      "chunkIndex": 59
+    },
+    {
+      "sequence": 68,
+      "chunkIndex": 60
+    },
+    {
+      "sequence": 72,
+      "chunkIndex": 61
+    },
+    {
+      "sequence": 73,
+      "chunkIndex": 62
+    },
+    {
+      "sequence": 74,
+      "chunkIndex": 63
+    },
+    {
+      "sequence": 75,
+      "chunkIndex": 64
+    },
+    {
+      "sequence": 76,
+      "chunkIndex": 65
+    },
+    {
+      "sequence": 77,
+      "chunkIndex": 66
+    },
+    {
+      "sequence": 78,
+      "chunkIndex": 67
+    },
+    {
+      "sequence": 79,
+      "chunkIndex": 68
+    },
+    {
+      "sequence": 80,
+      "chunkIndex": 69
+    },
+    {
+      "sequence": 81,
+      "chunkIndex": 70
+    },
+    {
+      "sequence": 82,
+      "chunkIndex": 71
+    },
+    {
+      "sequence": 83,
+      "chunkIndex": 72
+    },
+    {
+      "sequence": 84,
+      "chunkIndex": 73
+    },
+    {
+      "sequence": 85,
+      "chunkIndex": 74
+    },
+    {
+      "sequence": 86,
+      "chunkIndex": 75
+    },
+    {
+      "sequence": 87,
+      "chunkIndex": 76
+    },
+    {
+      "sequence": 88,
+      "chunkIndex": 77
+    },
+    {
+      "sequence": 89,
+      "chunkIndex": 78
+    },
+    {
+      "sequence": 90,
+      "chunkIndex": 79
+    },
+    {
+      "sequence": 91,
+      "chunkIndex": 80
+    },
+    {
+      "sequence": 92,
+      "chunkIndex": 81
+    },
+    {
+      "sequence": 93,
+      "chunkIndex": 82
+    },
+    {
+      "sequence": 94,
+      "chunkIndex": 83
+    },
+    {
+      "sequence": 95,
+      "chunkIndex": 84
+    },
+    {
+      "sequence": 96,
+      "chunkIndex": 85
+    },
+    {
+      "sequence": 97,
+      "chunkIndex": 86
+    },
+    {
+      "sequence": 98,
+      "chunkIndex": 87
+    },
+    {
+      "sequence": 99,
+      "chunkIndex": 88
+    },
+    {
+      "sequence": 100,
+      "chunkIndex": 89
+    },
+    {
+      "sequence": 101,
+      "chunkIndex": 90
+    },
+    {
+      "sequence": 102,
+      "chunkIndex": 91
+    },
+    {
+      "sequence": 103,
+      "chunkIndex": 102
+    },
+    {
+      "sequence": 104,
+      "chunkIndex": 103
+    },
+    {
+      "sequence": 105,
+      "chunkIndex": 104
+    },
+    {
+      "sequence": 106,
+      "chunkIndex": 105
+    },
+    {
+      "sequence": 107,
+      "chunkIndex": 106
+    },
+    {
+      "sequence": 108,
+      "chunkIndex": 107
+    },
+    {
+      "sequence": 109,
+      "chunkIndex": 108
+    },
+    {
+      "sequence": 110,
+      "chunkIndex": 109
+    },
+    {
+      "sequence": 111,
+      "chunkIndex": 110
+    },
+    {
+      "sequence": 112,
+      "chunkIndex": 111
+    },
+    {
+      "sequence": 113,
+      "chunkIndex": 112
+    },
+    {
+      "sequence": 114,
+      "chunkIndex": 113
+    },
+    {
+      "sequence": 115,
+      "chunkIndex": 114
+    },
+    {
+      "sequence": 116,
+      "chunkIndex": 115
+    },
+    {
+      "sequence": 117,
+      "chunkIndex": 116
+    },
+    {
+      "sequence": 118,
+      "chunkIndex": 117
+    },
+    {
+      "sequence": 119,
+      "chunkIndex": 118
+    },
+    {
+      "sequence": 120,
+      "chunkIndex": 119
+    },
+    {
+      "sequence": 121,
+      "chunkIndex": 120
+    },
+    {
+      "sequence": 122,
+      "chunkIndex": 121
+    },
+    {
+      "sequence": 123,
+      "chunkIndex": 122
+    },
+    {
+      "sequence": 124,
+      "chunkIndex": 123
+    },
+    {
+      "sequence": 125,
+      "chunkIndex": 124
+    },
+    {
+      "sequence": 126,
+      "chunkIndex": 125
+    },
+    {
+      "sequence": 127,
+      "chunkIndex": 126
+    },
+    {
+      "sequence": 128,
+      "chunkIndex": 127
+    },
+    {
+      "sequence": 129,
+      "chunkIndex": 128
+    },
+    {
+      "sequence": 130,
+      "chunkIndex": 129
+    },
+    {
+      "sequence": 131,
+      "chunkIndex": 130
+    },
+    {
+      "sequence": 132,
+      "chunkIndex": 131
+    },
+    {
+      "sequence": 133,
+      "chunkIndex": 132
+    },
+    {
+      "sequence": 134,
+      "chunkIndex": 133
+    },
+    {
+      "sequence": 135,
+      "chunkIndex": 134
+    },
+    {
+      "sequence": 136,
+      "chunkIndex": 135
+    },
+    {
+      "sequence": 137,
+      "chunkIndex": 136
+    },
+    {
+      "sequence": 138,
+      "chunkIndex": 137
+    },
+    {
+      "sequence": 139,
+      "chunkIndex": 138
+    },
+    {
+      "sequence": 140,
+      "chunkIndex": 139
+    },
+    {
+      "sequence": 141,
+      "chunkIndex": 140
+    },
+    {
+      "sequence": 142,
+      "chunkIndex": 141
+    },
+    {
+      "sequence": 143,
+      "chunkIndex": 142
+    },
+    {
+      "sequence": 144,
+      "chunkIndex": 143
+    },
+    {
+      "sequence": 145,
+      "chunkIndex": 144
+    },
+    {
+      "sequence": 146,
+      "chunkIndex": 145
+    },
+    {
+      "sequence": 147,
+      "chunkIndex": 146
+    },
+    {
+      "sequence": 148,
+      "chunkIndex": 147
+    },
+    {
+      "sequence": 149,
+      "chunkIndex": 148
+    },
+    {
+      "sequence": 150,
+      "chunkIndex": 149
+    },
+    {
+      "sequence": 151,
+      "chunkIndex": 150
+    },
+    {
+      "sequence": 152,
+      "chunkIndex": 151
+    },
+    {
+      "sequence": 153,
+      "chunkIndex": 152
+    },
+    {
+      "sequence": 154,
+      "chunkIndex": 153
+    },
+    {
+      "sequence": 155,
+      "chunkIndex": 154
+    },
+    {
+      "sequence": 156,
+      "chunkIndex": 155
+    },
+    {
+      "sequence": 157,
+      "chunkIndex": 156
+    },
+    {
+      "sequence": 158,
+      "chunkIndex": 157
+    },
+    {
+      "sequence": 159,
+      "chunkIndex": 158
+    },
+    {
+      "sequence": 160,
+      "chunkIndex": 159
+    },
+    {
+      "sequence": 161,
+      "chunkIndex": 160
+    },
+    {
+      "sequence": 162,
+      "chunkIndex": 161
+    },
+    {
+      "sequence": 163,
+      "chunkIndex": 162
+    },
+    {
+      "sequence": 164,
+      "chunkIndex": 163
+    },
+    {
+      "sequence": 165,
+      "chunkIndex": 164
+    },
+    {
+      "sequence": 166,
+      "chunkIndex": 165
+    },
+    {
+      "sequence": 167,
+      "chunkIndex": 166
+    },
+    {
+      "sequence": 168,
+      "chunkIndex": 167
+    },
+    {
+      "sequence": 169,
+      "chunkIndex": 168
+    },
+    {
+      "sequence": 170,
+      "chunkIndex": 169
+    },
+    {
+      "sequence": 171,
+      "chunkIndex": 170
+    },
+    {
+      "sequence": 172,
+      "chunkIndex": 171
+    },
+    {
+      "sequence": 173,
+      "chunkIndex": 172
+    },
+    {
+      "sequence": 174,
+      "chunkIndex": 173
+    },
+    {
+      "sequence": 175,
+      "chunkIndex": 174
+    },
+    {
+      "sequence": 176,
+      "chunkIndex": 175
+    },
+    {
+      "sequence": 177,
+      "chunkIndex": 176
+    },
+    {
+      "sequence": 178,
+      "chunkIndex": 177
+    },
+    {
+      "sequence": 179,
+      "chunkIndex": 178
+    }
+  ]
+}

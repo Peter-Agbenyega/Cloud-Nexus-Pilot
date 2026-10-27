@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/test-local-journey.mjs",
+    "recover"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "20528db1c2d1f6da208a3bd4eb9375c4fd5fe312",
+  "started_at": "2026-10-27T14:47:56.452895+00:00",
+  "finished_at": "2026-10-27T14:47:57.014705+00:00",
+  "exit_code": 0,
+  "log": "compiled-http-recover.log",
+  "sha256": "1d8af1dc81d0672c023cf3e1a6c0de01bb48214b232f21ccc47a4bb31459a6e0"
+}

@@ -1,0 +1,190 @@
+{
+  "recorded_at": "2026-10-27T16:04:20.543837+00:00",
+  "branch": "fix/pilot-quality-gates",
+  "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+  "base": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca",
+  "lock_sha256": "505e81e87e0b90520315debb7fa498a9a7ff98bd50ee9c43a3dd3074a1810d0f",
+  "test_counts": {
+    "integrated-locked-frontend": 198,
+    "integrated-locked-realtime": 57,
+    "integrated-locked-ops": 34
+  },
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:54:38.500051+00:00",
+      "finished_at": "2026-10-27T15:55:11.262881+00:00",
+      "exit_code": 0,
+      "log": "final-locked-install.log",
+      "sha256": "f0692b73066b5ed8a58e61a25010bb330244361520f267f68699f8d1830c66be"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "check:pilot-dependencies"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:55:42.306473+00:00",
+      "finished_at": "2026-10-27T15:55:42.527378+00:00",
+      "exit_code": 0,
+      "log": "integrated-dependency-contract.log",
+      "sha256": "413a8526083ab904c9b32b8e29ca21c195624f73a8168b60776dcdf5a3b48cc6"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:55:42.306439+00:00",
+      "finished_at": "2026-10-27T15:55:45.210312+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-lint.log",
+      "sha256": "0610bd5e6718886f81fd2cfb693f0854aae4cb9d755b2f987b9aab11fb4382ae"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:55:42.306477+00:00",
+      "finished_at": "2026-10-27T15:55:46.592755+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-types.log",
+      "sha256": "72a30f18ae728bdfffd13286163e732e5e5bc3801200b29c11d644bb4b162d2e"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:55:42.306479+00:00",
+      "finished_at": "2026-10-27T15:56:01.119230+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-frontend.log",
+      "sha256": "0ae8f2187884021be677fcb5f8bc7bd8fd36af73be66ef23d2111ca4403792de"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:57:08.838168+00:00",
+      "finished_at": "2026-10-27T15:57:13.334911+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-realtime.log",
+      "sha256": "abbfcdfb56029c1c65dfa6186083ef770aee96eb4ce0910ef94a3fb4d773be08"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:57:14.611803+00:00",
+      "finished_at": "2026-10-27T15:57:34.940091+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-ops.log",
+      "sha256": "bfe680087dbfbb4e3ea8554030539d234896a51f6dc693fa86d448cb835d13f6"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/pilot/local.mjs",
+        "build"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T15:57:28.250422+00:00",
+      "finished_at": "2026-10-27T15:57:39.389080+00:00",
+      "exit_code": 0,
+      "log": "integrated-locked-build.log",
+      "sha256": "fe82ba6553543480ee82975ebaa6790b10f42c74501087676c0ee39c6cf66a43"
+    },
+    {
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T16:02:44.653475+00:00",
+      "finished_at": "2026-10-27T16:02:46.744506+00:00",
+      "exit_code": 1,
+      "log": "integrated-runtime-audit-network.log",
+      "sha256": "693dcfd6c8eee7f6171dfc519b9fc601fd0b2d25c6b50fab8458ee29b415b34b"
+    },
+    {
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T16:02:50.112437+00:00",
+      "finished_at": "2026-10-27T16:02:50.876955+00:00",
+      "exit_code": 0,
+      "log": "integrated-pilot-runtime-audit-network.log",
+      "sha256": "6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f"
+    },
+    {
+      "command": [
+        "npm",
+        "audit",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "source_head": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+      "started_at": "2026-10-27T16:04:06.897946+00:00",
+      "finished_at": "2026-10-27T16:04:07.756483+00:00",
+      "exit_code": 0,
+      "log": "integrated-pilot-all-dependency-audit.log",
+      "sha256": "6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f"
+    }
+  ],
+  "scope": "Local source and fixtures only; no paid provider, physical microphone, hosted or production acceptance."
+}

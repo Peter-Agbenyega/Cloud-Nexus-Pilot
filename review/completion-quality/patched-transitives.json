@@ -1,0 +1,18 @@
+{
+  "command": [
+    "npm",
+    "view",
+    "sharp",
+    "version",
+    "engines",
+    "--json",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:07:25.416208+00:00",
+  "finished_at": "2026-10-27T01:07:25.734432+00:00",
+  "exit_code": 0,
+  "log": "patched-transitives.log",
+  "sha256": "e6e6edd725e629ed0a3f8ff5ed461f83843a91656d141b301b8c00dbd6731783"
+}

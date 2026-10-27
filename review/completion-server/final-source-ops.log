@@ -1,0 +1,290 @@
+
+> cloud-nexus-pilot@0.1.0 test:realtime-ops
+> node --test ops/realtime/tests/*.test.mjs
+
+TAP version 13
+# Subtest: successful deploy records candidate and actual last-good release
+ok 1 - successful deploy records candidate and actual last-good release
+  ---
+  duration_ms: 1140.979166
+  type: 'test'
+  ...
+# Subtest: failed up restores A and preserves B instead of skipping A
+ok 2 - failed up restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1358.616166
+  type: 'test'
+  ...
+# Subtest: failed health restores A and preserves B instead of skipping A
+ok 3 - failed health restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1183.771292
+  type: 'test'
+  ...
+# Subtest: failed tls restores A and preserves B instead of skipping A
+ok 4 - failed tls restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1412.723375
+  type: 'test'
+  ...
+# Subtest: failed origin restores A and preserves B instead of skipping A
+ok 5 - failed origin restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1534.902917
+  type: 'test'
+  ...
+# Subtest: failed worker restores A and preserves B instead of skipping A
+ok 6 - failed worker restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1719.480625
+  type: 'test'
+  ...
+# Subtest: failed binding restores A and preserves B instead of skipping A
+ok 7 - failed binding restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1656.323833
+  type: 'test'
+  ...
+# Subtest: same-SHA retry preserves previous release and reuses its image
+ok 8 - same-SHA retry preserves previous release and reuses its image
+  ---
+  duration_ms: 1628.037792
+  type: 'test'
+  ...
+# Subtest: failed recovery retains pending journal; rollback recovers A without skipping to B
+ok 9 - failed recovery retains pending journal; rollback recovers A without skipping to B
+  ---
+  duration_ms: 2414.540166
+  type: 'test'
+  ...
+# Subtest: normal rollback swaps releases and never builds
+ok 10 - normal rollback swaps releases and never builds
+  ---
+  duration_ms: 974.058458
+  type: 'test'
+  ...
+# Subtest: failed rollback restores the original current release
+ok 11 - failed rollback restores the original current release
+  ---
+  duration_ms: 1267.427541
+  type: 'test'
+  ...
+# Subtest: first deployment succeeds without inventing previous release
+ok 12 - first deployment succeeds without inventing previous release
+  ---
+  duration_ms: 1068.888708
+  type: 'test'
+  ...
+# Subtest: failed first deployment keeps pending state and refuses fictitious rollback
+ok 13 - failed first deployment keeps pending state and refuses fictitious rollback
+  ---
+  duration_ms: 955.773958
+  type: 'test'
+  ...
+# Subtest: dirty worktree fails before replacing the container
+ok 14 - dirty worktree fails before replacing the container
+  ---
+  duration_ms: 61.541416
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores previous fragment and preserves main Caddyfile
+ok 15 - caddy-validation restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 90.262458
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores absence of fragment and preserves main Caddyfile
+ok 16 - caddy-validation restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 88.466459
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores previous fragment and preserves main Caddyfile
+ok 17 - caddy-reload restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 220.179291
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores absence of fragment and preserves main Caddyfile
+ok 18 - caddy-reload restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 229.95175
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores previous fragment and preserves main Caddyfile
+ok 19 - caddy-endpoint restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 267.551
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores absence of fragment and preserves main Caddyfile
+ok 20 - caddy-endpoint restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 282.410709
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores previous fragment and preserves main Caddyfile
+ok 21 - caddy-recovery restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 223.682583
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores absence of fragment and preserves main Caddyfile
+ok 22 - caddy-recovery restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 222.637666
+  type: 'test'
+  ...
+# Subtest: successful Caddy install preserves worker configuration
+ok 23 - successful Caddy install preserves worker configuration
+  ---
+  duration_ms: 221.92
+  type: 'test'
+  ...
+# Subtest: deploy-realtime.sh refuses lock contention before state or container changes
+ok 24 - deploy-realtime.sh refuses lock contention before state or container changes
+  ---
+  duration_ms: 195.528042
+  type: 'test'
+  ...
+# Subtest: rollback-realtime.sh refuses lock contention before state or container changes
+ok 25 - rollback-realtime.sh refuses lock contention before state or container changes
+  ---
+  duration_ms: 57.920708
+  type: 'test'
+  ...
+# Subtest: requires session.ready after sending authentication
+not ok 26 - requires session.ready after sending authentication
+  ---
+  duration_ms: 5.523709
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on silent timeout
+not ok 27 - fails on silent timeout
+  ---
+  duration_ms: 1.389416
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on premature close
+not ok 28 - fails on premature close
+  ---
+  duration_ms: 0.145791
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on malformed JSON
+not ok 29 - fails on malformed JSON
+  ---
+  duration_ms: 0.173208
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on null JSON
+not ok 30 - fails on null JSON
+  ---
+  duration_ms: 0.223042
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on authentication rejection
+not ok 31 - fails on authentication rejection
+  ---
+  duration_ms: 0.186084
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: fails on unsolicited readiness
+not ok 32 - fails on unsolicited readiness
+  ---
+  duration_ms: 0.144334
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:39:3'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: CLI exits nonzero on premature close without printing credentials
+not ok 33 - CLI exits nonzero on premature close without printing credentials
+  ---
+  duration_ms: 0.174
+  type: 'test'
+  location: '/private/tmp/cnp-quality-gates/ops/realtime/tests/ws-smoke.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: 'listen EPERM: operation not permitted 127.0.0.1'
+  code: 'EPERM'
+  stack: |-
+    Server.setupListenHandle [as _listen2] (node:net:1919:21)
+    listenInCluster (node:net:1998:12)
+    node:net:2207:7
+    process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  ...
+# Subtest: missing JWT fails before opening a connection
+ok 34 - missing JWT fails before opening a connection
+  ---
+  duration_ms: 0.413125
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 26
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20555.670417

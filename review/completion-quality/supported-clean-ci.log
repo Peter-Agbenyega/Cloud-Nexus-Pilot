@@ -1,0 +1,5 @@
+npm error Exit handler never called!
+npm error This is an error with npm itself. Please report this error at:
+npm error   <https://github.com/npm/cli/issues>
+npm error Log files were not written due to an error writing to the directory: /Users/peterchristianagbenyega/.npm/_logs
+npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal

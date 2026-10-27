@@ -1,0 +1,15 @@
+
+> cloud-nexus-pilot@0.1.0 typecheck
+> tsc --noEmit
+
+.next/types/app/api/transcribe/route.ts(166,7): error TS2344: Type '{ __tag__: "POST"; __param_position__: "second"; __param_type__: string | undefined; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  Types of property '__param_type__' are incompatible.
+    Type 'string | undefined' is not assignable to type 'RouteContext'.
+      Type 'undefined' is not assignable to type 'RouteContext'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error workspace cloud-nexus-pilot@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot
+npm error command failed
+npm error command sh -c tsc --noEmit

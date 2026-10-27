@@ -1,0 +1,15 @@
+{
+  "worker": "/root/audio_journey",
+  "base_at_scoped_checks": "20528db1c2d1f6da208a3bd4eb9375c4fd5fe312",
+  "committed": false,
+  "files_sha256": {
+    "apps/cloud-nexus-pilot/components/capture-disclosure.tsx": "4797b90d9803cdc9cc90b8bff8f0e4486fcd85c4c567740dbd188b1046cf485a",
+    "apps/cloud-nexus-pilot/components/saved-session-picker.tsx": "05b750bfcf1838296eb0857575eb467630d6dcafd42247bcd2d7acfa954b6a7e",
+    "apps/cloud-nexus-pilot/components/ready-state-launch-panel.tsx": "fcbf2344eba6e55e8869d21894be77e25fbccf96f37f5b4ae8234e1417bbe38f",
+    "apps/cloud-nexus-pilot/features/transcription/transcription-runtime-surface.tsx": "dd8ad14d3a08b9e4e4f79b752ead8f5bbcfbb27909458394ed302106c8f31a6a",
+    "apps/cloud-nexus-pilot/features/transcription/use-transcription-workflow.ts": "45efb619d44468b8f404ae0fcaaf5fb0332d437e0f0aeb8432aad9fc38596513",
+    "apps/cloud-nexus-pilot/features/transcription/saved-session-service.ts": "ad48d30f2e1c115e2f698b0df609a8a8a6ac6840362064c6021d0a4579ea6d5b",
+    "apps/cloud-nexus-pilot/tests/intelligence/streaming-transcript-client.test.ts": "8fe47bb283a9c6080a35916b1bb477e17e5df3451627ede93392c2e9e38b043d"
+  },
+  "integration_note": "Root final production build/browser checks must certify the complete integrated source; this snapshot includes shared hook edits preserved from root."
+}

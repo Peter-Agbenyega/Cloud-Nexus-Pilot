@@ -1,0 +1,37 @@
+setUpClass (__main__.DurableStorage) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.DurableStorage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 33, in setUpClass
+    cls.run_pg("initdb", "-D", str(cls.data), "--no-locale", "--encoding=UTF8", "--auth=trust")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/cnp-quality-gates/scripts/db-test/test_pilot_durable_storage.py", line 60, in run_pg
+    raise RuntimeError(f"{binary} exited {result.returncode}: {result.stdout}\n{result.stderr}")
+RuntimeError: initdb exited 1: The files belonging to this database system will be owned by user "peterchristianagbenyega".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+creating directory /private/tmp/pilot-db-contract-oncrd2w0/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... sysv
+selecting default "max_connections" ... 25
+selecting default "shared_buffers" ... 400kB
+selecting default time zone ... America/New_York
+creating configuration files ... ok
+running bootstrap script ... 
+2026-10-26 21:11:20.565 EDT [18633] FATAL:  could not create shared memory segment: Operation not permitted
+2026-10-26 21:11:20.565 EDT [18633] DETAIL:  Failed system call was shmget(key=157770413, size=56, 03600).
+child process exited with exit code 1
+initdb: removing data directory "/private/tmp/pilot-db-contract-oncrd2w0/data"
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 2.298s
+
+FAILED (errors=1)

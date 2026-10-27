@@ -1,0 +1,23 @@
+{
+  "baselineSha": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "originalSourceSha256": "c79b919dff422302991757f74a477a28c23b5f9bd7654fa08e09c34d135fc520",
+  "method": "Transpiled exact committed pcm-encoder.ts and executed its exported downsample function on one-second vectors split into 2048-frame callbacks.",
+  "results": [
+    {
+      "inputRate": 44100,
+      "inputFrames": 44100,
+      "callbacks": 22,
+      "originalOutputFrames": 15999,
+      "expectedOutputFrames": 16000,
+      "lostFrames": 1
+    },
+    {
+      "inputRate": 48000,
+      "inputFrames": 48000,
+      "callbacks": 24,
+      "originalOutputFrames": 15984,
+      "expectedOutputFrames": 16000,
+      "lostFrames": 16
+    }
+  ]
+}

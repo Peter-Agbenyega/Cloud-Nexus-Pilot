@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "apps/cloud-nexus-pilot/scripts/test-security-boundary.mjs"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "started_at": "2026-10-27T14:19:29.769860+00:00",
+  "finished_at": "2026-10-27T14:19:30.832634+00:00",
+  "exit_code": 0,
+  "log": "origin-regression.log",
+  "sha256": "1842144e326169efdba0a36a8e883e6b8c98cb390f7e272d3a3d27165b6f5d96"
+}

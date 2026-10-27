@@ -1,0 +1,866 @@
+{
+  "source_sha": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "lock_sha256": "505e81e87e0b90520315debb7fa498a9a7ff98bd50ee9c43a3dd3074a1810d0f",
+  "commands": [
+    {
+      "record": "apply-next-postcss-override.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:12:42.583074+00:00",
+      "finished_at": "2026-10-27T01:12:43.297579+00:00",
+      "exit_code": 0,
+      "log": "apply-next-postcss-override.log",
+      "sha256": "570ce1b20cc310ab6fca17d2b8e59800a072e9ec2e1028e810f23f92df4f6369"
+    },
+    {
+      "record": "audit-after-families.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:12:07.747480+00:00",
+      "finished_at": "2026-10-27T01:12:08.927867+00:00",
+      "exit_code": 1,
+      "log": "audit-after-families.log",
+      "sha256": "f11979fe921258ba83325e9bc6878e60d5d89999df6391a936c8820cbe7f289e"
+    },
+    {
+      "record": "audit-before-retry.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:05:42.822979+00:00",
+      "finished_at": "2026-10-27T01:05:45.012213+00:00",
+      "exit_code": 1,
+      "log": "audit-before-retry.log",
+      "sha256": "19703f15c594b2be34d716a0198da50cb602b9435e602f7c3d6a4dd38be662bd"
+    },
+    {
+      "record": "audit-before.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:05:22.357036+00:00",
+      "finished_at": "2026-10-27T01:05:23.145537+00:00",
+      "exit_code": 1,
+      "log": "audit-before.log",
+      "sha256": "2e987b4e6718131a81bc98c2a1d009d86ffaff2e958c6f0b1a46fd6c35c17eeb"
+    },
+    {
+      "record": "audit-final.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:14:07.106959+00:00",
+      "finished_at": "2026-10-27T01:14:07.893948+00:00",
+      "exit_code": 1,
+      "log": "audit-final.log",
+      "sha256": "cbae7f51df4c0872edafe455bed3682a8f8d942ce1fadf71c16212b51f635509"
+    },
+    {
+      "record": "eslint-js-registry-retry.json",
+      "command": [
+        "npm",
+        "view",
+        "@eslint/js",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:09:12.527814+00:00",
+      "finished_at": "2026-10-27T01:09:13.089052+00:00",
+      "exit_code": 0,
+      "log": "eslint-js-registry-retry.log",
+      "sha256": "7f1d37bc3928836dc33d0da10c9d5f3a48447f5aa7dd0683f9cde8992a9b529d"
+    },
+    {
+      "record": "eslint-js-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "@eslint/js",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:09:00.198018+00:00",
+      "finished_at": "2026-10-27T01:09:00.472589+00:00",
+      "exit_code": 1,
+      "log": "eslint-js-registry.log",
+      "sha256": "a80a1290664c6bfe909dca76e3154839c8a3d6246abe13b0973f9eaa5eb05879"
+    },
+    {
+      "record": "eslint-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "eslint",
+        "version",
+        "engines",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:06:00.761210+00:00",
+      "finished_at": "2026-10-27T01:06:01.255850+00:00",
+      "exit_code": 0,
+      "log": "eslint-registry.log",
+      "sha256": "85d0d9b0cb93405f849da6f02df2cea657d2683e01dc231964a28b5eb6a5b4d4"
+    },
+    {
+      "record": "fastify-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "fastify",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:06:02.790042+00:00",
+      "finished_at": "2026-10-27T01:06:03.179803+00:00",
+      "exit_code": 0,
+      "log": "fastify-registry.log",
+      "sha256": "ff32361127945f9e804e5bade9c884a2520fd3a98dce99fcca14ad28112fdcde"
+    },
+    {
+      "record": "final-pilot-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:22:45.611622+00:00",
+      "finished_at": "2026-10-27T01:23:11.146731+00:00",
+      "exit_code": 0,
+      "log": "final-pilot-ci.log",
+      "sha256": "0ccee79707a538bac5dcbb6f97989bd12203b33e26b837b2a0c81e05c3366eb5"
+    },
+    {
+      "record": "installed-dependency-contract.json",
+      "command": [
+        "npm",
+        "run",
+        "check:pilot-dependencies"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:38.273912+00:00",
+      "finished_at": "2026-10-27T01:23:38.517759+00:00",
+      "exit_code": 0,
+      "log": "installed-dependency-contract.log",
+      "sha256": "413a8526083ab904c9b32b8e29ca21c195624f73a8168b60776dcdf5a3b48cc6"
+    },
+    {
+      "record": "next-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "next@15",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:06:01.748810+00:00",
+      "finished_at": "2026-10-27T01:06:02.762174+00:00",
+      "exit_code": 0,
+      "log": "next-registry.log",
+      "sha256": "027efd794d75e5c46130003a590d1c8ac588c05faf078ddfa582247c95f2fe87"
+    },
+    {
+      "record": "operations-repaired.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:14:08.531806+00:00",
+      "finished_at": "2026-10-27T01:14:29.466716+00:00",
+      "exit_code": 1,
+      "log": "operations-repaired.log",
+      "sha256": "059d69e72461a7e1e2e071bf340e284e5f7a4a392588e9577ae4a57d41bb7200"
+    },
+    {
+      "record": "override-clean-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:12:58.201056+00:00",
+      "finished_at": "2026-10-27T01:13:24.509622+00:00",
+      "exit_code": 0,
+      "log": "override-clean-ci.log",
+      "sha256": "be3ff375567793107119cfbd9b83c11a026edebb151336df81e5e7b69bcb33e9"
+    },
+    {
+      "record": "patched-transitives.json",
+      "command": [
+        "npm",
+        "view",
+        "sharp",
+        "version",
+        "engines",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:07:25.416208+00:00",
+      "finished_at": "2026-10-27T01:07:25.734432+00:00",
+      "exit_code": 0,
+      "log": "patched-transitives.log",
+      "sha256": "e6e6edd725e629ed0a3f8ff5ed461f83843a91656d141b301b8c00dbd6731783"
+    },
+    {
+      "record": "peers-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "eslint-config-next@15.5.28",
+        "peerDependencies",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:07:24.291202+00:00",
+      "finished_at": "2026-10-27T01:07:24.926102+00:00",
+      "exit_code": 0,
+      "log": "peers-registry.log",
+      "sha256": "e7f9f1e7762d5e7cf878a6178cca7068dd84aa85ba230fa752c8b4110a60760f"
+    },
+    {
+      "record": "pilot-audit-final.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:14:07.924886+00:00",
+      "finished_at": "2026-10-27T01:14:08.501530+00:00",
+      "exit_code": 0,
+      "log": "pilot-audit-final.log",
+      "sha256": "be1e2dd62b53c4871f7abaee9397943b4161ba013f4513ccc910859ed96f3b39"
+    },
+    {
+      "record": "pilot-final-frontend-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:52.984138+00:00",
+      "finished_at": "2026-10-27T01:23:54.688559+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-frontend-lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "record": "pilot-final-monorepo-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:40.319802+00:00",
+      "finished_at": "2026-10-27T01:23:42.226753+00:00",
+      "exit_code": 1,
+      "log": "pilot-final-monorepo-audit.log",
+      "sha256": "693dcfd6c8eee7f6171dfc519b9fc601fd0b2d25c6b50fab8458ee29b415b34b"
+    },
+    {
+      "record": "pilot-final-operations.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:47.354613+00:00",
+      "finished_at": "2026-10-27T01:24:08.426976+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-operations.log",
+      "sha256": "342f9dc5124a78681b6a96f63a95355b413cd4d2e25677d72ef3d28fdc9ddaa4"
+    },
+    {
+      "record": "pilot-final-realtime-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:52.983833+00:00",
+      "finished_at": "2026-10-27T01:23:54.566137+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-realtime-lint.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "pilot-final-realtime-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:42.854927+00:00",
+      "finished_at": "2026-10-27T01:23:47.325963+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-realtime-tests.log",
+      "sha256": "b0bfadb4ad6ef0179bec9016e6318991df2b78a14de022eae32efca4323e9d6d"
+    },
+    {
+      "record": "pilot-final-realtime-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:52.983762+00:00",
+      "finished_at": "2026-10-27T01:23:54.423120+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-realtime-typecheck.log",
+      "sha256": "cdac84b73011f90d264fc574f36da4d3ed007b107b1b325c299c71a022afae13"
+    },
+    {
+      "record": "pilot-final-scoped-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:23:42.259339+00:00",
+      "finished_at": "2026-10-27T01:23:42.823463+00:00",
+      "exit_code": 0,
+      "log": "pilot-final-scoped-audit.log",
+      "sha256": "6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f"
+    },
+    {
+      "record": "pilot-only-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:05.416004+00:00",
+      "finished_at": "2026-10-27T01:18:31.515215+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-ci.log",
+      "sha256": "1f7c509032d16bd26129489572bc0b33a2238991f981a6f9e7bdcc070447b1a3"
+    },
+    {
+      "record": "pilot-only-frontend-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:45.320385+00:00",
+      "finished_at": "2026-10-27T01:18:46.600925+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-frontend-lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "record": "pilot-only-lock.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:17:56.443199+00:00",
+      "finished_at": "2026-10-27T01:18:05.373061+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-lock.log",
+      "sha256": "91611fabb007911708a8410de0ddce40abdc2789273d37f60035859002061d4c"
+    },
+    {
+      "record": "pilot-only-monorepo-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:50.514651+00:00",
+      "finished_at": "2026-10-27T01:18:52.450466+00:00",
+      "exit_code": 1,
+      "log": "pilot-only-monorepo-audit.log",
+      "sha256": "bd28d19b33e07a35b1a2cab4cc8161585fdf094cbac63b6f4a50e8ab49e814ce"
+    },
+    {
+      "record": "pilot-only-operations.json",
+      "command": [
+        "npm",
+        "run",
+        "test:realtime-ops"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:53.437369+00:00",
+      "finished_at": "2026-10-27T01:19:12.461000+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-operations.log",
+      "sha256": "a409774790241832dceb5f7cac1ee3afe16e301f7efc22f8675d014f3b8a1577"
+    },
+    {
+      "record": "pilot-only-realtime-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:45.320373+00:00",
+      "finished_at": "2026-10-27T01:18:46.415139+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-realtime-lint.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "pilot-only-realtime-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:19:12.499023+00:00",
+      "finished_at": "2026-10-27T01:19:17.335439+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-realtime-tests.log",
+      "sha256": "7f0a4dcab764601a2395f53aeee240979eb4d27ff89e0ae06b51df993035c25e"
+    },
+    {
+      "record": "pilot-only-realtime-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:45.320438+00:00",
+      "finished_at": "2026-10-27T01:18:46.389264+00:00",
+      "exit_code": 0,
+      "log": "pilot-only-realtime-typecheck.log",
+      "sha256": "cdac84b73011f90d264fc574f36da4d3ed007b107b1b325c299c71a022afae13"
+    },
+    {
+      "record": "pilot-only-scoped-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:18:52.491977+00:00",
+      "finished_at": "2026-10-27T01:18:53.404632+00:00",
+      "exit_code": 1,
+      "log": "pilot-only-scoped-audit.log",
+      "sha256": "fcc88a29bf8fd4d54fdb75317132c4f6e986bd77592b8df6bf14420436fcb430"
+    },
+    {
+      "record": "pilot-runtime-audit.json",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--workspace",
+        "apps/cloud-nexus-pilot",
+        "--workspace",
+        "apps/pilot-realtime-api",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:12:08.968033+00:00",
+      "finished_at": "2026-10-27T01:12:09.949058+00:00",
+      "exit_code": 1,
+      "log": "pilot-runtime-audit.log",
+      "sha256": "aa1ae32ee0dda91723fae4da0e37c2592c55799eef75504cf84c54bb7d26f22f"
+    },
+    {
+      "record": "pilot-shared-transitives.json",
+      "command": [
+        "npm",
+        "update",
+        "fast-uri",
+        "find-my-way",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:22:05.658383+00:00",
+      "finished_at": "2026-10-27T01:22:06.600905+00:00",
+      "exit_code": 0,
+      "log": "pilot-shared-transitives.log",
+      "sha256": "068250cc50f871f19fd91c03d5e521c0edf32933737d111924e427e04e1a3be2"
+    },
+    {
+      "record": "pilot-supported-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:13:37.806319+00:00",
+      "finished_at": "2026-10-27T01:13:39.233133+00:00",
+      "exit_code": 0,
+      "log": "pilot-supported-lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "record": "postcss-version.json",
+      "command": [
+        "npm",
+        "view",
+        "postcss",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:09:47.394669+00:00",
+      "finished_at": "2026-10-27T01:09:47.919606+00:00",
+      "exit_code": 0,
+      "log": "postcss-version.log",
+      "sha256": "da5a28dababfa38f9efa2720b49cf3d49537a695f2076f2317d8c72ab035d2f8"
+    },
+    {
+      "record": "realtime-supported-lint.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:13:37.803533+00:00",
+      "finished_at": "2026-10-27T01:13:39.097778+00:00",
+      "exit_code": 0,
+      "log": "realtime-supported-lint.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "realtime-zod4-tests.json",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:14:29.505586+00:00",
+      "finished_at": "2026-10-27T01:14:30.954036+00:00",
+      "exit_code": 2,
+      "log": "realtime-zod4-tests.log",
+      "sha256": "97108ce8823dc82849c43b03fa7f29538468c312827c4c282039d6de202d5f3e"
+    },
+    {
+      "record": "realtime-zod4-typecheck.json",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:13:37.804241+00:00",
+      "finished_at": "2026-10-27T01:13:38.993934+00:00",
+      "exit_code": 2,
+      "log": "realtime-zod4-typecheck.log",
+      "sha256": "72fa58839223a0905b90b805a5f97ab5c43ace736575593436b0672597c2fa6e"
+    },
+    {
+      "record": "supported-clean-ci-retry.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:10:38.800628+00:00",
+      "finished_at": "2026-10-27T01:11:05.510438+00:00",
+      "exit_code": 0,
+      "log": "supported-clean-ci-retry.log",
+      "sha256": "ac7dfbb0bbc05181c7137dcf57c228649289287ecf0ea0c82134a8c649c765fd"
+    },
+    {
+      "record": "supported-clean-ci.json",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:09:29.814200+00:00",
+      "finished_at": "2026-10-27T01:09:38.910937+00:00",
+      "exit_code": 1,
+      "log": "supported-clean-ci.log",
+      "sha256": "4f4518e297406872523c3c99d350a2b63fce4b42f100dc5e8cedd9fda49ad19a"
+    },
+    {
+      "record": "supported-lint-negative.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:24:19.711500+00:00",
+      "finished_at": "2026-10-27T01:24:20.755936+00:00",
+      "exit_code": 1,
+      "log": "supported-lint-negative.log",
+      "sha256": "7af219d759ddfc2e0b9faebd15d0d5cff0c078a7334be214a8bc534a62b14def"
+    },
+    {
+      "record": "supported-lint-restored.json",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:24:20.788866+00:00",
+      "finished_at": "2026-10-27T01:24:21.432408+00:00",
+      "exit_code": 0,
+      "log": "supported-lint-restored.log",
+      "sha256": "53b8f1d4ae90ab69f6f61ff6b8b7751e758317813daaed2305c4f6f0d1a74b5d"
+    },
+    {
+      "record": "tseslint-existing-peers.json",
+      "command": [
+        "npm",
+        "view",
+        "@typescript-eslint/eslint-plugin@8.57.1",
+        "peerDependencies",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:07:24.956491+00:00",
+      "finished_at": "2026-10-27T01:07:25.388227+00:00",
+      "exit_code": 0,
+      "log": "tseslint-existing-peers.log",
+      "sha256": "36ee059f6ee1abb16497ad2189403465c8acc0e6ed08870900631ff9b8761390"
+    },
+    {
+      "record": "typescript-eslint-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "@typescript-eslint/eslint-plugin",
+        "version",
+        "peerDependencies",
+        "engines",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:06:01.286246+00:00",
+      "finished_at": "2026-10-27T01:06:01.718853+00:00",
+      "exit_code": 0,
+      "log": "typescript-eslint-registry.log",
+      "sha256": "14a3a22003001140562b89c4442132a0ab3dad125308aa8b84ddac8dc2b02a33"
+    },
+    {
+      "record": "update-patched-transitives.json",
+      "command": [
+        "npm",
+        "update",
+        "postcss",
+        "nanoid",
+        "source-map-js",
+        "fast-uri",
+        "find-my-way",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:10:06.362971+00:00",
+      "finished_at": "2026-10-27T01:10:07.466273+00:00",
+      "exit_code": 0,
+      "log": "update-patched-transitives.log",
+      "sha256": "b125771fda8addd462adfe7f7b03299feb35e28badbb2d16ae8589e371216f8f"
+    },
+    {
+      "record": "update-supported-families.json",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--install-strategy=nested",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:09:13.124454+00:00",
+      "finished_at": "2026-10-27T01:09:18.983721+00:00",
+      "exit_code": 0,
+      "log": "update-supported-families.log",
+      "sha256": "f7bed42a2825de3edc01854228204e8095bd8b23576a174ac66435b135530bba"
+    },
+    {
+      "record": "zod3-registry.json",
+      "command": [
+        "npm",
+        "view",
+        "zod@3",
+        "version",
+        "--json",
+        "--fetch-timeout=15000",
+        "--fetch-retries=0"
+      ],
+      "cwd": "/private/tmp/cnp-quality-gates",
+      "started_at": "2026-10-27T01:07:25.762214+00:00",
+      "finished_at": "2026-10-27T01:07:26.082438+00:00",
+      "exit_code": 0,
+      "log": "zod3-registry.log",
+      "sha256": "4d8e52237456652e1bbba8184204e9075355baf8a2b44756630c6f54a1c68752"
+    }
+  ]
+}

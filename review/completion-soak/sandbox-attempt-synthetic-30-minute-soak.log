@@ -1,0 +1,21 @@
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:15270:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async _handleRequest (/private/tmp/cnp-quality-gates/node_modules/@supabase/auth-js/dist/main/lib/fetch.js:119:18)
+    at async _request (/private/tmp/cnp-quality-gates/node_modules/@supabase/auth-js/dist/main/lib/fetch.js:109:18)
+    at async SupabaseAuthClient.signInWithPassword (/private/tmp/cnp-quality-gates/node_modules/@supabase/auth-js/dist/main/GoTrueClient.js:919:23)
+    at async login (file:///private/tmp/cnp-quality-gates/scripts/pilot/test-local-soak.mjs:35:21)
+    at async file:///private/tmp/cnp-quality-gates/scripts/pilot/test-local-soak.mjs:81:4 {
+  [cause]: Error: connect EPERM 127.0.0.1:58090 - Local (0.0.0.0:0)
+      at internalConnect (node:net:1111:16)
+      at defaultTriggerAsyncIdScope (node:internal/async_hooks:472:18)
+      at node:net:1357:9
+      at process.processTicksAndRejections (node:internal/process/task_queues:84:11) {
+    errno: -1,
+    code: 'EPERM',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 58090
+  }
+}
+{"at":"2026-10-27T14:30:06.136Z","elapsedMs":33,"type":"failed","name":"AssertionError","code":"ERR_ASSERTION","message":"Real local synthetic account login failed","sessionId":null}

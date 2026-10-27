@@ -1,0 +1,16 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test",
+    "--workspace",
+    "apps/pilot-realtime-api"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "2fcc3dcff5831a7e72931d174e88f09881ae053a",
+  "started_at": "2026-10-27T15:16:49.035591+00:00",
+  "finished_at": "2026-10-27T15:16:54.330404+00:00",
+  "exit_code": 0,
+  "log": "final-source-realtime-approved.log",
+  "sha256": "4d4244bce19d59109a6309a7182c36380cf89d19ce7b154de4b3d5901f51d6b5"
+}

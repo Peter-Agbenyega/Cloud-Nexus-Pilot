@@ -1,0 +1,13 @@
+{
+  "worker": "/root/audio_journey",
+  "worktree": "/private/tmp/cnp-quality-gates",
+  "base_at_checks": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "committed": false,
+  "files_sha256": {
+    "apps/cloud-nexus-pilot/components/ready-state-launch-panel.tsx": "5606be1562dfad6dffb44a37f35d7ba70f2a41f4bbe040df708f919d64941880",
+    "apps/cloud-nexus-pilot/features/transcription/guidance-session-client.ts": "164673d45191dc7dab975b5362184a763aa59a72120285a9a1e6bd99977e372e",
+    "apps/cloud-nexus-pilot/features/transcription/use-transcription-workflow.ts": "2553c77e62e7979de31062aae3aec1d9066174972603f6f6ddd4fa3d31ec68ff",
+    "apps/cloud-nexus-pilot/features/transcription/transcription-runtime-surface.tsx": "4922de075c487585bc9a274c6815e4262ef94663513280debda6512cfa87c8b1",
+    "apps/cloud-nexus-pilot/tests/intelligence/guidance-session-client.test.ts": "0e596edc45138c5ff0b20028e67ddf57eb521f8d391b11fc9ab49c513707a0d1"
+  }
+}

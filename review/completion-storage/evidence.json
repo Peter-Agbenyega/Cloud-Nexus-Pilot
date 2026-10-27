@@ -1,0 +1,52 @@
+{
+  "recorded_at": "2026-10-27T01:18:47.214549+00:00",
+  "worker": "/root/infrastructure_review",
+  "scope": "Pilot-only additive SQL and disposable DB tests; existing provider-route regression adaptation",
+  "current_head": "9d90fa5c54ec7a8a5e9d0e5d5274e2a45a805cff",
+  "uncommitted": true,
+  "source_sha256": {
+    "packages/db/migrations/postgres/003_pilot_durable_processing.sql": "db2aa2ce9d6373bae0799b1416a189246fd63ed7276d0bd6f11b8bae2763fae4",
+    "scripts/db-test/test_pilot_durable_storage.py": "9187d1274d259314cc6d73a2916b8fb7625315bc52b6715b46697bb9eb379235",
+    "apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs": "a1657df7ab105f85c9204f25b7adf2595b941e925c02b29ea417ef54a6be9798",
+    "apps/cloud-nexus-pilot/scripts/test-transcription-errors.mjs": "b678c88c17164a459287a85bcf87bdb94bde17932bb67f5aab895b449cf3cd89"
+  },
+  "logs": {
+    "postgres-contract.log": "94ca861ece9516dc0e8b263a82943617dbedb9b0ef7258277a238d5f7d335c44",
+    "postgres-contract-sandbox.log": "5b9da5a4492ffe4b68ccbbb1e7800a9823e2a403329683eb0edbbfb158d3f575",
+    "postgres-contract-approved.log": "eb4cbc3e9bc09376bc6ae6fde96a13c62771b3ff3cb410a6b9915d490073cff7",
+    "postgres-contract-approved-r2.log": "6ed7320cb8f7e8c53a4d898cae3fa19b3dba4d24aecb0e393105622bfaa66f63",
+    "postgres-contract-final.log": "294e85cd103154e5e1b66c9b790a0aa45153e76511d738633f07965d7113890d",
+    "postgres-contract-r4.log": "5fbc375e6a0086907455780b5525053978e881c4f5950710a71feb160e7c9c18",
+    "route-adaptations-first.log": "c6209b07c20caf07246d98ec2141c00c5d6cb93b3f7f21a221c9ababcad1e9d9"
+  },
+  "final_commands": [
+    {
+      "command": [
+        "python3",
+        "scripts/db-test/test_pilot_durable_storage.py"
+      ],
+      "exit_code": 0,
+      "passed": 22,
+      "log": "postgres-contract-r4.log",
+      "layer": "actual disposable PostgreSQL17;002 fixture unrelated pgvector columns adapted;003 verbatim"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "apps/cloud-nexus-pilot/scripts/test-provider-routes.mjs",
+        "apps/cloud-nexus-pilot/scripts/test-transcription-errors.mjs"
+      ],
+      "exit_code": 0,
+      "passed": 33,
+      "log": "route-adaptations-first.log",
+      "layer": "actual route source with repository/provider doubles"
+    }
+  ],
+  "initial_failures": "Sandbox initdb failed shmget Operation not permitted; approved retry initially found fixture assumed one vector column rather than actual two; fixed and reran. No workaround to sandbox enforcement.",
+  "limitations": [
+    "No shared migration or infrastructure changes",
+    "No full pgvector/GoTrue/PostgREST deployment acceptance",
+    "No hosted or live-provider result"
+  ]
+}

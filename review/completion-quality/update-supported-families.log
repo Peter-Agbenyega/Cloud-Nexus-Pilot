@@ -1,0 +1,24 @@
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: eslint-config-next@15.2.6
+npm warn Found: eslint@10.13.0
+npm warn apps/cloud-nexus-pilot/node_modules/eslint
+npm warn   dev eslint@"10.13.0" from cloud-nexus-pilot@0.1.0
+npm warn   apps/cloud-nexus-pilot
+npm warn     cloud-nexus-pilot@0.1.0
+npm warn     node_modules/cloud-nexus-pilot
+npm warn   5 more (@eslint-community/eslint-utils, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer eslint@"^7.23.0 || ^8.0.0 || ^9.0.0" from eslint-config-next@15.2.6
+npm warn apps/cloud-nexus-pilot/node_modules/eslint-config-next
+npm warn
+npm warn Conflicting peer dependency: eslint@9.39.5
+npm warn node_modules/eslint
+npm warn   peer eslint@"^7.23.0 || ^8.0.0 || ^9.0.0" from eslint-config-next@15.2.6
+npm warn   apps/cloud-nexus-pilot/node_modules/eslint-config-next
+npm warn ERESOLVE overriding peer dependency
+npm warn ERESOLVE overriding peer dependency
+npm warn ERESOLVE overriding peer dependency
+npm warn ERESOLVE overriding peer dependency
+
+up to date in 6s

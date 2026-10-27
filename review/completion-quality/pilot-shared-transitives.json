@@ -1,0 +1,21 @@
+{
+  "command": [
+    "npm",
+    "update",
+    "fast-uri",
+    "find-my-way",
+    "--package-lock-only",
+    "--install-strategy=nested",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--fetch-timeout=15000",
+    "--fetch-retries=0"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "started_at": "2026-10-27T01:22:05.658383+00:00",
+  "finished_at": "2026-10-27T01:22:06.600905+00:00",
+  "exit_code": 0,
+  "log": "pilot-shared-transitives.log",
+  "sha256": "068250cc50f871f19fd91c03d5e521c0edf32933737d111924e427e04e1a3be2"
+}

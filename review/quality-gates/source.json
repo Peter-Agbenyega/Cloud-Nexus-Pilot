@@ -1,0 +1,15 @@
+{
+  "base_sha": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca",
+  "branch": "fix/pilot-quality-gates",
+  "parent_pr10_sha": "77f87077d3ceecb7b1b108ac57c228b16559a0ca",
+  "node": "22.23.3",
+  "npm": "10.9.9",
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "baseline_lock_sha256": "1109bff0e73cccb1edfd7b98279d4bd30172aa48523caf1752120e5566b0bf7a",
+  "hooks_review": "No repository workspace install hooks. Inspected lockfile hasInstallScript list and installed sharp/install/check.js, unrs-resolver+napi-postinstall, better-sqlite3/package.json and fsevents/package.json before normal npm ci. Native build/download hooks only; no root dev or migration scripts invoked.",
+  "interrupted_attempt": {
+    "command": "npm ci --ignore-scripts --no-audit --no-fund",
+    "exit_code": 130,
+    "reason": "Sandboxed fetch stalled; interrupted, then approved network retry."
+  }
+}

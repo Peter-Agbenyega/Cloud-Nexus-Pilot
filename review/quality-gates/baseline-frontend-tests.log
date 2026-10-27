@@ -1,0 +1,440 @@
+
+> cloud-nexus-pilot@0.1.0 test
+> npm run test:realtime && npm run test:intelligence
+
+
+> cloud-nexus-pilot@0.1.0 test:realtime
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/realtime/*.test.js
+
+TAP version 13
+# Subtest: auth_required triggers session.authenticate
+ok 1 - auth_required triggers session.authenticate
+  ---
+  duration_ms: 1.419542
+  type: 'test'
+  ...
+# Subtest: session.ready changes state to ready
+ok 2 - session.ready changes state to ready
+  ---
+  duration_ms: 1.122375
+  type: 'test'
+  ...
+# Subtest: token never appears in logs, URL, or non-auth state
+ok 3 - token never appears in logs, URL, or non-auth state
+  ---
+  duration_ms: 0.195125
+  type: 'test'
+  ...
+# Subtest: authentication failure closes without reconnect
+ok 4 - authentication failure closes without reconnect
+  ---
+  duration_ms: 0.145584
+  type: 'test'
+  ...
+# Subtest: 1008 does not reconnect
+ok 5 - 1008 does not reconnect
+  ---
+  duration_ms: 0.140875
+  type: 'test'
+  ...
+# Subtest: 1012 reconnects
+ok 6 - 1012 reconnects
+  ---
+  duration_ms: 0.113542
+  type: 'test'
+  ...
+# Subtest: reconnect obtains a fresh token
+ok 7 - reconnect obtains a fresh token
+  ---
+  duration_ms: 0.25475
+  type: 'test'
+  ...
+# Subtest: explicit disconnect prevents reconnect
+ok 8 - explicit disconnect prevents reconnect
+  ---
+  duration_ms: 0.218875
+  type: 'test'
+  ...
+# Subtest: token refresh sends session.reauthenticate
+ok 9 - token refresh sends session.reauthenticate
+  ---
+  duration_ms: 0.340209
+  type: 'test'
+  ...
+# Subtest: duplicate refresh is prevented
+ok 10 - duplicate refresh is prevented
+  ---
+  duration_ms: 0.359916
+  type: 'test'
+  ...
+# Subtest: auth_refreshed clears refresh-in-flight state
+ok 11 - auth_refreshed clears refresh-in-flight state
+  ---
+  duration_ms: 0.15525
+  type: 'test'
+  ...
+# Subtest: cleanup removes listeners and timers
+ok 12 - cleanup removes listeners and timers
+  ---
+  duration_ms: 0.076375
+  type: 'test'
+  ...
+# Subtest: Strict Mode-style setup and cleanup does not create duplicate live sockets
+ok 13 - Strict Mode-style setup and cleanup does not create duplicate live sockets
+  ---
+  duration_ms: 0.055083
+  type: 'test'
+  ...
+# Subtest: ping, session.end, and clean disconnect use protocol messages safely
+ok 14 - ping, session.end, and clean disconnect use protocol messages safely
+  ---
+  duration_ms: 0.078625
+  type: 'test'
+  ...
+# Subtest: runtime event acknowledgements parse and runtime events serialize without URL tokens
+ok 15 - runtime event acknowledgements parse and runtime events serialize without URL tokens
+  ---
+  duration_ms: 0.134459
+  type: 'test'
+  ...
+# Subtest: session.end prevents reconnect when the server close arrives first
+ok 16 - session.end prevents reconnect when the server close arrives first
+  ---
+  duration_ms: 0.083417
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT closes the active WebSocket
+ok 17 - SIGNED_OUT closes the active WebSocket
+  ---
+  duration_ms: 0.047333
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT prevents reconnect
+ok 18 - SIGNED_OUT prevents reconnect
+  ---
+  duration_ms: 0.040333
+  type: 'test'
+  ...
+# Subtest: a later normal session start can connect again after SIGNED_OUT
+ok 19 - a later normal session start can connect again after SIGNED_OUT
+  ---
+  duration_ms: 0.039959
+  type: 'test'
+  ...
+# Subtest: first live session start connects
+ok 20 - first live session start connects
+  ---
+  duration_ms: 0.033292
+  type: 'test'
+  ...
+# Subtest: endSession closes the active WebSocket
+ok 21 - endSession closes the active WebSocket
+  ---
+  duration_ms: 0.047084
+  type: 'test'
+  ...
+# Subtest: starting a second live session reconnects after session.end
+ok 22 - starting a second live session reconnects after session.end
+  ---
+  duration_ms: 0.041792
+  type: 'test'
+  ...
+# Subtest: only one live WebSocket exists when connect is called repeatedly
+ok 23 - only one live WebSocket exists when connect is called repeatedly
+  ---
+  duration_ms: 0.035708
+  type: 'test'
+  ...
+# Subtest: connect does nothing while connecting, authenticating, ready, or reconnecting
+ok 24 - connect does nothing while connecting, authenticating, ready, or reconnecting
+  ---
+  duration_ms: 0.055666
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 88.720959
+
+> cloud-nexus-pilot@0.1.0 test:intelligence
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js
+
+TAP version 13
+# Subtest: late permission grant after teardown closes fake tracks instead of adopting them
+ok 1 - late permission grant after teardown closes fake tracks instead of adopting them
+  ---
+  duration_ms: 0.910041
+  type: 'test'
+  ...
+# Subtest: startup failure closes the acquired fake stream before a fresh start
+ok 2 - startup failure closes the acquired fake stream before a fresh start
+  ---
+  duration_ms: 0.07975
+  type: 'test'
+  ...
+# Subtest: stop during async startup keeps a lock until old startup settles
+ok 3 - stop during async startup keeps a lock until old startup settles
+  ---
+  duration_ms: 0.232917
+  type: 'test'
+  ...
+# Subtest: failed authenticated cloud deletes reject without writing unrelated local storage
+ok 4 - failed authenticated cloud deletes reject without writing unrelated local storage
+  ---
+  duration_ms: 3.213666
+  type: 'test'
+  ...
+# Subtest: ingests a plain text resume and extracts structured profile data
+ok 5 - ingests a plain text resume and extracts structured profile data
+  ---
+  duration_ms: 1.633084
+  type: 'test'
+  ...
+# Subtest: ingests markdown job descriptions and extracts job profile data
+ok 6 - ingests markdown job descriptions and extracts job profile data
+  ---
+  duration_ms: 0.598167
+  type: 'test'
+  ...
+# Subtest: rejects oversized profile uploads before parsing
+ok 7 - rejects oversized profile uploads before parsing
+  ---
+  duration_ms: 0.234083
+  type: 'test'
+  ...
+# Subtest: rejects unsupported profile file types
+ok 8 - rejects unsupported profile file types
+  ---
+  duration_ms: 0.074708
+  type: 'test'
+  ...
+# Subtest: interview persistence falls back to local session storage without Supabase credentials
+ok 9 - interview persistence falls back to local session storage without Supabase credentials
+  ---
+  duration_ms: 1.7085
+  type: 'test'
+  ...
+# Subtest: local interview persistence stores transcript, question, guidance, and end state
+ok 10 - local interview persistence stores transcript, question, guidance, and end state
+  ---
+  duration_ms: 0.639083
+  type: 'test'
+  ...
+# Subtest: selects OpenAI only when an OpenAI key is available
+ok 11 - selects OpenAI only when an OpenAI key is available
+  ---
+  duration_ms: 0.6655
+  type: 'test'
+  ...
+# Subtest: OpenAI provider streams chat-completion delta content
+ok 12 - OpenAI provider streams chat-completion delta content
+  ---
+  duration_ms: 27.348041
+  type: 'test'
+  ...
+# Subtest: saved empty Prompt Vault stays empty across reads and subsequent writes
+ok 13 - saved empty Prompt Vault stays empty across reads and subsequent writes
+  ---
+  duration_ms: 1.108917
+  type: 'test'
+  ...
+# Subtest: missing and malformed Prompt Vault storage retain prior starter fallback
+ok 14 - missing and malformed Prompt Vault storage retain prior starter fallback
+  ---
+  duration_ms: 0.153167
+  type: 'test'
+  ...
+# Subtest: auth return paths cannot escape origin through URL normalization
+ok 15 - auth return paths cannot escape origin through URL normalization
+  ---
+  duration_ms: 0.232958
+  type: 'test'
+  ...
+# Subtest: local fallback eligibility preserves billing authentication and route boundaries
+ok 16 - local fallback eligibility preserves billing authentication and route boundaries
+  ---
+  duration_ms: 0.076791
+  type: 'test'
+  ...
+# Subtest: mock interview asks role-specific first question using shared profile context
+ok 17 - mock interview asks role-specific first question using shared profile context
+  ---
+  duration_ms: 5.28575
+  type: 'test'
+  ...
+# Subtest: mock interview scores candidate answers and asks follow-up prompts
+ok 18 - mock interview scores candidate answers and asks follow-up prompts
+  ---
+  duration_ms: 2.968833
+  type: 'test'
+  ...
+# Subtest: mock interview can finish with a report
+ok 19 - mock interview can finish with a report
+  ---
+  duration_ms: 1.108625
+  type: 'test'
+  ...
+# Subtest: natural speaking policy rejects routine AI-style openings
+ok 20 - natural speaking policy rejects routine AI-style openings
+  ---
+  duration_ms: 0.726041
+  type: 'test'
+  ...
+# Subtest: technical prompt keeps speak-now concise while preserving deeper detail
+ok 21 - technical prompt keeps speak-now concise while preserving deeper detail
+  ---
+  duration_ms: 0.158125
+  type: 'test'
+  ...
+# Subtest: candidate evidence policy allows personalization without invented experience
+ok 22 - candidate evidence policy allows personalization without invented experience
+  ---
+  duration_ms: 0.126333
+  type: 'test'
+  ...
+# Subtest: debugging prompt starts with actionable diagnosis
+ok 23 - debugging prompt starts with actionable diagnosis
+  ---
+  duration_ms: 0.128875
+  type: 'test'
+  ...
+# Subtest: behavioral prompt stays natural and does not expose template labels
+ok 24 - behavioral prompt stays natural and does not expose template labels
+  ---
+  duration_ms: 0.094
+  type: 'test'
+  ...
+# Subtest: system design prompt separates architecture direction from components
+ok 25 - system design prompt separates architecture direction from components
+  ---
+  duration_ms: 0.083416
+  type: 'test'
+  ...
+# Subtest: user prompt carries context without asking to repeat the question
+ok 26 - user prompt carries context without asking to repeat the question
+  ---
+  duration_ms: 0.136209
+  type: 'test'
+  ...
+# Subtest: provider auth fails closed when authentication is unconfigured
+ok 27 - provider auth fails closed when authentication is unconfigured
+  ---
+  duration_ms: 20.664792
+  type: 'test'
+  ...
+# Subtest: provider auth rejects absent and invalid sessions
+ok 28 - provider auth rejects absent and invalid sessions
+  ---
+  duration_ms: 0.202792
+  type: 'test'
+  ...
+# Subtest: provider auth rejects service roles, anonymous accounts and role-less identities
+ok 29 - provider auth rejects service roles, anonymous accounts and role-less identities
+  ---
+  duration_ms: 0.175792
+  type: 'test'
+  ...
+# Subtest: provider auth returns the verified ordinary user's ID
+ok 30 - provider auth returns the verified ordinary user's ID
+  ---
+  duration_ms: 0.597333
+  type: 'test'
+  ...
+# Subtest: authentication outages do not authorize provider access or leak errors
+ok 31 - authentication outages do not authorize provider access or leak errors
+  ---
+  duration_ms: 0.639125
+  type: 'test'
+  ...
+# Subtest: detects implicit technical prompts and classifies cloud debugging context
+ok 32 - detects implicit technical prompts and classifies cloud debugging context
+  ---
+  duration_ms: 2.144084
+  type: 'test'
+  ...
+# Subtest: suppresses previously seen questions by normalized dedupe key
+ok 33 - suppresses previously seen questions by normalized dedupe key
+  ---
+  duration_ms: 0.142083
+  type: 'test'
+  ...
+# Subtest: extracts resume and job profiles, then packs only relevant evidence
+ok 34 - extracts resume and job profiles, then packs only relevant evidence
+  ---
+  duration_ms: 2.306709
+  type: 'test'
+  ...
+# Subtest: classifies screen text from terminal and extracts operational errors
+ok 35 - classifies screen text from terminal and extracts operational errors
+  ---
+  duration_ms: 0.388959
+  type: 'test'
+  ...
+# Subtest: diagnoses terminal debugging artifacts with safe next steps
+ok 36 - diagnoses terminal debugging artifacts with safe next steps
+  ---
+  duration_ms: 0.371209
+  type: 'test'
+  ...
+# Subtest: generates a post-interview report from transcript text
+ok 37 - generates a post-interview report from transcript text
+  ---
+  duration_ms: 0.806083
+  type: 'test'
+  ...
+# [transcription][stream-session] event-publish {
+#   sessionId: 'cfadca82-ddee-4389-a2e7-54ee3b1ec5bf',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: 'cfadca82-ddee-4389-a2e7-54ee3b1ec5bf',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '14f9376b-116c-47b8-b3e4-d73dfb4b2df6',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '14f9376b-116c-47b8-b3e4-d73dfb4b2df6',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# Subtest: a streaming session cannot be read, subscribed to or stopped by another account
+ok 38 - a streaming session cannot be read, subscribed to or stopped by another account
+  ---
+  duration_ms: 3.414958
+  type: 'test'
+  ...
+# Subtest: cross-account chunk ingest is rejected before provider invocation
+ok 39 - cross-account chunk ingest is rejected before provider invocation
+  ---
+  duration_ms: 0.299292
+  type: 'test'
+  ...
+# Subtest: empty owners cannot create or access streaming sessions
+ok 40 - empty owners cannot create or access streaming sessions
+  ---
+  duration_ms: 0.296791
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 165.351

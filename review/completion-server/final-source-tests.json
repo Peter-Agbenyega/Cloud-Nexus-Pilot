@@ -1,0 +1,16 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test",
+    "--workspace",
+    "apps/cloud-nexus-pilot"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "2fcc3dcff5831a7e72931d174e88f09881ae053a",
+  "started_at": "2026-10-27T15:14:25.325987+00:00",
+  "finished_at": "2026-10-27T15:14:43.801902+00:00",
+  "exit_code": 0,
+  "log": "final-source-tests.log",
+  "sha256": "f3e2ea5b8c1b16f56afbeddffe82e2e71c6b87c2e3d45c7595075d9d0c6b1173"
+}

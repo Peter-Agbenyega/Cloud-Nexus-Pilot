@@ -1,0 +1,18 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "lint",
+    "--workspace",
+    "apps/cloud-nexus-pilot",
+    "--workspace",
+    "apps/pilot-realtime-api"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "2fcc3dcff5831a7e72931d174e88f09881ae053a",
+  "started_at": "2026-10-27T15:16:58.163436+00:00",
+  "finished_at": "2026-10-27T15:17:00.865621+00:00",
+  "exit_code": 0,
+  "log": "final-source-lint.log",
+  "sha256": "0610bd5e6718886f81fd2cfb693f0854aae4cb9d755b2f987b9aab11fb4382ae"
+}

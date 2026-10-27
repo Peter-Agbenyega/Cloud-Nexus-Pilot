@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "mode": "recover",
+  "layer": "compiled local app + real local identity/database + synthetic provider; no microphone or paid provider",
+  "steps": [
+    "two real local account logins with SSR cookies",
+    "recover after application restart; complete bounded export; cross-account deletion denial; owned deletion confirmed"
+  ]
+}

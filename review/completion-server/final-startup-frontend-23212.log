@@ -1,0 +1,13 @@
+   ▲ Next.js 15.5.28
+   - Local:        http://127.0.0.1:3100
+   - Network:      http://127.0.0.1:3100
+
+ ✓ Starting...
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /private/tmp/cnp-quality-gates/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /private/tmp/cnp-quality-gates/apps/cloud-nexus-pilot/package-lock.json
+
+ ✓ Ready in 481ms

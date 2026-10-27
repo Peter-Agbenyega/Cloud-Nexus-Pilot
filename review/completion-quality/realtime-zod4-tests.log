@@ -1,0 +1,57 @@
+
+> @cloudnexus/pilot-realtime-api@0.1.0 test
+> npm run build && npm run test:run
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 build
+> tsc -p tsconfig.json
+
+src/server.ts(68,18): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/server.ts(68,25): error TS7006: Parameter 'socket' implicitly has an 'any' type.
+src/server.ts(68,33): error TS7006: Parameter 'request' implicitly has an 'any' type.
+src/sessionRoute.ts(62,7): error TS2353: Object literal may only specify known properties, and 'websocket' does not exist in type 'RouteShorthandOptions<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, RouteGenericInterface, unknown, FastifySchema, FastifyTypeProviderDefault, FastifyBaseLogger>'.
+src/sessionRoute.ts(81,52): error TS2345: Argument of type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>' is not assignable to parameter of type 'WebSocket'.
+  Type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>' is missing the following properties from type 'WebSocket': binaryType, bufferedAmount, extensions, isPaused, and 33 more.
+src/sessionRoute.ts(109,20): error TS2339: Property 'readyState' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(109,42): error TS2339: Property 'OPEN' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(109,57): error TS2339: Property 'readyState' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(109,79): error TS2339: Property 'CONNECTING' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(110,18): error TS2339: Property 'close' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(130,20): error TS2339: Property 'readyState' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(130,42): error TS2339: Property 'OPEN' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(131,18): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(148,20): error TS2339: Property 'readyState' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(148,42): error TS2339: Property 'OPEN' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(202,18): error TS2339: Property 'readyState' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(202,40): error TS2339: Property 'OPEN' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(217,14): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(231,14): error TS2339: Property 'on' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(231,29): error TS7006: Parameter 'rawData' implicitly has an 'any' type.
+src/sessionRoute.ts(231,38): error TS7006: Parameter 'isBinary' implicitly has an 'any' type.
+src/sessionRoute.ts(234,20): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(239,18): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(252,18): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(289,24): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(337,24): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(362,20): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(372,20): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(380,20): error TS2339: Property 'close' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(401,22): error TS2339: Property 'send' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(415,14): error TS2339: Property 'on' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(415,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/sessionRoute.ts(433,14): error TS2339: Property 'on' does not exist on type 'FastifyRequest<RouteGenericInterface, RawServerDefault, IncomingMessage, FastifySchema, FastifyTypeProviderDefault, unknown, FastifyBaseLogger, ResolveFastifyRequestType<...>>'.
+src/sessionRoute.ts(433,27): error TS7006: Parameter 'error' implicitly has an 'any' type.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error workspace @cloudnexus/pilot-realtime-api@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error command failed
+npm error command sh -c tsc -p tsconfig.json
+npm error Lifecycle script `test` failed with error:
+npm error code 2
+npm error path /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error workspace @cloudnexus/pilot-realtime-api@0.1.0
+npm error location /private/tmp/cnp-quality-gates/apps/pilot-realtime-api
+npm error command failed
+npm error command sh -c npm run build && npm run test:run

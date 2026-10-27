@@ -9,7 +9,8 @@ const require = createRequire(resolve(root, "apps/cloud-nexus-pilot/package.json
 const { createServerClient } = require("@supabase/ssr");
 const localRoot = "/private/tmp/cnp-pilot-local-stack";
 const configuration = JSON.parse(await readFile(`${localRoot}/private.json`, "utf8"));
-const app = "http://127.0.0.1:3100";
+const app = process.env.PILOT_JOURNEY_URL ?? "http://127.0.0.1:3100";
+assert.ok(["http://127.0.0.1:3100", "http://127.0.0.1:43101"].includes(app), "Only the two isolated local acceptance instances are supported");
 for (const key of ["NEXT_PUBLIC_SUPABASE_URL", "PILOT_DATA_API_URL", "OPENAI_BASE_URL"]) {
   const value = process.env[key];
   assert.ok(value && new URL(value).hostname === "127.0.0.1", `Local-only ${key} required`);

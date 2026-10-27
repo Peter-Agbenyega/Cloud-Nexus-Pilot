@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "14b7d7df78afd9392054c2223170ba057c02cbbf",
+  "started_at": "2026-10-27T17:53:45.150838+00:00",
+  "finished_at": "2026-10-27T17:53:45.416911+00:00",
+  "exit_code": 0,
+  "log": "recovered-checker-tests.log",
+  "sha256": "b5cbd69f75f9ce8d22dda8d29ad44a30a29b74defdb33d133c433a57351d7f87"
+}

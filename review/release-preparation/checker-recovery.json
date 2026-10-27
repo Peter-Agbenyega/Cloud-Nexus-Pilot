@@ -1,0 +1,22 @@
+{
+  "archive": "/Users/peterchristianagbenyega/Downloads/Cloud_Nexus_Engineering_Manuals_v1.1_2026-10-19.zip",
+  "archive_sha256": "e7c44aa01443e707678396fc9778164d339a1ef7792e5183addd695381fca0b4",
+  "extracted_unmodified": [
+    {
+      "path": "tools/check_release_evidence.py",
+      "sha256": "b7cb1c8986bd2e7c27864ff4b9e8b43da232ac1152184798c194baf74868130f",
+      "bytes": 8759
+    },
+    {
+      "path": "tools/test_check_release_evidence.py",
+      "sha256": "390240c557eff7a5a5e24ef4e4a6a2b34a655cbe73e2aab07b56509d41cf462c",
+      "bytes": 8509
+    },
+    {
+      "path": "validation/pilot_release_manifest.pending.json",
+      "sha256": "250aedcce729e3b87ecc1b72e70a65a221b0623731b55caea962d329ab330761",
+      "bytes": 10883
+    }
+  ],
+  "excluded": "Other-product manuals, manifests and evidence were not extracted."
+}

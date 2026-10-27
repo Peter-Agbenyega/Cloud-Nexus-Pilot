@@ -1,0 +1,336 @@
+{
+  "schema_version": 2,
+  "product": "pilot",
+  "sources": {
+    "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+  },
+  "blockers": [
+    "Runtime npm audit has 1 critical and 7 high package entries requiring resolution/triage.",
+    "Realtime lint remains an echo placeholder, not an executed linter.",
+    "PR11 is an unmerged draft; owner-aware in-memory state is not durable multi-instance recovery.",
+    "Real browser audio, provider/account contracts, quota/body-limit gates, database recovery, hosted identity and deployment mapping remain unverified."
+  ],
+  "stages": {
+    "clean_install": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:42:46.155280+00:00",
+      "summary": "Fresh monorepo dependency tree; 1,926 packages added.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "dependency_audit": {
+      "status": "failed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--json"
+      ],
+      "exit_code": 1,
+      "executed_at": "2026-10-19T18:43:03.385485+00:00",
+      "summary": "npm audit --omit=dev returned exit 1; 8 unresolved high/critical package entries. This is not a production exploit count.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        },
+        {
+          "path": "audits/candidate-pilot-audit-runtime.json",
+          "sha256": "4db3a3efb61c6ed828485305362c3d3a03ba27e0c3373f7d7bd7a40d840ed04b"
+        }
+      ],
+      "unresolved_high_critical": 8,
+      "advisories_checked_at": "2026-10-19T18:43:03.385485+00:00"
+    },
+    "lint": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "lint",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:05.545668+00:00",
+      "summary": "Real frontend ESLint passed; this does not close the separate API-lint gate.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "typecheck": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:06.704927+00:00",
+      "summary": "Frontend TypeScript passed.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "unit_tests": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:08.939510+00:00",
+      "summary": "64 frontend tests passed (24 realtime client and 40 intelligence); mocked/synthetic input.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "production_build": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--workspace",
+        "apps/cloud-nexus-pilot"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:17.448314+00:00",
+      "summary": "Scoped Next frontend build passed. This is not a hosted audio/provider journey.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "database_migrations": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "staging_auth": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "tenant_isolation": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "backup_restore": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "rollback": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "deployment_mapping": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "api_lint": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Main and candidate script inspection shows an echo placeholder; implement and execute a real linter. Exit 0 from echo is not lint evidence.",
+      "artifacts": []
+    },
+    "api_typecheck": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "typecheck",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:11.207621+00:00",
+      "summary": "Realtime service TypeScript passed.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "api_tests": {
+      "status": "passed",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--workspace",
+        "apps/pilot-realtime-api"
+      ],
+      "exit_code": 0,
+      "executed_at": "2026-10-19T18:43:12.468407+00:00",
+      "summary": "Realtime TypeScript build and 57 local server tests passed.",
+      "artifacts": [
+        {
+          "path": "candidate.json",
+          "sha256": "3a97438813f33aa9a285518f61cd1062a961018894426f7b07cddd6ad96b8536"
+        }
+      ]
+    },
+    "api_auth_cost_guard": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "audio_browser_journey": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "provider_contract": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "multiinstance_reconnect": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    },
+    "long_session": {
+      "status": "pending",
+      "sources": {
+        "pilot": "c4f49e85ff5b36d5505b83c95f15b9375ed01bca"
+      },
+      "kind": "exercise",
+      "executed_at": null,
+      "reviewer": null,
+      "summary": "Not yet qualified for this release source vector. Perform and review the named acceptance gate; do not infer it from unit tests.",
+      "artifacts": []
+    }
+  },
+  "record_note": "Partially populated engineering evidence. Pending release exercises and positive dependency audits intentionally block. Re-run all applicable gates after integration or any source-vector change."
+}

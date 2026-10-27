@@ -1,0 +1,72 @@
+{
+  "recorded_at": "2026-10-27T20:00:49.435620+00:00",
+  "source_commit": "5f1a1d6a6d267496e2d21f0242425969f7a6f198",
+  "physical_test": "WAITING_FOR_HUMAN_NOT_VERIFIED",
+  "proxmox_readonly_inventory": {
+    "command": "ssh existing known lab identity to192.168.68.50 qm list",
+    "exit_code": 0,
+    "guest_ids": [
+      101,
+      107,
+      201
+    ],
+    "pilot_allocation": null
+  },
+  "evidence": [
+    {
+      "path": "review/microphone-test/baseline.json",
+      "bytes": 1422,
+      "sha256": "31782919faa46109696471a2c1b0c5023c38b927232109a65178f787c1c40e09"
+    },
+    {
+      "path": "review/microphone-test/browser-observations.json",
+      "bytes": 657,
+      "sha256": "3b2a1059b599cb7deacee3066343465ba7a2e4dc95bbda4a775e7d059cf35515"
+    },
+    {
+      "path": "review/microphone-test/live-provider-preflight.json",
+      "bytes": 410,
+      "sha256": "7103b3924b7bdbe79b16f9aa0bc66c097bd394161a02be7bf8c30fd4e513342b"
+    },
+    {
+      "path": "review/microphone-test/observe.py",
+      "bytes": 2732,
+      "sha256": "374a8b1997809e3c842c00693e60c904438e453b79aff1d77ea3328f86da5d93"
+    },
+    {
+      "path": "review/microphone-test/prepared-page.png",
+      "bytes": 45785,
+      "sha256": "aab26f00891d2f9d13189f34c0957c76763435f74c4e5ffced7364ea3b307024"
+    },
+    {
+      "path": "review/microphone-test/verify-owned-session.mjs",
+      "bytes": 4344,
+      "sha256": "694e1d457d24dcb0b4ce656cffa01cdab624497d3df455354f3006d037d7b18d"
+    },
+    {
+      "path": "review/microphone-test/waiting.json",
+      "bytes": 1422,
+      "sha256": "3ed22683fed9c153c4777e03ff28a5634e978a754c41109849f833e64510ae58"
+    },
+    {
+      "path": "review/completion-server/microphone-diagnostic-regressions.json",
+      "bytes": 453,
+      "sha256": "affd72db5f788fdcb016b3e8b8da7494015fcc9e8b7029ab435ed840cb576ef9"
+    },
+    {
+      "path": "review/completion-server/microphone-diagnostic-regressions.log",
+      "bytes": 968,
+      "sha256": "0075d8da71fd30d81c5db48db7b7e7b10d0bc70c987b699a5d25bc45aa626272"
+    },
+    {
+      "path": "review/completion-server/microphone-unperformed-guard.json",
+      "bytes": 456,
+      "sha256": "c062654041b53f5ab5e4f6c1a863a320b6b3853f1c9992fd6b6bebe81999e8fa"
+    },
+    {
+      "path": "review/completion-server/microphone-unperformed-guard.log",
+      "bytes": 92,
+      "sha256": "4014130d7b46b6b99905f8c63a3733e95f93d497327ded0eab158b0acac3f772"
+    }
+  ]
+}

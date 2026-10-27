@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "review/microphone-test/verify-owned-session.mjs",
+    "waiting"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "5f1a1d6a6d267496e2d21f0242425969f7a6f198",
+  "started_at": "2026-10-27T19:59:07.691631+00:00",
+  "finished_at": "2026-10-27T19:59:07.762168+00:00",
+  "exit_code": 2,
+  "log": "microphone-unperformed-guard.log",
+  "sha256": "4014130d7b46b6b99905f8c63a3733e95f93d497327ded0eab158b0acac3f772"
+}

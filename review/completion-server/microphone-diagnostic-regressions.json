@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "scripts/pilot/audio-diagnostics.test.mjs"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "5f1a1d6a6d267496e2d21f0242425969f7a6f198",
+  "started_at": "2026-10-27T19:33:15.256067+00:00",
+  "finished_at": "2026-10-27T19:33:15.393750+00:00",
+  "exit_code": 0,
+  "log": "microphone-diagnostic-regressions.log",
+  "sha256": "0075d8da71fd30d81c5db48db7b7e7b10d0bc70c987b699a5d25bc45aa626272"
+}

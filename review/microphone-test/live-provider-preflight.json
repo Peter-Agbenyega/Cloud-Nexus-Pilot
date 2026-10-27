@@ -1,0 +1,8 @@
+{
+  "recorded_at": "2026-10-27T19:31:50.888484+00:00",
+  "path": "/private/tmp/cnp-pilot-local-stack/live-provider.env",
+  "mode": "0o600",
+  "live_openai_key_present": false,
+  "provider_intent": "Existing OpenAI transcription/guidance; Deepgram remains optional only when explicitly configured.",
+  "not_run": "No live build, provider call or actual recording. Existing synthetic fixture is still active."
+}

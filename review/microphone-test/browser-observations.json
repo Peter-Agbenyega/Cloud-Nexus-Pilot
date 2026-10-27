@@ -1,0 +1,28 @@
+{
+  "observations": [
+    {
+      "at": "2026-10-27T19:28:43.227Z",
+      "controls": [
+        "Start Session"
+      ],
+      "meterValue": null
+    },
+    {
+      "at": "2026-10-27T19:30:25.862Z",
+      "controls": [
+        "Start Session"
+      ],
+      "meterValue": null
+    },
+    {
+      "at": "2026-10-27T19:59:45.723Z",
+      "controls": [
+        "Start Session"
+      ],
+      "meterValue": null
+    }
+  ],
+  "warningOrErrorCount": 0,
+  "permissionOutcome": "Not yet observed for this physical attempt; no recording started by the agent.",
+  "privacy": "Only DOM meter/control metadata and log counts retained; no transcript or raw messages."
+}

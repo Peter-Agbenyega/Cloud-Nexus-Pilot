@@ -1,0 +1,12 @@
+{
+  "issue": "CLO-7",
+  "url": "https://linear.app/cloud-nexus-work-space/issue/CLO-7/cloud-nexus-pilot-complete-production-readiness-review",
+  "updated_at": "2026-10-28T14:06:32.078Z",
+  "read_back_verified": true,
+  "status": "In Progress",
+  "checkpoint": "CNX-COORD-20261028-PILOT-01",
+  "implementation_sha": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b",
+  "evidence_commit": "a408193e01ee98fa2fe4674513c05a6d7de0c2e1",
+  "release_state": "BLOCKED; owner inputs and held acceptance remain",
+  "historical_issue_notes_preserved": true
+}

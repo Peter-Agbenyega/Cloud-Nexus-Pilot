@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-28T00:31:31.109276+00:00",
+  "implementation_sha": "0a288523697810d81a3cf32652f30268e0a947eb",
+  "artifacts": [
+    {
+      "path": "review/completion-server/current-audio-pcm-focused.json",
+      "sha256": "267bc771cabb4f92f1e25a344d5428625fe8ffc44faf67c0532dda04875b1644"
+    },
+    {
+      "path": "review/completion-server/current-origin-proxy-isolation.json",
+      "sha256": "96fc861621d8a5afb6aff816d177d11e2f90b59d2ccc6d6dd4485e3e2dc23836"
+    },
+    {
+      "path": "review/completion-server/current-release-evidence-blocked.json",
+      "sha256": "8d0bfda5bc00fa598a2a03350bd0f463e3c95e71a0f2053c5b5ccd4bf44e0eaa"
+    },
+    {
+      "path": "review/completion-server/current-synthetic-audio-exercise.json",
+      "sha256": "06fe003240b5a9c0ef3030b66f22289a336a6ca4f8ecbfd24feffb40608a4854"
+    },
+    {
+      "path": "review/completion-server/current-synthetic-audio-reload-export-delete.json",
+      "sha256": "d264fd18556f4eea5208f35b05360f69fed5848b4ab26884d5fe223f8dfc5bd7"
+    },
+    {
+      "path": "review/completion-server/final-staging-preparation-regressions.json",
+      "sha256": "66e5e9610c4bf60c1dcc9de27b3487c4527bdecdc99c4f1c460a0adfc0e7c359"
+    },
+    {
+      "path": "review/completion-server/staging-identity-config-regressions.json",
+      "sha256": "c9ad31f80965ab2d31e5b4ac14c0f3d275a913c234323fa8eb3e66727d87b201"
+    }
+  ],
+  "release_ready": false,
+  "provider_calls_live": 0,
+  "physical_audio_verified": false
+}

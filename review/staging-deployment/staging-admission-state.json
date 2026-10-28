@@ -1,0 +1,25 @@
+{
+  "validator_exit": 1,
+  "public_admission": "BLOCKED",
+  "identity_external_placeholder": true,
+  "selector_identity_host_present": false,
+  "selector_realtime_host_present": false,
+  "selector_web_origin_present": false,
+  "realtime_image_still_tagged": true,
+  "signup_disabled": true,
+  "autoconfirm_disabled": true,
+  "auth_rest_signing_config_agrees": true,
+  "private_env_permissions": true,
+  "caddy_active": false,
+  "live_tls_verified": false,
+  "public_wss_verified": false,
+  "at": "2026-10-28T00:28:11.746533+00:00",
+  "source_sha": "0a288523697810d81a3cf32652f30268e0a947eb",
+  "guest_id": 215,
+  "after_image_pin": {
+    "validator_exit": 1,
+    "realtime_image_still_tagged": false,
+    "caddy_active": false,
+    "at": "2026-10-28T00:30:34.125034+00:00"
+  }
+}

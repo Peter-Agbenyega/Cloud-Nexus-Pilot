@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: capture failures identify the browser boundary and do not expose arbitrary diagnostics
+ok 1 - capture failures identify the browser boundary and do not expose arbitrary diagnostics
+  ---
+  duration_ms: 0.658291
+  type: 'test'
+  ...
+# Subtest: 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 2 - 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 8.375667
+  type: 'test'
+  ...
+# Subtest: 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 3 - 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 3.223208
+  type: 'test'
+  ...
+# Subtest: PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+ok 4 - PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+  ---
+  duration_ms: 0.585
+  type: 'test'
+  ...
+# Subtest: first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+ok 5 - first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+  ---
+  duration_ms: 1.322791
+  type: 'test'
+  ...
+# Subtest: pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+ok 6 - pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+  ---
+  duration_ms: 1.112917
+  type: 'test'
+  ...
+# Subtest: throwing final consumer and failed startup cannot leave audio nodes or contexts running
+ok 7 - throwing final consumer and failed startup cannot leave audio nodes or contexts running
+  ---
+  duration_ms: 0.558292
+  type: 'test'
+  ...
+# Subtest: video-only sharing releases acquired tracks and never silently acquires a microphone
+ok 8 - video-only sharing releases acquired tracks and never silently acquires a microphone
+  ---
+  duration_ms: 0.34475
+  type: 'test'
+  ...
+# Subtest: transcript cleanup preserves short answers, negations and technical LIKE rather than guessing filler
+ok 9 - transcript cleanup preserves short answers, negations and technical LIKE rather than guessing filler
+  ---
+  duration_ms: 0.18
+  type: 'test'
+  ...
+# Subtest: cancelling suspended audio startup closes its context rather than hanging past Stop
+ok 10 - cancelling suspended audio startup closes its context rather than hanging past Stop
+  ---
+  duration_ms: 0.331
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 103.370708

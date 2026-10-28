@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "mode": "exercise",
+  "layer": "compiled local app + real local identity/database + synthetic provider; no microphone or paid provider",
+  "steps": [
+    "two real local account logins with SSR cookies",
+    "owned session; first and later valid PCM/WAV chunks through compiled route and synthetic provider",
+    "cross-account denial; replay has no extra provider call; guidance saved with source association; idempotent stop"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "ops/pilot/tests",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "0d0d3c6f16bc78be7ee9b6eec0ba4855a5f7a4df",
+  "started_at": "2026-10-28T00:25:35.391534+00:00",
+  "finished_at": "2026-10-28T00:25:36.000513+00:00",
+  "exit_code": 0,
+  "log": "staging-identity-config-regressions.log",
+  "sha256": "2f034c02ed76958bdcc95ba30d9a0d1299a8321a0284fb1d7430a295e62d8532"
+}

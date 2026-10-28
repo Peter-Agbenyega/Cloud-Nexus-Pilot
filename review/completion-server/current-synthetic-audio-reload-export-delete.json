@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "scripts/pilot/test-local-journey.mjs",
+    "recover"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "0d0d3c6f16bc78be7ee9b6eec0ba4855a5f7a4df",
+  "started_at": "2026-10-27T22:04:27.264127+00:00",
+  "finished_at": "2026-10-27T22:04:27.883796+00:00",
+  "exit_code": 0,
+  "log": "current-synthetic-audio-reload-export-delete.log",
+  "sha256": "03d9537a9aaf3af9cd0964c4deee634e7fa93cbfe27a6a01f60b0c70a10845d0"
+}

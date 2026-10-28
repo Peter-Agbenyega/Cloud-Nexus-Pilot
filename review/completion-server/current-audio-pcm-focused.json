@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "apps/cloud-nexus-pilot/dist/realtime-tests/tests/intelligence/audio-pcm.test.js"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "0d0d3c6f16bc78be7ee9b6eec0ba4855a5f7a4df",
+  "started_at": "2026-10-28T00:25:03.435677+00:00",
+  "finished_at": "2026-10-28T00:25:03.668592+00:00",
+  "exit_code": 0,
+  "log": "current-audio-pcm-focused.log",
+  "sha256": "6982ad32644125f5c16d5cd5b8430ec69d4acb8076ae9115850a6a113b80e02d"
+}

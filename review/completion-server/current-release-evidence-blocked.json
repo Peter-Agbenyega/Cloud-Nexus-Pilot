@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python3",
+    "tools/check_release_evidence.py",
+    "validation/pilot_release_manifest.current.pending.json",
+    "--evidence-root",
+    "validation",
+    "--product",
+    "pilot",
+    "--expected-sha",
+    "0a288523697810d81a3cf32652f30268e0a947eb"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "0a288523697810d81a3cf32652f30268e0a947eb",
+  "started_at": "2026-10-28T00:29:02.830137+00:00",
+  "finished_at": "2026-10-28T00:29:02.876592+00:00",
+  "exit_code": 1,
+  "log": "current-release-evidence-blocked.log",
+  "sha256": "e3332e3de3cdb0a95d010d9c942ff8723a569ceee55938d23ccfeb6601172165"
+}

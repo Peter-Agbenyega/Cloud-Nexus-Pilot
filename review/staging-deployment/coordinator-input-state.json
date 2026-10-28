@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-28T13:48:21.000173+00:00",
+  "live_key_present": false,
+  "key_file_private": true,
+  "microphone_completed_evidence_found": false,
+  "microphone_result": "NOT_VERIFIED; only prior automated synthetic tone chunks observed",
+  "existing_tunnel_guest_auth_health": 200,
+  "local_ports_reused": [
+    3100,
+    3310,
+    58093,
+    58191,
+    58192
+  ],
+  "new_services_started": false,
+  "missing_decisions": [
+    "Approved staging DNS names/exact frontend origin/ingress",
+    "Approved SMTP relay and sender",
+    "Durable encrypted Pilot backup destination/retention/schedule/key custodian",
+    "Production identity continuity and production approval"
+  ],
+  "search_scope": [
+    "PILOT_ENGINEERING_HANDOFF.md",
+    "ops/pilot/",
+    "review/staging-deployment/",
+    "review/release-preparation/",
+    "apps/cloud-nexus-pilot/docs/"
+  ],
+  "decision_search_result": "No newer approved staging values found; proposed configuration is explicitly unapproved.",
+  "held_actions_executed": []
+}

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-28T13:48:20.964212+00:00",
+  "selected_sha": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b",
+  "baseline_blocked": true,
+  "all_artifact_paths_hashes_dates_and_sources_valid": true,
+  "tampered_hash_rejected": true,
+  "stale_release_vector_rejected": true,
+  "required_release_stages_pending": 20,
+  "checker_sha256": "b7cb1c8986bd2e7c27864ff4b9e8b43da232ac1152184798c194baf74868130f",
+  "checker_modified": false,
+  "release_ready": false
+}

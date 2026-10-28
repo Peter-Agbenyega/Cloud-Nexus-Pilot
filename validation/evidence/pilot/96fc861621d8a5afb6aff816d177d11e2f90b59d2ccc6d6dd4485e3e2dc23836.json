@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "ops/pilot/tests/rehearse_caddy.py"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "0d0d3c6f16bc78be7ee9b6eec0ba4855a5f7a4df",
+  "started_at": "2026-10-28T00:24:51.010190+00:00",
+  "finished_at": "2026-10-28T00:24:52.323782+00:00",
+  "exit_code": 0,
+  "log": "current-origin-proxy-isolation.log",
+  "sha256": "38608bfd65dc3bd36279f74f3db70cf66506888425182ef48b8ced930b069b5f"
+}

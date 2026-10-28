@@ -2,295 +2,565 @@
   "schema_version": 2,
   "product": "pilot",
   "sources": {
-    "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+    "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
   },
+  "selection_note": "Selected current implementation commit; subsequent evidence/checkpoint commits do not represent new application validation. All mandatory release gates remain pending, original observations are separate.",
   "blockers": [
-    "No allocated Pilot guest/healthy dedicated storage or hosted staging acceptance.",
-    "Production identity/signing/refresh/SMTP continuity and authorized live-provider acceptance remain unverified.",
-    "Physical microphone/shared-audio completion remains awaiting human gesture and observed capture evidence.",
-    "Full release gates must be revalidated against this integrated source; predecessor289 tests are not silently relabeled."
+    "Missing approved staging DNS/origin/ingress; public HTTPS/WSS NOT RUN and routing held.",
+    "OPENAI_API_KEY absent in private live config; live-provider calls held/NOT RUN.",
+    "Physical microphone acceptance NOT RUN; synthetic counters are not human capture.",
+    "SMTP host/port/user/password/sender missing; delivery held/NOT RUN.",
+    "Production identity continuity, durable backup custody/retention, production migration/promotion and independent release approvals remain held.",
+    "Final integrated release checks/advisory audit and hosted acceptance not executed; prior observations retain original source/time."
   ],
   "stages": {
     "clean_install": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical clean npm ci succeeded at17861ba with unchanged lock; final release clean-install gate remains pending, not rerun.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/f0692b73066b5ed8a58e61a25010bb330244361520f267f68699f8d1830c66be.log",
+          "sha256": "f0692b73066b5ed8a58e61a25010bb330244361520f267f68699f8d1830c66be"
+        },
+        {
+          "path": "evidence/pilot/413a8526083ab904c9b32b8e29ca21c195624f73a8168b60776dcdf5a3b48cc6.log",
+          "sha256": "413a8526083ab904c9b32b8e29ca21c195624f73a8168b60776dcdf5a3b48cc6"
+        },
+        {
+          "path": "evidence/pilot/0610bd5e6718886f81fd2cfb693f0854aae4cb9d755b2f987b9aab11fb4382ae.log",
+          "sha256": "0610bd5e6718886f81fd2cfb693f0854aae4cb9d755b2f987b9aab11fb4382ae"
+        },
+        {
+          "path": "evidence/pilot/72a30f18ae728bdfffd13286163e732e5e5bc3801200b29c11d644bb4b162d2e.log",
+          "sha256": "72a30f18ae728bdfffd13286163e732e5e5bc3801200b29c11d644bb4b162d2e"
+        },
+        {
+          "path": "evidence/pilot/0ae8f2187884021be677fcb5f8bc7bd8fd36af73be66ef23d2111ca4403792de.log",
+          "sha256": "0ae8f2187884021be677fcb5f8bc7bd8fd36af73be66ef23d2111ca4403792de"
+        },
+        {
+          "path": "evidence/pilot/abbfcdfb56029c1c65dfa6186083ef770aee96eb4ce0910ef94a3fb4d773be08.log",
+          "sha256": "abbfcdfb56029c1c65dfa6186083ef770aee96eb4ce0910ef94a3fb4d773be08"
+        },
+        {
+          "path": "evidence/pilot/bfe680087dbfbb4e3ea8554030539d234896a51f6dc693fa86d448cb835d13f6.log",
+          "sha256": "bfe680087dbfbb4e3ea8554030539d234896a51f6dc693fa86d448cb835d13f6"
+        },
+        {
+          "path": "evidence/pilot/fe82ba6553543480ee82975ebaa6790b10f42c74501087676c0ee39c6cf66a43.log",
+          "sha256": "fe82ba6553543480ee82975ebaa6790b10f42c74501087676c0ee39c6cf66a43"
+        },
+        {
+          "path": "evidence/pilot/693dcfd6c8eee7f6171dfc519b9fc601fd0b2d25c6b50fab8458ee29b415b34b.log",
+          "sha256": "693dcfd6c8eee7f6171dfc519b9fc601fd0b2d25c6b50fab8458ee29b415b34b"
+        },
+        {
+          "path": "evidence/pilot/6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f.log",
+          "sha256": "6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f"
+        },
+        {
+          "path": "evidence/pilot/6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f.log",
+          "sha256": "6e1c76482c48fdec87847909a699714e718f4e95de5e77eebb206aa5530bc61f"
+        }
+      ]
     },
     "dependency_audit": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical Pilot scoped audit0 and whole-monorepo findings remain dated evidence; no current advisory lookup/audit is claimed. Counts are unknown for final release.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ],
+      "unresolved_high_critical": null,
+      "advisories_checked_at": null
     },
     "lint": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical real lint passed; no fresh final release lint run or release approval is claimed.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
     },
     "typecheck": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical frontend/API TypeScript passed; final source qualification remains pending.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
     },
     "unit_tests": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical198 frontend/57 API/34 ops and later focused checks are retained with original sources; no final-source289-test rerun claimed.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/66e5e9610c4bf60c1dcc9de27b3487c4527bdecdc99c4f1c460a0adfc0e7c359.json",
+          "sha256": "66e5e9610c4bf60c1dcc9de27b3487c4527bdecdc99c4f1c460a0adfc0e7c359"
+        }
+      ]
     },
     "production_build": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
-    },
-    "database_migrations": {
-      "status": "passed",
-      "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
-      },
-      "kind": "command",
-      "command": [
-        "python3",
-        "ops/pilot/tests/rehearse_postgres.py"
-      ],
-      "exit_code": 0,
-      "executed_at": "2026-10-27T18:32:58.400870+00:00",
-      "summary": "Fresh disposable PostgreSQL17 and real GoTrue migration, restricted roles, full002+003, replay checksums and JSON JWT identity claims passed. Does not qualify source-data import or hosted migration.",
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical production build passed; no current public staged frontend artifact or integrated production qualification.",
       "artifacts": [
         {
-          "path": "review/completion-server/release-prep-committed-postgres.json",
-          "sha256": "7b9c3b3100d43f9ce9744c138ffee4e04176a8e377c76d0905b4a517f6b0b9e0"
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
         },
         {
-          "path": "review/completion-server/release-prep-committed-postgres.log",
-          "sha256": "c7ae20e7fcd7514c5420ed50ce2e99024f54d623e72c3fb1fd728f407a023af0"
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9.json",
+          "sha256": "8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9"
+        }
+      ]
+    },
+    "database_migrations": {
+      "status": "pending",
+      "sources": {
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
+      },
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Existing002/003 private fresh-guest receipts retained. Production source-data/signing migration is held and NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1.json",
+          "sha256": "400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1"
         }
       ]
     },
     "staging_auth": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "22 private guest synthetic-account HTTP checks passed previously; public HTTPS identity/callback/SMTP acceptance NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1.json",
+          "sha256": "400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1"
+        },
+        {
+          "path": "evidence/pilot/d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3.json",
+          "sha256": "d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3"
+        }
+      ]
     },
     "tenant_isolation": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Existing private guest and local owner denial evidence retained; complete hosted public path not yet qualified.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1.json",
+          "sha256": "400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1"
+        },
+        {
+          "path": "evidence/pilot/5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f.json",
+          "sha256": "5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f"
+        }
+      ]
     },
     "backup_restore": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "14 private guest encrypted snapshot/isolated restore checks passed previously. Production backup custody/policy and disaster-recovery gate remain pending; no restore repeated.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/1025fd6c22648da719158f299a057d6a1b960d16be440272f72400ea6b66ad0c.json",
+          "sha256": "1025fd6c22648da719158f299a057d6a1b960d16be440272f72400ea6b66ad0c"
+        }
+      ]
     },
     "rollback": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Documented data-preserving rollback only; full hosted rollback/identity cutover acceptance NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
     },
     "deployment_mapping": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Exact existing frontend project and VM215 mapping retained; no frontend-to-private-guest HTTPS/WSS acceptance or promotion.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/3a04a52cf21f33fe2cb22a7d6606c16ff19bf0c8072339717712e8b021875600.json",
+          "sha256": "3a04a52cf21f33fe2cb22a7d6606c16ff19bf0c8072339717712e8b021875600"
+        },
+        {
+          "path": "evidence/pilot/8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9.json",
+          "sha256": "8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9"
+        },
+        {
+          "path": "evidence/pilot/d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3.json",
+          "sha256": "d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3"
+        }
+      ]
     },
     "api_lint": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
-    },
-    "api_typecheck": {
-      "status": "passed",
-      "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
-      },
-      "kind": "command",
-      "command": [
-        "docker",
-        "build",
-        "--label",
-        "org.opencontainers.image.revision=71a1ed5",
-        "-f",
-        "apps/pilot-realtime-api/Dockerfile",
-        "-t",
-        "cloud-nexus-pilot-realtime:prep-71a1ed5",
-        "."
-      ],
-      "exit_code": 0,
-      "executed_at": "2026-10-27T18:32:56.990416+00:00",
-      "summary": "Actual realtime Docker builder executed tsc build successfully with pinned Node22.23.3/npm10.9.9.",
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical genuine API lint evidence retained; final release gate pending.",
       "artifacts": [
         {
-          "path": "review/completion-server/release-prep-realtime-image.json",
-          "sha256": "139399e972e3eb9e79685e5aa0e154348a21763142dee713a0c81225ac8305da"
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
         },
         {
-          "path": "review/completion-server/release-prep-realtime-image.log",
-          "sha256": "ee432b500e141868bc5e90d6de39e7072a9707eda87190abec95f5ab5066adae"
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
+    },
+    "api_typecheck": {
+      "status": "pending",
+      "sources": {
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
+      },
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical API TypeScript/container build evidence retained; no new runtime build execution.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
         }
       ]
     },
     "api_tests": {
-      "status": "passed",
+      "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "command",
-      "command": [
-        "docker",
-        "run",
-        "--rm",
-        "--network",
-        "none",
-        "--read-only",
-        "--cap-drop",
-        "ALL",
-        "--security-opt",
-        "no-new-privileges",
-        "--tmpfs",
-        "/tmp:mode=1777,size=67108864",
-        "--entrypoint",
-        "node",
-        "cloud-nexus-pilot-realtime:prep-71a1ed5",
-        "--test",
-        "apps/pilot-realtime-api/dist/server.test.js"
-      ],
-      "exit_code": 0,
-      "executed_at": "2026-10-27T18:34:56.414171+00:00",
-      "summary": "57 realtime tests passed in the built Linux ARM64 container with no external network; hosted/AMD64 acceptance remains separate.",
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Historical57 API tests retained under original source/image; final release gate pending.",
       "artifacts": [
         {
-          "path": "review/completion-server/release-prep-container-unit-tests.json",
-          "sha256": "5bf6af0a6f4bc1c39be021706926aaaef912074d35a41fd469e604abc0cb9452"
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
         },
         {
-          "path": "review/completion-server/release-prep-container-unit-tests.log",
-          "sha256": "37f313521b35bf39df001fd07dd32bdaad4fbcd25fe72172fd3127231d7db528"
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
         }
       ]
     },
     "api_auth_cost_guard": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Existing synthetic route/DB quota/owner denial evidence retained; final hosted boundary gate pending.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
     },
     "audio_browser_journey": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Synthetic PCM/WAV and HTTP journey passed; physical microphone action/permission/cleanup verification NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/da3406c50464b77c183e4aa30716a92b64f0770b1d4d4314478e3f6abdcbd09d.json",
+          "sha256": "da3406c50464b77c183e4aa30716a92b64f0770b1d4d4314478e3f6abdcbd09d"
+        },
+        {
+          "path": "evidence/pilot/267bc771cabb4f92f1e25a344d5428625fe8ffc44faf67c0532dda04875b1644.json",
+          "sha256": "267bc771cabb4f92f1e25a344d5428625fe8ffc44faf67c0532dda04875b1644"
+        }
+      ]
     },
     "provider_contract": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Live provider NOT RUN. OPENAI_API_KEY absent in private live file; synthetic responses are not provider acceptance.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3.json",
+          "sha256": "d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3"
+        }
+      ]
     },
     "multiinstance_reconnect": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Prior local two-instance/restart evidence retained; hosted rolling/reconnect gate NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        },
+        {
+          "path": "evidence/pilot/5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f.json",
+          "sha256": "5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f"
+        }
+      ]
     },
     "long_session": {
       "status": "pending",
       "sources": {
-        "pilot": "71a1ed5f7b621829e4134326eed1d1fba5a97b03"
+        "pilot": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b"
       },
-      "kind": "exercise",
-      "executed_at": null,
-      "reviewer": null,
-      "summary": "Not release-qualified at this source/environment; see maintained engineering checkpoint for predecessor evidence and remaining acceptance.",
-      "artifacts": []
+      "kind": "review",
+      "executed_at": "2026-10-28T04:48:34.099697+00:00",
+      "reviewer": "Codex /root \u2014 evidence reconciliation only; not independent release approval",
+      "summary": "Prior1810-second synthetic soak remains original-source evidence; supported physical/live hosted soak NOT RUN.",
+      "artifacts": [
+        {
+          "path": "evidence/pilot/890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3.json",
+          "sha256": "890fac203502c1c358fd423aa08f7fe37267684e6a3dd4efc8f35ec726d886c3"
+        },
+        {
+          "path": "evidence/pilot/f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13.json",
+          "sha256": "f95d7ff264319855326a08fce2044840daf1c0d0818f27496d9355c16d42dc13"
+        }
+      ]
+    }
+  },
+  "local_observations": {
+    "private_auth": {
+      "path": "evidence/pilot/400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1.json",
+      "sha256": "400521cbc40dcc925114fbd4847997f6cfbfdb45474124317512b4de993ff0a1"
+    },
+    "private_recovery": {
+      "path": "evidence/pilot/5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f.json",
+      "sha256": "5aca93792c52ca1a155174f2424ce2e948818aa59011b543f4114b1cd548436f"
+    },
+    "backup_restore": {
+      "path": "evidence/pilot/1025fd6c22648da719158f299a057d6a1b960d16be440272f72400ea6b66ad0c.json",
+      "sha256": "1025fd6c22648da719158f299a057d6a1b960d16be440272f72400ea6b66ad0c"
+    },
+    "preflight": {
+      "path": "evidence/pilot/d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3.json",
+      "sha256": "d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3"
+    },
+    "physical_pending": {
+      "path": "evidence/pilot/da3406c50464b77c183e4aa30716a92b64f0770b1d4d4314478e3f6abdcbd09d.json",
+      "sha256": "da3406c50464b77c183e4aa30716a92b64f0770b1d4d4314478e3f6abdcbd09d"
+    },
+    "preparation": {
+      "path": "evidence/pilot/66e5e9610c4bf60c1dcc9de27b3487c4527bdecdc99c4f1c460a0adfc0e7c359.json",
+      "sha256": "66e5e9610c4bf60c1dcc9de27b3487c4527bdecdc99c4f1c460a0adfc0e7c359"
+    },
+    "origin": {
+      "path": "evidence/pilot/96fc861621d8a5afb6aff816d177d11e2f90b59d2ccc6d6dd4485e3e2dc23836.json",
+      "sha256": "96fc861621d8a5afb6aff816d177d11e2f90b59d2ccc6d6dd4485e3e2dc23836"
+    },
+    "audio": {
+      "path": "evidence/pilot/267bc771cabb4f92f1e25a344d5428625fe8ffc44faf67c0532dda04875b1644.json",
+      "sha256": "267bc771cabb4f92f1e25a344d5428625fe8ffc44faf67c0532dda04875b1644"
+    },
+    "image": {
+      "path": "evidence/pilot/8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9.json",
+      "sha256": "8731438d88cc72b4bdbe7048b02969e703d980206f7381bcfde73cdb89588dd9"
+    },
+    "mapping": {
+      "path": "evidence/pilot/3a04a52cf21f33fe2cb22a7d6606c16ff19bf0c8072339717712e8b021875600.json",
+      "sha256": "3a04a52cf21f33fe2cb22a7d6606c16ff19bf0c8072339717712e8b021875600"
     }
   }
 }

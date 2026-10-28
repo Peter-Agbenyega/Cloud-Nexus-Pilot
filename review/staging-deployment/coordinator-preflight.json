@@ -1,0 +1,33 @@
+{
+  "status": "BLOCKED",
+  "missing_values": [
+    "PILOT_IDENTITY_HOST",
+    "PILOT_REALTIME_HOST",
+    "PILOT_WEB_ORIGIN",
+    "auth/GOTRUE_SMTP_HOST",
+    "auth/GOTRUE_SMTP_PORT",
+    "auth/GOTRUE_SMTP_USER",
+    "auth/GOTRUE_SMTP_PASS",
+    "auth/GOTRUE_SMTP_ADMIN_EMAIL"
+  ],
+  "placeholder_values": [
+    "auth/API_EXTERNAL_URL",
+    "auth/GOTRUE_SITE_URL",
+    "realtime/SUPABASE_URL",
+    "realtime/CORS_ORIGIN"
+  ],
+  "failed_checks": [
+    "admission_shape_invalid",
+    "identity_origin_agreement_invalid"
+  ],
+  "https_verified": false,
+  "smtp_delivery_verified": false,
+  "release_authorized": false,
+  "recorded_at": "2026-10-28T04:47:16.522909+00:00",
+  "source_sha": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b",
+  "validator_sha256": "68afc317c36b5a857e9e2275f178fa11f312bdf1a2a77521cf574d7cf4641e0a",
+  "exit_code": 1,
+  "guest_id": 215,
+  "guest_address": "192.168.68.54",
+  "remote_mutation": false
+}

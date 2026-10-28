@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-28T04:48:34.099697+00:00",
+  "selected_implementation_sha": "62b5bab1a19abfef5d148ff36c1b7de64ff85f7b",
+  "resumed_evidence_head": "e6f919ff6a9d50e5d5ea5b90803f10dee524f674",
+  "prior_manifest_sha256": "3f4b21f5bc0bc5c83b73e092dcefabb56ac95ce5cebfb47feb6d7475d9b0c523",
+  "historical_product_evidence_source": "17861bad288c0c6c2d926b3dbbda1e2cf86ffc6d",
+  "historical_product_log_hashes_verified": 11,
+  "prior_scope": "198 frontend +57 realtime +34 operations tests/builds at original source; no fresh rerun or relabeling",
+  "private_guest_evidence": "Existing VM215 and isolated restore evidence reused; no provisioning or restores repeated",
+  "redacted_preflight": {
+    "path": "evidence/pilot/d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3.json",
+    "sha256": "d18c11e15452063e7469a62b1c81b9b410a07d708aeaa879c80b2c30fee6ddd3"
+  },
+  "evidence_root": "validation",
+  "copied_artifacts": "Byte-identical content-addressed copies; originals retain source/time/command details",
+  "release_status": "BLOCKED",
+  "physical_audio": "NOT_RUN/no completed browser-account evidence",
+  "live_provider": "NOT_RUN/key absent",
+  "https_wss": "NOT_RUN",
+  "smtp_delivery": "NOT_RUN",
+  "production_migration_promotion": "NOT_RUN",
+  "checker_modified": false
+}

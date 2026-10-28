@@ -1,0 +1,8 @@
+
+> cloud-nexus-pilot@0.1.0 lint
+> eslint .
+
+
+> @cloudnexus/pilot-realtime-api@0.1.0 lint
+> eslint src --max-warnings=0
+

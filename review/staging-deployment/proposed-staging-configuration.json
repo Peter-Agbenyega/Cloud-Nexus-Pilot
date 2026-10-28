@@ -1,0 +1,34 @@
+{
+  "status": "PROPOSED_NOT_APPROVED_NOT_APPLIED",
+  "pilot_guest": {
+    "id": 215,
+    "address": "192.168.68.54",
+    "address_assignment": "DHCP; reserve via authorized network administration before public cutover"
+  },
+  "selectors": {
+    "PILOT_IDENTITY_HOST": "identity.staging.cloudnexuspilot.com",
+    "PILOT_REALTIME_HOST": "realtime.staging.cloudnexuspilot.com",
+    "PILOT_WEB_ORIGIN": "https://staging.cloudnexuspilot.com"
+  },
+  "derived_auth": {
+    "API_EXTERNAL_URL": "https://identity.staging.cloudnexuspilot.com/auth/v1",
+    "GOTRUE_SITE_URL": "https://staging.cloudnexuspilot.com",
+    "GOTRUE_URI_ALLOW_LIST": "https://staging.cloudnexuspilot.com/auth/callback"
+  },
+  "derived_realtime": {
+    "SUPABASE_URL": "https://identity.staging.cloudnexuspilot.com",
+    "CORS_ORIGIN": "https://staging.cloudnexuspilot.com"
+  },
+  "frontend": "Use existing verified Pilot Vercel project preview; proposed hostname is not created or mapped. Exact preview origin must be substituted consistently if hostname is declined.",
+  "ingress": "Owner must select approved HTTPS ingress path from existing infrastructure to this dedicated guest; no assumption that Vercel reaches192.168.68.54. No DNS/NAT/tunnel/firewall/Caddy mutation performed.",
+  "smtp": "Use existing approved relay; supply GOTRUE_SMTP_HOST/PORT/USER/PASS/ADMIN_EMAIL securely in guest auth.env. No provider or sender invented.",
+  "backup": "Select approved independent encrypted Pilot destination, retention/schedule and key custodian. Existing temporary rehearsal copies are not a production policy.",
+  "holds": [
+    "No paid calls",
+    "No microphone activation",
+    "No SMTP sends",
+    "No public routing/security changes",
+    "No production migration/promotion",
+    "No backup-destination changes"
+  ]
+}

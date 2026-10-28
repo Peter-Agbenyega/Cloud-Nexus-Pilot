@@ -1,0 +1,24 @@
+{
+  "source_sha": "71a1ed5f7b621829e4134326eed1d1fba5a97b03",
+  "base_node_image": "node:22.23.3-bookworm-slim@sha256:3ed98443660ff48413b5af19ecefce3b9d50845a901a43420d47cc63a9fddbe9",
+  "npm": "10.9.9",
+  "artifacts": [
+    {
+      "platform": "linux/arm64",
+      "local_tag": "cloud-nexus-pilot-realtime:prep-71a1ed5",
+      "digest": "sha256:5f1a9e39b13633cf3e62804df4e4f708970e3bde1f70ea6386b0f847c40260e5",
+      "realtime_tests": 57,
+      "environment": "Docker Desktop on Mac"
+    },
+    {
+      "platform": "linux/amd64",
+      "local_tag": "cloud-nexus-pilot-realtime:prep-71a1ed5-amd64",
+      "digest": "sha256:2a909d8442e9669d45dd6003334d926b1a1648eec07d2c6eeb7b4b1d14d631de",
+      "realtime_tests": 57,
+      "environment": "local emulation, not Proxmox guest"
+    }
+  ],
+  "registry_push": false,
+  "deployment": false,
+  "security_limit": "npm install audit reported0 for the scoped image graph. OS image vulnerability scan and hosted qualification not executed."
+}

@@ -1,0 +1,218 @@
+
+> cloud-nexus-pilot@0.1.0 test:realtime-ops
+> node --test ops/realtime/tests/*.test.mjs
+
+TAP version 13
+# Subtest: successful deploy records candidate and actual last-good release
+ok 1 - successful deploy records candidate and actual last-good release
+  ---
+  duration_ms: 1136.347417
+  type: 'test'
+  ...
+# Subtest: failed up restores A and preserves B instead of skipping A
+ok 2 - failed up restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1239.096542
+  type: 'test'
+  ...
+# Subtest: failed health restores A and preserves B instead of skipping A
+ok 3 - failed health restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1363.843875
+  type: 'test'
+  ...
+# Subtest: failed tls restores A and preserves B instead of skipping A
+ok 4 - failed tls restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1594.612625
+  type: 'test'
+  ...
+# Subtest: failed origin restores A and preserves B instead of skipping A
+ok 5 - failed origin restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1572.985709
+  type: 'test'
+  ...
+# Subtest: failed worker restores A and preserves B instead of skipping A
+ok 6 - failed worker restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1642.063917
+  type: 'test'
+  ...
+# Subtest: failed binding restores A and preserves B instead of skipping A
+ok 7 - failed binding restores A and preserves B instead of skipping A
+  ---
+  duration_ms: 1362.733125
+  type: 'test'
+  ...
+# Subtest: same-SHA retry preserves previous release and reuses its image
+ok 8 - same-SHA retry preserves previous release and reuses its image
+  ---
+  duration_ms: 1040.524875
+  type: 'test'
+  ...
+# Subtest: failed recovery retains pending journal; rollback recovers A without skipping to B
+ok 9 - failed recovery retains pending journal; rollback recovers A without skipping to B
+  ---
+  duration_ms: 2315.168125
+  type: 'test'
+  ...
+# Subtest: normal rollback swaps releases and never builds
+ok 10 - normal rollback swaps releases and never builds
+  ---
+  duration_ms: 833.208375
+  type: 'test'
+  ...
+# Subtest: failed rollback restores the original current release
+ok 11 - failed rollback restores the original current release
+  ---
+  duration_ms: 1169.2765
+  type: 'test'
+  ...
+# Subtest: first deployment succeeds without inventing previous release
+ok 12 - first deployment succeeds without inventing previous release
+  ---
+  duration_ms: 1061.529333
+  type: 'test'
+  ...
+# Subtest: failed first deployment keeps pending state and refuses fictitious rollback
+ok 13 - failed first deployment keeps pending state and refuses fictitious rollback
+  ---
+  duration_ms: 973.230208
+  type: 'test'
+  ...
+# Subtest: dirty worktree fails before replacing the container
+ok 14 - dirty worktree fails before replacing the container
+  ---
+  duration_ms: 64.382459
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores previous fragment and preserves main Caddyfile
+ok 15 - caddy-validation restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 163.504792
+  type: 'test'
+  ...
+# Subtest: caddy-validation restores absence of fragment and preserves main Caddyfile
+ok 16 - caddy-validation restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 130.692541
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores previous fragment and preserves main Caddyfile
+ok 17 - caddy-reload restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 320.90925
+  type: 'test'
+  ...
+# Subtest: caddy-reload restores absence of fragment and preserves main Caddyfile
+ok 18 - caddy-reload restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 239.529875
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores previous fragment and preserves main Caddyfile
+ok 19 - caddy-endpoint restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 322.022125
+  type: 'test'
+  ...
+# Subtest: caddy-endpoint restores absence of fragment and preserves main Caddyfile
+ok 20 - caddy-endpoint restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 310.382
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores previous fragment and preserves main Caddyfile
+ok 21 - caddy-recovery restores previous fragment and preserves main Caddyfile
+  ---
+  duration_ms: 256.62975
+  type: 'test'
+  ...
+# Subtest: caddy-recovery restores absence of fragment and preserves main Caddyfile
+ok 22 - caddy-recovery restores absence of fragment and preserves main Caddyfile
+  ---
+  duration_ms: 230.084333
+  type: 'test'
+  ...
+# Subtest: successful Caddy install preserves worker configuration
+ok 23 - successful Caddy install preserves worker configuration
+  ---
+  duration_ms: 232.481167
+  type: 'test'
+  ...
+# Subtest: deploy-realtime.sh refuses lock contention before state or container changes
+ok 24 - deploy-realtime.sh refuses lock contention before state or container changes
+  ---
+  duration_ms: 416.874417
+  type: 'test'
+  ...
+# Subtest: rollback-realtime.sh refuses lock contention before state or container changes
+ok 25 - rollback-realtime.sh refuses lock contention before state or container changes
+  ---
+  duration_ms: 72.745792
+  type: 'test'
+  ...
+# Subtest: requires session.ready after sending authentication
+ok 26 - requires session.ready after sending authentication
+  ---
+  duration_ms: 12.762792
+  type: 'test'
+  ...
+# Subtest: fails on silent timeout
+ok 27 - fails on silent timeout
+  ---
+  duration_ms: 152.199959
+  type: 'test'
+  ...
+# Subtest: fails on premature close
+ok 28 - fails on premature close
+  ---
+  duration_ms: 2.702917
+  type: 'test'
+  ...
+# Subtest: fails on malformed JSON
+ok 29 - fails on malformed JSON
+  ---
+  duration_ms: 1.816292
+  type: 'test'
+  ...
+# Subtest: fails on null JSON
+ok 30 - fails on null JSON
+  ---
+  duration_ms: 2.311584
+  type: 'test'
+  ...
+# Subtest: fails on authentication rejection
+ok 31 - fails on authentication rejection
+  ---
+  duration_ms: 1.6375
+  type: 'test'
+  ...
+# Subtest: fails on unsolicited readiness
+ok 32 - fails on unsolicited readiness
+  ---
+  duration_ms: 1.954625
+  type: 'test'
+  ...
+# Subtest: CLI exits nonzero on premature close without printing credentials
+ok 33 - CLI exits nonzero on premature close without printing credentials
+  ---
+  duration_ms: 77.477459
+  type: 'test'
+  ...
+# Subtest: missing JWT fails before opening a connection
+ok 34 - missing JWT fails before opening a connection
+  ---
+  duration_ms: 0.289666
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20143.701417

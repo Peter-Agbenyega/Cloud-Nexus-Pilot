@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-27T21:28:35.720624+00:00",
+  "guest_id": 215,
+  "guest_ip": "192.168.68.54",
+  "checks": [
+    "pre-restart token still verifies",
+    "final event survived restart without duplication",
+    "ended state survived restart",
+    "cross-account denied after restart",
+    "foreign deletion no effect",
+    "owned deletion succeeds",
+    "deleted session unavailable"
+  ],
+  "exit_code": 0,
+  "layer": "Private guest DB/Auth/REST restart with retained verified user token; synthetic fixture only",
+  "provider_calls": 0,
+  "frontend_export_verified": false,
+  "public_acceptance_verified": false
+}

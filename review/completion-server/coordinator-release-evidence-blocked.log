@@ -1,0 +1,29 @@
+{
+  "result": "BLOCKED",
+  "errors": [
+    "blockers must explicitly be an empty list",
+    "clean_install: must be passed; pending/skipped/failed cannot pass",
+    "dependency_audit: must be passed; pending/skipped/failed cannot pass",
+    "dependency_audit: unresolved high/critical findings block release",
+    "dependency_audit: advisory-check timestamp required",
+    "lint: must be passed; pending/skipped/failed cannot pass",
+    "typecheck: must be passed; pending/skipped/failed cannot pass",
+    "unit_tests: must be passed; pending/skipped/failed cannot pass",
+    "production_build: must be passed; pending/skipped/failed cannot pass",
+    "database_migrations: must be passed; pending/skipped/failed cannot pass",
+    "staging_auth: must be passed; pending/skipped/failed cannot pass",
+    "tenant_isolation: must be passed; pending/skipped/failed cannot pass",
+    "backup_restore: must be passed; pending/skipped/failed cannot pass",
+    "rollback: must be passed; pending/skipped/failed cannot pass",
+    "deployment_mapping: must be passed; pending/skipped/failed cannot pass",
+    "api_lint: must be passed; pending/skipped/failed cannot pass",
+    "api_typecheck: must be passed; pending/skipped/failed cannot pass",
+    "api_tests: must be passed; pending/skipped/failed cannot pass",
+    "api_auth_cost_guard: must be passed; pending/skipped/failed cannot pass",
+    "audio_browser_journey: must be passed; pending/skipped/failed cannot pass",
+    "provider_contract: must be passed; pending/skipped/failed cannot pass",
+    "multiinstance_reconnect: must be passed; pending/skipped/failed cannot pass",
+    "long_session: must be passed; pending/skipped/failed cannot pass"
+  ],
+  "release_authorization_granted": false
+}

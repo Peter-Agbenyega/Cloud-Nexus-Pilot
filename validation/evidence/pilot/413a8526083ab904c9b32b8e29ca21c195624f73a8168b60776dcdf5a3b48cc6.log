@@ -1,0 +1,12 @@
+
+> cloud-nexus-pilot@0.1.0 check:pilot-dependencies
+> node scripts/check-pilot-dependencies.mjs
+
+Pilot installed dependency contract verified {
+  next: '15.5.28',
+  nextPostcss: '8.5.32',
+  pilotEslint: '10.13.0',
+  realtimeEslint: '10.13.0',
+  fastify: '5.12.7',
+  zod: '4.6.7'
+}

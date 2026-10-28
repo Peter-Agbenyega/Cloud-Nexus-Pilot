@@ -59,6 +59,6 @@ if (mode === "exercise") {
  const restored=await call(a,base);assert.equal(restored.status,200);const body=await restored.json();assert.equal(body.events.length,2);assert.equal(body.status,"ended");assert.ok(body.guidance.some(g=>g.state==="succeeded"));
  const exported=await call(a,base+"?format=export");assert.equal(exported.status,200);assert.match(exported.headers.get("content-disposition"),/attachment/);assert.equal((await exported.json()).events.length,2);
  assert.equal((await call(b,base,{method:"DELETE"})).status,404);assert.equal((await call(a,base,{method:"DELETE"})).status,200);assert.equal((await call(a,base)).status,404);
- steps.push("recover after application restart; complete bounded export; cross-account deletion denial; owned deletion confirmed");
+ steps.push("reload durable stopped session via new HTTP requests; complete bounded export; cross-account deletion denial; owned deletion confirmed");
 } else throw new Error("Use exercise or recover");
 console.log(JSON.stringify({passed:true,mode,layer:"compiled local app + real local identity/database + synthetic provider; no microphone or paid provider",steps},null,2));

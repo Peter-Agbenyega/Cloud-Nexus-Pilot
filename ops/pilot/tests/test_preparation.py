@@ -16,12 +16,34 @@ verify=importlib.util.module_from_spec(spec);spec.loader.exec_module(verify)
 def selectors(directory):
     return {'PILOT_CONFIG_DIR':str(directory),'PILOT_PG_VOLUME':'pilot_staging_test',
             **{k:'example/pilot@sha256:'+'a'*64 for k in ('PILOT_POSTGRES_IMAGE','PILOT_AUTH_IMAGE','PILOT_REST_IMAGE','PILOT_REALTIME_IMAGE')},
-            'PILOT_IDENTITY_HOST':'identity.pilot.example.invalid','PILOT_REALTIME_HOST':'realtime.pilot.example.invalid','PILOT_WEB_ORIGIN':'https://pilot.example.invalid'}
+            'PILOT_IDENTITY_HOST':'identity.pilot.example.com','PILOT_REALTIME_HOST':'realtime.pilot.example.com','PILOT_WEB_ORIGIN':'https://pilot.example.com'}
 
 
 class PreparationTests(unittest.TestCase):
     def test_valid_shape_does_not_claim_destination(self):
         self.assertEqual(verify.validate(selectors(Path('/private/test'))),Path('/private/test'))
+
+    def test_real_guest_volume_and_content_addressed_image_are_accepted(self):
+        v=selectors(Path('/private/test'));v['PILOT_PG_VOLUME']='cnp-pilot-staging-pg17';v['PILOT_REALTIME_IMAGE']='sha256:'+'b'*64
+        verify.validate(v)
+
+    def test_placeholder_or_numeric_hosts_block_admission(self):
+        for key in ('PILOT_IDENTITY_HOST','PILOT_REALTIME_HOST'):
+            for host in ('pilot.example.invalid','pilot.test','192.168.68.54'):
+                v=selectors(Path('/private/test'));v[key]=host
+                with self.assertRaises(ValueError):verify.validate(v)
+        v=selectors(Path('/private/test'));v['PILOT_WEB_ORIGIN']='https://pilot.example.invalid'
+        with self.assertRaises(ValueError):verify.validate(v)
+
+    def test_service_identity_and_origin_must_agree(self):
+        v=selectors(Path('/private/test'))
+        services={'auth':{'API_EXTERNAL_URL':'https://identity.pilot.example.com/auth/v1','GOTRUE_SITE_URL':v['PILOT_WEB_ORIGIN'],'GOTRUE_DISABLE_SIGNUP':'true','GOTRUE_MAILER_AUTOCONFIRM':'false'},'realtime':{'SUPABASE_URL':'https://identity.pilot.example.com','CORS_ORIGIN':v['PILOT_WEB_ORIGIN']}}
+        verify.validate_service_identity(v,services)
+        for service,key in [('auth','API_EXTERNAL_URL'),('auth','GOTRUE_SITE_URL'),('realtime','CORS_ORIGIN'),('realtime','SUPABASE_URL')]:
+            wrong=copy.deepcopy(services);wrong[service][key]='https://foreign.example.com'
+            with self.assertRaises(ValueError):verify.validate_service_identity(v,wrong)
+        wrong=copy.deepcopy(services);wrong['realtime']['NEXT_PUBLIC_PILOT_TEST_FIXTURE']='1'
+        with self.assertRaises(ValueError):verify.validate_service_identity(v,wrong)
 
     def test_mutable_image_rejected(self):
         for key in ('PILOT_POSTGRES_IMAGE','PILOT_AUTH_IMAGE','PILOT_REST_IMAGE','PILOT_REALTIME_IMAGE'):

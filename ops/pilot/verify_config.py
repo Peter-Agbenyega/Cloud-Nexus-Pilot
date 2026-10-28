@@ -29,23 +29,44 @@ def read_values(path, private=False):
 
 def validate(values):
     for name in ('PILOT_POSTGRES_IMAGE','PILOT_AUTH_IMAGE','PILOT_REST_IMAGE','PILOT_REALTIME_IMAGE'):
-        if not re.fullmatch(r'[a-zA-Z0-9./:_-]+@sha256:[a-f0-9]{64}', values.get(name,'')):
+        if not re.fullmatch(r'(?:[a-zA-Z0-9./:_-]+@)?sha256:[a-f0-9]{64}', values.get(name,'')):
             raise ValueError('Every deployed image must be selected by immutable digest')
-    if not re.fullmatch(r'pilot[a-zA-Z0-9_-]*', values.get('PILOT_PG_VOLUME','')):
+    if not re.fullmatch(r'(?:pilot|cnp-pilot)[a-zA-Z0-9_-]*', values.get('PILOT_PG_VOLUME','')):
         raise ValueError('An explicitly dedicated Pilot volume is required')
     directory = Path(values.get('PILOT_CONFIG_DIR',''))
     if not directory.is_absolute():
         raise ValueError('Private configuration directory must be absolute')
     for name in ('PILOT_IDENTITY_HOST','PILOT_REALTIME_HOST'):
         host = values.get(name,'')
-        if not re.fullmatch(r'[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?', host) or '.' not in host:
+        if not re.fullmatch(r'[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?', host) or '.' not in host or host.endswith(('.invalid','.test','.localhost','.local','.example')) or host.replace('.','').isdigit():
             raise ValueError('Exact approved DNS hosts required')
     origin = urlparse(values.get('PILOT_WEB_ORIGIN',''))
-    if origin.scheme != 'https' or not origin.hostname or not re.fullmatch(r'(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}', origin.hostname) or origin.path or origin.query or origin.fragment or origin.username or origin.password or origin.port not in (None,443):
+    if origin.scheme != 'https' or not origin.hostname or not re.fullmatch(r'(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}', origin.hostname) or origin.path or origin.query or origin.fragment or origin.username or origin.password or origin.port not in (None,443) or origin.hostname.endswith(('.invalid','.test','.localhost','.local','.example')):
         raise ValueError('One exact HTTPS frontend origin is required')
     if values['PILOT_IDENTITY_HOST'] == values['PILOT_REALTIME_HOST']:
         raise ValueError('Identity and realtime hosts must be distinct')
     return directory
+
+
+def validate_service_identity(values, services):
+    identity='https://'+values['PILOT_IDENTITY_HOST']
+    web=values['PILOT_WEB_ORIGIN']
+    expected={
+        ('auth','API_EXTERNAL_URL'):identity+'/auth/v1',
+        ('auth','GOTRUE_SITE_URL'):web,
+        ('auth','GOTRUE_DISABLE_SIGNUP'):'true',
+        ('auth','GOTRUE_MAILER_AUTOCONFIRM'):'false',
+        ('realtime','SUPABASE_URL'):identity,
+        ('realtime','CORS_ORIGIN'):web,
+    }
+    for (service,key),value in expected.items():
+        if services[service].get(key)!=value:
+            raise ValueError('Service identity/origin configuration mismatch: '+service+'/'+key)
+    issuer=services['auth'].get('GOTRUE_JWT_ISSUER',identity+'/auth/v1')
+    if issuer!=identity+'/auth/v1':
+        raise ValueError('Identity issuer mismatch')
+    if any('TEST_FIXTURE' in key or key.endswith('ALLOW_LOOPBACK') for data in services.values() for key in data):
+        raise ValueError('Fixture flags are forbidden in staging service configuration')
 
 
 def main():
@@ -54,10 +75,13 @@ def main():
     parser.add_argument('--target',type=Path,help='Required before any deployment; authoritative allocation record, not a guessed VM')
     args = parser.parse_args()
     directory = validate(read_values(args.env))
+    services={}
     for name in ('db','auth','rest','realtime','bootstrap','migration'):
         data = read_values(directory/(name+'.env'),private=True)
+        services[name]=data
         if any(k.startswith('NEXT_PUBLIC_') for k in data):
             raise ValueError('Guest private services do not consume public frontend configuration')
+    validate_service_identity(read_values(args.env),services)
     if args.target:
         target=json.loads(args.target.read_text())
         if type(target.get('guest_id')) is not int or target['guest_id'] in (101,107,201) or target['guest_id'] <= 0 or target.get('product') != 'pilot' or target.get('allocation_verified') is not True or not target.get('owner') or not target.get('verified_at'):

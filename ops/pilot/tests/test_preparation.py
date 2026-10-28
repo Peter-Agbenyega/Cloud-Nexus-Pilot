@@ -45,6 +45,18 @@ class PreparationTests(unittest.TestCase):
         wrong=copy.deepcopy(services);wrong['realtime']['NEXT_PUBLIC_PILOT_TEST_FIXTURE']='1'
         with self.assertRaises(ValueError):verify.validate_service_identity(v,wrong)
 
+    def test_redacted_preflight_names_missing_values_without_secrets(self):
+        v=selectors(Path('/private/test'))
+        del v['PILOT_WEB_ORIGIN']
+        services={'auth':{'GOTRUE_SMTP_PASS':'synthetic-secret-never-output','API_EXTERNAL_URL':'https://pilot.invalid/auth/v1'},'realtime':{}}
+        result=verify.redacted_preflight(v,services)
+        self.assertEqual(result['status'],'BLOCKED')
+        self.assertIn('PILOT_WEB_ORIGIN',result['missing_values'])
+        self.assertIn('auth/GOTRUE_SMTP_HOST',result['missing_values'])
+        self.assertIn('auth/API_EXTERNAL_URL',result['placeholder_values'])
+        self.assertNotIn('synthetic-secret-never-output',json.dumps(result))
+        self.assertFalse(result['release_authorized'])
+
     def test_mutable_image_rejected(self):
         for key in ('PILOT_POSTGRES_IMAGE','PILOT_AUTH_IMAGE','PILOT_REST_IMAGE','PILOT_REALTIME_IMAGE'):
             v=selectors(Path('/private/test'));v[key]='example/image:latest'

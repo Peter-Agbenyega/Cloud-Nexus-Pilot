@@ -69,11 +69,41 @@ def validate_service_identity(values, services):
         raise ValueError('Fixture flags are forbidden in staging service configuration')
 
 
+def redacted_preflight(values, services):
+    """Report configuration names only, using the existing admission validators."""
+    required=('PILOT_CONFIG_DIR','PILOT_PG_VOLUME','PILOT_POSTGRES_IMAGE','PILOT_AUTH_IMAGE','PILOT_REST_IMAGE','PILOT_REALTIME_IMAGE','PILOT_IDENTITY_HOST','PILOT_REALTIME_HOST','PILOT_WEB_ORIGIN')
+    missing=[name for name in required if not values.get(name)]
+    smtp=('GOTRUE_SMTP_HOST','GOTRUE_SMTP_PORT','GOTRUE_SMTP_USER','GOTRUE_SMTP_PASS','GOTRUE_SMTP_ADMIN_EMAIL')
+    missing += ['auth/'+name for name in smtp if not services.get('auth',{}).get(name)]
+    placeholders=[]
+    for service,names in {'auth':('API_EXTERNAL_URL','GOTRUE_SITE_URL','GOTRUE_JWT_ISSUER'),'realtime':('SUPABASE_URL','CORS_ORIGIN')}.items():
+        for name in names:
+            value=services.get(service,{}).get(name,'')
+            if '.invalid' in value or 'REPLACE' in value:
+                placeholders.append(service+'/'+name)
+    errors=[]
+    try:validate(values)
+    except (ValueError,KeyError):errors.append('admission_shape_invalid')
+    try:validate_service_identity(values,services)
+    except (ValueError,KeyError):errors.append('identity_origin_agreement_invalid')
+    return {'status':'BLOCKED' if missing or placeholders or errors else 'CONFIGURATION_SHAPE_ONLY',
+            'missing_values':missing,'placeholder_values':placeholders,'failed_checks':errors,
+            'https_verified':False,'smtp_delivery_verified':False,'release_authorized':False}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--env',type=Path,required=True)
     parser.add_argument('--target',type=Path,help='Required before any deployment; authoritative allocation record, not a guessed VM')
+    parser.add_argument('--redacted-report',action='store_true',help='Report missing configuration names only; never sends mail or enables routing')
     args = parser.parse_args()
+    if args.redacted_report:
+        values=read_values(args.env);directory=Path(values.get('PILOT_CONFIG_DIR',''))
+        if not directory.is_absolute():raise ValueError('Absolute configuration directory required')
+        services={name:read_values(directory/(name+'.env'),private=True) for name in ('db','auth','rest','realtime','bootstrap','migration')}
+        result=redacted_preflight(values,services)
+        print(json.dumps(result,indent=2))
+        raise SystemExit(1 if result['status']=='BLOCKED' else 0)
     directory = validate(read_values(args.env))
     services={}
     for name in ('db','auth','rest','realtime','bootstrap','migration'):

@@ -153,3 +153,24 @@ test("malformed, oversized and over-count session lists are rejected instead of 
   Object.defineProperty(globalThis, "fetch", { configurable: true, value: async () => new Response("x".repeat(65_537)) });
   await assert.rejects(listOwnedTranscriptSessions(), /exceeded the browser limit/);
 });
+
+test("late durable HTTP response after Stop cannot acknowledge save or deliver text", async (t) => {
+  let reply!: (r: Response) => void;let saved=0,delivered=0;
+  fixtures(t,()=>new Promise(resolve=>{reply=resolve;}));
+  const client=await createStreamingTranscriptClient({onSaveAcknowledged:()=>saved++,onTranscript:()=>delivered++});
+  const pending=client.sendChunk(params(0));const rejected=assert.rejects(pending,/stopped/);
+  await client.stop();await rejected;
+  reply(Response.json({saved:true,response:result(0)}));
+  await new Promise(resolve=>setTimeout(resolve,0));
+  assert.equal(saved,0);assert.equal(delivered,0);
+});
+
+test("HTTP authentication/storage errors preserve status for terminal recovery without transport reconnect", async (t) => {
+  let status=503;
+  fixtures(t,async()=>Response.json({error:{code:"processing_unavailable",message:"Processing access unavailable."}},{status}));
+  for (status of [401,403,429,503]) {
+    const client=await createStreamingTranscriptClient();
+    await assert.rejects(client.sendChunk(params(0)),{status,code:"processing_unavailable"});
+    await client.stop();
+  }
+});

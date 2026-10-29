@@ -5,6 +5,18 @@ export type Principal = Extract<ProviderAuthorization, { userId: string }>;
 export type SavedSession = { sessionId: string; status: string; createdAt: number; events: Array<{ sequence: number; [key: string]: unknown }>; guidance?: unknown[]; hasMore?: boolean; nextCursor?: number };
 export type Reservation = { acquired: boolean; state: string; result?: unknown };
 
+export function assertSettlementCredential(token = process.env.PILOT_PROCESSING_SERVICE_KEY): void {
+  // This is a fail-closed expiry preflight, not signature verification or a new
+  // principal boundary. PostgREST still verifies the actual trusted JWT.
+  try {
+    if (!token) throw new Error();
+    const claims = JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64url").toString()) as { exp?: unknown; role?: unknown };
+    if (claims.role !== "service_role" || typeof claims.exp !== "number" || claims.exp * 1000 <= Date.now() + 30_000) throw new Error();
+  } catch {
+    throw new RequestBoundaryError(503, "processing_settlement_unavailable", "Transcription saving is unavailable: the server processing credential is missing or expired. Ask the server operator to restore processing access; saved work remains available.");
+  }
+}
+
 // Uses the existing GoTrue identity and PostgREST contract. No hosted account,
 // service provisioning, or alternate login mechanism is created here.
 async function rpc(principal: Principal, name: string, args: Record<string, unknown>, signal?: AbortSignal, trusted = false): Promise<unknown> {
@@ -78,8 +90,8 @@ export const processingRepository = {
     return true;
   },
   async reserve(principal: Principal, input: { sessionId?: string; operationId: string; maxUnits: number; requestHash: string; kind: string }, signal: AbortSignal): Promise<Reservation> {
-    // Reserving without a configured trusted completion path would orphan spend.
-    if (!process.env.PILOT_PROCESSING_SERVICE_KEY) throw new RequestBoundaryError(503, "processing_store_unavailable", "Processing settlement is not configured.");
+    // Reject expired settlement configuration before reserving or provider work.
+    assertSettlementCredential();
     return await rpc(principal, "pilot_reserve_operation", { p_session_id: input.sessionId ?? null, p_operation_id: input.operationId, p_max_units: input.maxUnits, p_request_hash: input.requestHash, p_kind: input.kind }, signal) as Reservation;
   },
   async complete(principal: Principal, input: { operationId: string; requestHash: string; usedUnits: number; outcome: "succeeded" | "failed" | "unknown"; result: unknown; text?: string; source?: string }): Promise<unknown> {

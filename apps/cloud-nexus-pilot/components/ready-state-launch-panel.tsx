@@ -1,5 +1,7 @@
 "use client";
 
+import { capturePresentation } from "@/features/transcription/capture-recovery";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CaptureDisclosure } from "./capture-disclosure";
 import { SavedSessionPicker } from "./saved-session-picker";
@@ -815,14 +817,21 @@ export function ReadyStateLaunchPanel() {
     const stopped = previous.recording && !transcriptionWorkflow.isRecording;
     const paused = !previous.paused && transcriptionWorkflow.isPaused;
     previousCaptureStateRef.current = { recording: transcriptionWorkflow.isRecording, paused: transcriptionWorkflow.isPaused };
-    if (stopped || paused) {
-      cancelActiveGuidanceRequest();
-      setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
-      setGuidanceStatus("idle"); setAnswerReadyVisible(false);
-      setGuidanceError(paused ? "Audio processing paused; pending guidance was cancelled. Saved answers remain recoverable." : "Audio capture stopped; pending guidance was cancelled. Saved answers remain recoverable.");
+    if (stopped) {
+      stopActiveStream();
+      setCaptureState({ status: "idle", detail: "Audio capture stopped. Retained work is still available.", streamId: null });
     }
-  }, [transcriptionWorkflow.isRecording, transcriptionWorkflow.isPaused]);
-  const liveIndicator = transcriptionWorkflow.isPaused ? { color: "#FBBF24", shadow: "rgba(251,191,36,0.5)", label: "Audio processing paused" } : getLiveIndicatorState({
+    if ((stopped || paused) && activeGuidanceQuestionRef.current?.source !== "typed") {
+      cancelActiveGuidanceRequest();
+      if (guidanceStatus === "loading") {
+        setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
+        setGuidanceStatus("idle"); setAnswerReadyVisible(false);
+      }
+      setGuidanceError(paused ? "Audio processing paused; pending detected-question guidance was cancelled. Saved answers remain recoverable." : "Audio capture stopped; pending detected-question guidance was cancelled. Saved answers remain recoverable.");
+    }
+  }, [transcriptionWorkflow.isRecording, transcriptionWorkflow.isPaused, guidanceStatus]);
+  const captureView = capturePresentation(transcriptionWorkflow.isRecording, transcriptionWorkflow.isPaused, transcriptionWorkflow.status);
+  const liveIndicator = captureView.stopped ? { color: "#9090C0", shadow: "none", label: captureView.label } : transcriptionWorkflow.isPaused ? { color: "#FBBF24", shadow: "rgba(251,191,36,0.5)", label: "Audio processing paused" } : getLiveIndicatorState({
     guidanceStatus,
     preferredDetectedQuestion,
     answerReadyVisible,
@@ -1492,14 +1501,14 @@ export function ReadyStateLaunchPanel() {
             marginTop: 4,
           }}>
             {interviewPersistenceInfo?.mode === "supabase-active"
-              ? "Cloud interview persistence active"
+              ? "Session metadata storage connected — transcript saves acknowledged separately"
               : "Local interview persistence active"}
           </div>
         </div>
         <label style={{ color: "#C8C8E0", fontSize: 12 }}>Input level
           <meter aria-label="Selected-source audio level" min={0} max={1} value={transcriptionWorkflow.audioLevel} style={{ display: "block", width: 100 }} />
         </label>
-        <button type="button" disabled={!transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "connecting" || transcriptionWorkflow.status === "stopping"}
+        <button type="button" disabled={!captureView.canPause}
           onClick={() => { if (transcriptionWorkflow.isPaused) transcriptionWorkflow.resumeCapture(); else { cancelActiveGuidanceRequest(); transcriptionWorkflow.pauseCapture(); } }}
           style={{ background: "#34344F", color: "white", border: "1px solid #636386", borderRadius: 8, padding: "6px 12px" }}>
           {transcriptionWorkflow.isPaused ? "Resume" : "Pause"}
@@ -1513,18 +1522,19 @@ export function ReadyStateLaunchPanel() {
             borderRadius: 8,
             padding: "6px 14px",
             fontSize: 12,
-            color: "#7070A0",
+            color: "#EF4444",
             cursor: "pointer",
             transition: "border-color 0.2s, color 0.2s",
           }}
           onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#EF4444"; e.currentTarget.style.color = "#EF4444"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#7070A0"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#EF4444"; }}
         >
           End Session
         </button>
       </div>
 
-      {transcriptionWorkflow.feedback === "Connection unstable — retrying..." && (
+      {captureView.canRetry && <button type="button" onClick={() => void handleEndSession()} style={{ color: "white", background: "#34344F", padding: "8px 12px", borderRadius: 8 }}>Review saved work / return to Start</button>}
+      {!captureView.stopped && transcriptionWorkflow.feedback === "Connection unstable — retrying..." && (
         <div style={{
           background: "rgba(251,191,36,0.08)",
           border: "0.5px solid rgba(251,191,36,0.35)",
@@ -1837,7 +1847,7 @@ export function ReadyStateLaunchPanel() {
             )}
           </div>
         ) : transcriptionWorkflow.status === "failed" ? (
-          <p style={{ fontSize: 12, color: "#EF4444" }}>Transcription unavailable. Retrying...</p>
+          <p style={{ fontSize: 12, color: "#EF4444" }}>Transcription stopped. No retries are running. {transcriptionWorkflow.error} Use typed guidance, or resolve the error and return to Start to explicitly capture again.</p>
         ) : (
           <p style={{ fontSize: 12, color: "#5050A0" }}>No speech detected yet.</p>
         )}

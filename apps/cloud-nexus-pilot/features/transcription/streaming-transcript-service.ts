@@ -1,3 +1,7 @@
+export class StreamingTranscriptError extends Error {
+  constructor(message: string, readonly status: number, readonly code: string) { super(message); this.name = "StreamingTranscriptError"; }
+}
+
 import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/transcription";
 
 type StreamEventPayload =
@@ -78,7 +82,7 @@ export async function createStreamingTranscriptClient(options?: {
   let sessionId: string;
   try {
     const response = await fetch("/api/transcribe/stream/session", { method: "POST", signal: createAbort.signal });
-    if (!response.ok) throw new Error("Unable to create streaming transcription session.");
+    if (!response.ok) throw new StreamingTranscriptError(response.status === 401 ? "Sign in again before starting transcription." : "Unable to create an owned transcription session. Check account access and server readiness.", response.status, "session_create_failed");
     const body: unknown = await response.json();
     if (!body || typeof body !== "object" || !("sessionId" in body) ||
         typeof body.sessionId !== "string" || !/^[a-zA-Z0-9_-]{1,128}$/.test(body.sessionId)) {
@@ -221,7 +225,7 @@ export async function createStreamingTranscriptClient(options?: {
       let reject!: (reason?: unknown) => void;
       const promise = new Promise<TranscriptionResponse>((ok, fail) => { resolve = ok; reject = fail; });
       const timeoutId = window.setTimeout(() => {
-        rejectChunk(params.chunkIndex, new Error("Timed out waiting for transcription. This audio may not have been saved."));
+        rejectChunk(params.chunkIndex, new StreamingTranscriptError("Timed out waiting for a saved transcription acknowledgement. This audio may not have been saved.", 0, "acknowledgement_timeout"));
       }, chunkTimeoutMs);
       pendingChunks.set(params.chunkIndex, { resolve, reject, timeoutId, abort, promise, source: params.source, bytes: params.blob.size });
       deliveryOrder.push(params.chunkIndex);
@@ -233,17 +237,22 @@ export async function createStreamingTranscriptClient(options?: {
       }).then(async (response) => {
         if (!response.ok) {
           let message = "Unable to process the latest audio chunk.";
+          let code = "chunk_processing_failed";
           try {
-            const body = await response.json() as { error?: { message?: string } };
+            const body = await response.json() as { error?: { message?: string; code?: string } };
+            if (typeof body.error?.code === "string") code = body.error.code.slice(0, 100);
             if (typeof body.error?.message === "string") message = body.error.message.slice(0, 500);
           } catch { /* Keep the stable error if a gateway returns non-JSON. */ }
-          rejectChunk(params.chunkIndex, new Error(message));
+          options?.onLog?.({ event: "chunk-ingest-failed", sessionId, chunkIndex: params.chunkIndex, status: response.status });
+          rejectChunk(params.chunkIndex, new StreamingTranscriptError(message, response.status, code));
           return;
         }
+        if (isStopped || (!pendingChunks.has(params.chunkIndex) && !completed.has(params.chunkIndex))) return;
         // A durable HTTP acknowledgement is sufficient even if SSE reconnects.
         // Older servers return no response; their validated SSE event still resolves.
         try {
           const body = await response.json() as { response?: TranscriptionResponse; saved?: boolean };
+          if (isStopped || (!pendingChunks.has(params.chunkIndex) && !completed.has(params.chunkIndex))) return;
           const result = body.response;
           if (body.saved === true && result && typeof result.text === "string" &&
               result.text.length <= 100_000 && result.chunkIndex === params.chunkIndex &&

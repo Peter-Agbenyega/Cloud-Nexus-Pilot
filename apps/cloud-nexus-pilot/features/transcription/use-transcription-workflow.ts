@@ -2,6 +2,7 @@
 
 import { ensureOwnedGuidanceSession, savedGuidanceAssociations, type SavedGuidanceAssociation } from "./guidance-session-client";
 import { loadSavedTranscriptSession, deleteSavedTranscriptSession, listOwnedTranscriptSessions, type OwnedTranscriptSessionSummary } from "./saved-session-service";
+import { CaptureRetryQueue, shouldRetryChunk } from "./capture-recovery";
 import { CaptureOwnership } from "@/lib/realtime/capture-ownership";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -863,6 +864,7 @@ export function useTranscriptionWorkflow(
       });
   }, []);
 
+  const chunkRetriesRef = useRef(new CaptureRetryQueue());
   const stopInternal = useCallback(() => {
     recoveryEpochRef.current += 1;
     sessionListAbortRef.current?.abort();
@@ -872,6 +874,10 @@ export function useTranscriptionWorkflow(
     fileUploadAbortRef.current = null;
     trackCleanupRef.current?.();
     trackCleanupRef.current = null;
+    chunkRetriesRef.current.cancel();
+    setFeedback("");
+    inFlightChunkCountRef.current = 0;
+    setActiveUploads(0);
     stoppingRef.current = false;
     setCaptureActive(false);
     setIsPaused(false);
@@ -1077,6 +1083,7 @@ export function useTranscriptionWorkflow(
           byteSize: activeByteSizeRef.current,
           captureMode: activeCaptureModeRef.current,
         });
+        if (generation !== streamingGenerationRef.current) return;
         setStatus("receiving-transcript");
         setFeedback("Receiving transcript from the configured transcription provider.");
         setError("");
@@ -1087,9 +1094,10 @@ export function useTranscriptionWorkflow(
           uploadError instanceof Error
             ? uploadError.message
             : "Unable to process the latest audio chunk.";
-        if (stoppingRef.current || attempt >= 2) {
+        if (stoppingRef.current || !shouldRetryChunk(uploadError, attempt)) {
           if (!stoppingRef.current) stopInternal();
-          setError("Transcription stopped after bounded retries. The latest audio may not have been saved. Retained text remains available.");
+          setFeedback("Capture stopped. No retries are running. Resolve the error, then explicitly restart capture or use typed guidance.");
+          setError(`${message} The latest audio may not have been saved. Retained text remains available.`);
           setStatus("failed");
           return;
         }
@@ -1106,7 +1114,7 @@ export function useTranscriptionWorkflow(
             : "The latest live audio chunk failed, but the session is still listening."
         );
         setStatus(transcriptRef.current.trim() ? "receiving-transcript" : "listening");
-        window.setTimeout(() => {
+        chunkRetriesRef.current.schedule(() => {
           if (!stoppingRef.current && generation === streamingGenerationRef.current &&
               (recorderRef.current?.state === "recording" || audioPipelineRef.current)) {
             void processAudioChunk(audioBlob, chunkIndex, nextSource, overrideContentType, attempt + 1);
@@ -1114,19 +1122,21 @@ export function useTranscriptionWorkflow(
         }, CHUNK_UPLOAD_RETRY_BACKOFF_MS);
         return;
       } finally {
-        inFlightChunkCountRef.current = Math.max(0, inFlightChunkCountRef.current - 1);
-        setActiveUploads(() => {
-          const nextValue = inFlightChunkCountRef.current;
-          if (
-            nextValue === 0 &&
-            recorderRef.current?.state === "recording" &&
-            streamingClientRef.current
-          ) {
-            const hasTranscript = transcriptRef.current.trim().length > 0;
-            setStatus(hasTranscript ? "listening" : "no-speech-yet");
-          }
-          return nextValue;
-        });
+        if (generation === streamingGenerationRef.current) {
+          inFlightChunkCountRef.current = Math.max(0, inFlightChunkCountRef.current - 1);
+          setActiveUploads(() => {
+            const nextValue = inFlightChunkCountRef.current;
+            if (
+              nextValue === 0 &&
+              recorderRef.current?.state === "recording" &&
+              streamingClientRef.current
+            ) {
+              const hasTranscript = transcriptRef.current.trim().length > 0;
+              setStatus(hasTranscript ? "listening" : "no-speech-yet");
+            }
+            return nextValue;
+          });
+        }
       }
     },
     [
@@ -1158,6 +1168,7 @@ export function useTranscriptionWorkflow(
       const token = ownership.begin();
       if (token === null) return false;
       recoveryEpochRef.current += 1;
+      chunkRetriesRef.current.begin();
 
       setError("");
       setFeedback("");
@@ -1297,6 +1308,7 @@ export function useTranscriptionWorkflow(
   const stopCapture = useCallback(() => {
     if (stoppingRef.current) return;
     stoppingRef.current = true;
+    chunkRetriesRef.current.cancel();
     trackCleanupRef.current?.();
     trackCleanupRef.current = null;
     // Flush valid final PCM before invalidating capture, and retain its bounded
@@ -1310,7 +1322,9 @@ export function useTranscriptionWorkflow(
     setIsPaused(false);
     setAudioLevel(0);
     setStatus("stopping");
+    const generation = streamingGenerationRef.current;
     void Promise.allSettled([...pendingChunkTasksRef.current]).then(() => {
+      if (generation !== streamingGenerationRef.current) return;
       stopInternal();
       setStatus("stopped");
       setFeedback("Capture stopped. Completed transcript remains available; any reported failed audio is a gap.");

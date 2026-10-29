@@ -153,3 +153,18 @@ test("capability disclosure requires identity and never returns configured crede
 
 test("profile upload authenticates before any file parsing",async()=>{let parsed=0;const load=sourceLoader({"@/lib/server/provider-auth":{requireProviderUser:async()=>({response:Response.json({error:{code:"authentication_required"}},{status:401})})},"@/lib/interview-intelligence/file-ingestion":{ingestProfileFile:async()=>{parsed++;}}});const r=await load("@/app/api/ingest-profile/route").POST(new Request(url,{method:"POST",body:"untrusted"}));assert.equal(r.status,401);assert.equal(parsed,0);});
 test("authorized bounded text profile upload still reaches the file adapter",async()=>{let parsed=0;const load=sourceLoader({"@/lib/server/provider-auth":{requireProviderUser:async()=>({userId:"a"})},"@/lib/interview-intelligence/file-ingestion":{ingestProfileFile:async(input)=>{parsed++;assert.equal(input.data.toString(),"Synthetic resume text");return{extractedText:"Synthetic resume text"};}}});const form=new FormData();form.set("file",new File(["Synthetic resume text"],"resume.txt",{type:"text/plain"}));const r=await load("@/app/api/ingest-profile/route").POST(new Request(url,{method:"POST",body:form}));assert.equal(r.status,200);assert.equal(parsed,1);});
+
+test("expired settlement credential rejects before reservation or provider dispatch",async()=>{
+ const token=(exp)=>'synthetic.'+Buffer.from(JSON.stringify({role:'service_role',exp})).toString('base64url')+'.synthetic';
+ let calls=0;
+ const load=sourceLoader({}, {process:{env:{PILOT_PROCESSING_SERVICE_KEY:token(1)}},fetch:async()=>{calls++;assert.fail('Expired settlement must not reach storage or provider');}});
+ const repository=load('@/lib/server/processing-repository').processingRepository;
+ await assert.rejects(repository.reserve({userId:'a',accessToken:'synthetic'},{operationId:'fixture',maxUnits:100,requestHash:'a'.repeat(64),kind:'transcription'},new AbortController().signal),{status:503,code:'processing_settlement_unavailable'});
+ assert.equal(calls,0);
+ let providerCalls=0;
+ const handler=load('@/lib/server/protected-transcription').createProtectedTranscriptionHandler({authorize:async()=>({userId:'a',accessToken:'synthetic'}),repository,transcribe:async()=>{providerCalls++;throw new Error('Provider must not be invoked');}});
+ const reply=await handler(audio());assert.equal(reply.status,503);assert.equal((await reply.json()).error.code,'processing_settlement_unavailable');assert.equal(providerCalls,0);assert.equal(calls,0);
+ const check=load('@/lib/server/processing-repository').assertSettlementCredential;
+ assert.doesNotThrow(()=>check(token(Math.floor(Date.now()/1000)+3600)));
+ for(const value of ['', 'not-a-jwt',token(1)])assert.throws(()=>check(value),{status:503});
+});

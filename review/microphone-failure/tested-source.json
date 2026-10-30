@@ -1,0 +1,44 @@
+{
+  "at": "2026-10-29T21:43:19.755472+00:00",
+  "base_sha": "96a8eec804eb5d1ca0163c26a6463d055cc6762e",
+  "working_patch_files": [
+    {
+      "path": "apps/cloud-nexus-pilot/components/ready-state-launch-panel.tsx",
+      "sha256": "848bb75bbaa0cb6a5c1fa14b21b9162c711cefc5a5b1fc87d7181d198939b17d"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/capture-recovery.ts",
+      "sha256": "6733b9ae8130d0a071fde7a4f627c50b5e4402cdcfea84131740d3790220bfde"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/streaming-transcript-service.ts",
+      "sha256": "167b0faea85b82d50880d7dc9825773ae9cf9d8faa55b74673c350f9746019c5"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/use-transcription-workflow.ts",
+      "sha256": "ee5db1e74fbf16e6426ce7077a08a19947d214e379bf351311c70dea125186c3"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/lib/server/processing-repository.ts",
+      "sha256": "761fcdea149185f81f963e4030dfc4f795f5e0654508ff618c1ec3269ddcfd5e"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/scripts/test-security-boundary.mjs",
+      "sha256": "d782cf638646cba3e9c1d9c62a297f1cb0d0d2b232fa1ebdbfd3c09d570bb959"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/tests/intelligence/capture-recovery.test.ts",
+      "sha256": "4ec30bdba307b9cb172b755d7361b3b3d19ec958d51583deed3e19aee0e5befd"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/tests/intelligence/streaming-transcript-client.test.ts",
+      "sha256": "f607183ea752e12c10c6703faf2fe0fce24f394c58f423aa2eef7a5e9910a600"
+    }
+  ],
+  "tests_run_before_local_commit": true,
+  "build_id": "SITacR8QmPMBR-XuXTP9C",
+  "note": "Checks ran on this working patch; receipts retain actual pre-commit HEAD. Generated next-env declaration restored to baseline.",
+  "implementation_sha": "043ceca9f5ce47d5f3e1775bf880e3bcee340182",
+  "committed_file_hashes_match_tested_patch": true,
+  "final_client_auth_status_loop_verified": true
+}

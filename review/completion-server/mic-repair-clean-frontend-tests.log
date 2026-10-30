@@ -1,0 +1,1366 @@
+
+> cloud-nexus-pilot@0.1.0 test
+> npm run test:realtime && npm run test:intelligence && npm run test:routes && npm run test:connectivity && npm run test:provider-routes && npm run test:transcription-errors && npm run test:report-persistence && npm run test:security-boundary
+
+
+> cloud-nexus-pilot@0.1.0 test:realtime
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/realtime/*.test.js
+
+TAP version 13
+# Subtest: auth_required triggers session.authenticate
+ok 1 - auth_required triggers session.authenticate
+  ---
+  duration_ms: 1.391084
+  type: 'test'
+  ...
+# Subtest: session.ready changes state to ready
+ok 2 - session.ready changes state to ready
+  ---
+  duration_ms: 0.958542
+  type: 'test'
+  ...
+# Subtest: token never appears in logs, URL, or non-auth state
+ok 3 - token never appears in logs, URL, or non-auth state
+  ---
+  duration_ms: 0.210333
+  type: 'test'
+  ...
+# Subtest: authentication failure closes without reconnect
+ok 4 - authentication failure closes without reconnect
+  ---
+  duration_ms: 0.157958
+  type: 'test'
+  ...
+# Subtest: 1008 does not reconnect
+ok 5 - 1008 does not reconnect
+  ---
+  duration_ms: 0.131167
+  type: 'test'
+  ...
+# Subtest: 1012 reconnects
+ok 6 - 1012 reconnects
+  ---
+  duration_ms: 0.10925
+  type: 'test'
+  ...
+# Subtest: reconnect obtains a fresh token
+ok 7 - reconnect obtains a fresh token
+  ---
+  duration_ms: 0.165375
+  type: 'test'
+  ...
+# Subtest: explicit disconnect prevents reconnect
+ok 8 - explicit disconnect prevents reconnect
+  ---
+  duration_ms: 0.073416
+  type: 'test'
+  ...
+# Subtest: token refresh sends session.reauthenticate
+ok 9 - token refresh sends session.reauthenticate
+  ---
+  duration_ms: 0.310208
+  type: 'test'
+  ...
+# Subtest: duplicate refresh is prevented
+ok 10 - duplicate refresh is prevented
+  ---
+  duration_ms: 0.356334
+  type: 'test'
+  ...
+# Subtest: auth_refreshed clears refresh-in-flight state
+ok 11 - auth_refreshed clears refresh-in-flight state
+  ---
+  duration_ms: 0.159042
+  type: 'test'
+  ...
+# Subtest: cleanup removes listeners and timers
+ok 12 - cleanup removes listeners and timers
+  ---
+  duration_ms: 0.072584
+  type: 'test'
+  ...
+# Subtest: Strict Mode-style setup and cleanup does not create duplicate live sockets
+ok 13 - Strict Mode-style setup and cleanup does not create duplicate live sockets
+  ---
+  duration_ms: 0.055041
+  type: 'test'
+  ...
+# Subtest: ping, session.end, and clean disconnect use protocol messages safely
+ok 14 - ping, session.end, and clean disconnect use protocol messages safely
+  ---
+  duration_ms: 0.072583
+  type: 'test'
+  ...
+# Subtest: runtime event acknowledgements parse and runtime events serialize without URL tokens
+ok 15 - runtime event acknowledgements parse and runtime events serialize without URL tokens
+  ---
+  duration_ms: 0.133333
+  type: 'test'
+  ...
+# Subtest: session.end prevents reconnect when the server close arrives first
+ok 16 - session.end prevents reconnect when the server close arrives first
+  ---
+  duration_ms: 0.082541
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT closes the active WebSocket
+ok 17 - SIGNED_OUT closes the active WebSocket
+  ---
+  duration_ms: 0.045125
+  type: 'test'
+  ...
+# Subtest: SIGNED_OUT prevents reconnect
+ok 18 - SIGNED_OUT prevents reconnect
+  ---
+  duration_ms: 0.039625
+  type: 'test'
+  ...
+# Subtest: a later normal session start can connect again after SIGNED_OUT
+ok 19 - a later normal session start can connect again after SIGNED_OUT
+  ---
+  duration_ms: 0.040625
+  type: 'test'
+  ...
+# Subtest: first live session start connects
+ok 20 - first live session start connects
+  ---
+  duration_ms: 0.033542
+  type: 'test'
+  ...
+# Subtest: endSession closes the active WebSocket
+ok 21 - endSession closes the active WebSocket
+  ---
+  duration_ms: 0.043459
+  type: 'test'
+  ...
+# Subtest: starting a second live session reconnects after session.end
+ok 22 - starting a second live session reconnects after session.end
+  ---
+  duration_ms: 0.043417
+  type: 'test'
+  ...
+# Subtest: only one live WebSocket exists when connect is called repeatedly
+ok 23 - only one live WebSocket exists when connect is called repeatedly
+  ---
+  duration_ms: 0.038583
+  type: 'test'
+  ...
+# Subtest: connect does nothing while connecting, authenticating, ready, or reconnecting
+ok 24 - connect does nothing while connecting, authenticating, ready, or reconnecting
+  ---
+  duration_ms: 0.053959
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.411417
+
+> cloud-nexus-pilot@0.1.0 test:intelligence
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/intelligence/*.test.js
+
+TAP version 13
+# Subtest: capture failures identify the browser boundary and do not expose arbitrary diagnostics
+ok 1 - capture failures identify the browser boundary and do not expose arbitrary diagnostics
+  ---
+  duration_ms: 0.638291
+  type: 'test'
+  ...
+# Subtest: 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 2 - 44100 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 17.404583
+  type: 'test'
+  ...
+# Subtest: 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+ok 3 - 48000 Hz capture preserves sample count and fractional phase over arbitrary callback boundaries
+  ---
+  duration_ms: 5.633583
+  type: 'test'
+  ...
+# Subtest: PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+ok 4 - PCM clamps clipping, normalizes nonfinite input, preserves silence and rejects upsampling
+  ---
+  duration_ms: 1.393375
+  type: 'test'
+  ...
+# Subtest: first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+ok 5 - first and later WAV chunks have complete headers, correct lengths and explicit stereo framing
+  ---
+  duration_ms: 1.738583
+  type: 'test'
+  ...
+# Subtest: pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+ok 6 - pipeline reports actual RMS, pauses without frames, flushes final WAV once and tears down
+  ---
+  duration_ms: 1.157792
+  type: 'test'
+  ...
+# Subtest: throwing final consumer and failed startup cannot leave audio nodes or contexts running
+ok 7 - throwing final consumer and failed startup cannot leave audio nodes or contexts running
+  ---
+  duration_ms: 0.550875
+  type: 'test'
+  ...
+# Subtest: video-only sharing releases acquired tracks and never silently acquires a microphone
+ok 8 - video-only sharing releases acquired tracks and never silently acquires a microphone
+  ---
+  duration_ms: 0.344709
+  type: 'test'
+  ...
+# Subtest: transcript cleanup preserves short answers, negations and technical LIKE rather than guessing filler
+ok 9 - transcript cleanup preserves short answers, negations and technical LIKE rather than guessing filler
+  ---
+  duration_ms: 0.180958
+  type: 'test'
+  ...
+# Subtest: cancelling suspended audio startup closes its context rather than hanging past Stop
+ok 10 - cancelling suspended audio startup closes its context rather than hanging past Stop
+  ---
+  duration_ms: 0.333167
+  type: 'test'
+  ...
+# Subtest: late permission grant after teardown closes fake tracks instead of adopting them
+ok 11 - late permission grant after teardown closes fake tracks instead of adopting them
+  ---
+  duration_ms: 0.613041
+  type: 'test'
+  ...
+# Subtest: startup failure closes the acquired fake stream before a fresh start
+ok 12 - startup failure closes the acquired fake stream before a fresh start
+  ---
+  duration_ms: 0.068041
+  type: 'test'
+  ...
+# Subtest: stop during async startup keeps a lock until old startup settles
+ok 13 - stop during async startup keeps a lock until old startup settles
+  ---
+  duration_ms: 0.07525
+  type: 'test'
+  ...
+# Subtest: retry exhaustion is bounded; auth/quota/storage failures require explicit recovery
+ok 14 - retry exhaustion is bounded; auth/quota/storage failures require explicit recovery
+  ---
+  duration_ms: 1.193041
+  type: 'test'
+  ...
+# Subtest: stop clears timers and stale timer callbacks cannot revive stopped or restarted capture
+ok 15 - stop clears timers and stale timer callbacks cannot revive stopped or restarted capture
+  ---
+  duration_ms: 0.13675
+  type: 'test'
+  ...
+# Subtest: terminal capture never advertises listening/retrying or offers Pause; restart remains explicit
+ok 16 - terminal capture never advertises listening/retrying or offers Pause; restart remains explicit
+  ---
+  duration_ms: 0.161959
+  type: 'test'
+  ...
+# Subtest: failed authenticated cloud deletes reject without writing unrelated local storage
+ok 17 - failed authenticated cloud deletes reject without writing unrelated local storage
+  ---
+  duration_ms: 4.227208
+  type: 'test'
+  ...
+# Subtest: ingests a plain text resume and extracts structured profile data
+ok 18 - ingests a plain text resume and extracts structured profile data
+  ---
+  duration_ms: 3.532167
+  type: 'test'
+  ...
+# Subtest: ingests markdown job descriptions and extracts job profile data
+ok 19 - ingests markdown job descriptions and extracts job profile data
+  ---
+  duration_ms: 0.647
+  type: 'test'
+  ...
+# Subtest: rejects oversized profile uploads before parsing
+ok 20 - rejects oversized profile uploads before parsing
+  ---
+  duration_ms: 0.266
+  type: 'test'
+  ...
+# Subtest: rejects unsupported profile file types
+ok 21 - rejects unsupported profile file types
+  ---
+  duration_ms: 0.077542
+  type: 'test'
+  ...
+# Subtest: guidance association is stable but changes with the question or transcript revision
+ok 22 - guidance association is stable but changes with the question or transcript revision
+  ---
+  duration_ms: 10.081083
+  type: 'test'
+  ...
+# Subtest: typed guidance creates an acknowledged owned session without audio and sends that association to the provider route
+ok 23 - typed guidance creates an acknowledged owned session without audio and sends that association to the provider route
+  ---
+  duration_ms: 34.894584
+  type: 'test'
+  ...
+# Subtest: an owned active live session is reused; an ended typed session creates a fresh owned session
+ok 24 - an owned active live session is reused; an ended typed session creates a fresh owned session
+  ---
+  duration_ms: 0.812292
+  type: 'test'
+  ...
+# Subtest: unauthenticated or unacknowledged owned-session creation cannot reach guidance
+ok 25 - unauthenticated or unacknowledged owned-session creation cannot reach guidance
+  ---
+  duration_ms: 0.614791
+  type: 'test'
+  ...
+# Subtest: cancellation after session preparation prevents the guidance request
+ok 26 - cancellation after session preparation prevents the guidance request
+  ---
+  duration_ms: 2.330459
+  type: 'test'
+  ...
+# Subtest: recovery displays only committed guidance with its saved question and revision association
+ok 27 - recovery displays only committed guidance with its saved question and revision association
+  ---
+  duration_ms: 0.3535
+  type: 'test'
+  ...
+# Subtest: completed guidance handles split UTF-8 and CRLF, and cancels/releases its reader
+ok 28 - completed guidance handles split UTF-8 and CRLF, and cancels/releases its reader
+  ---
+  duration_ms: 1.743417
+  type: 'test'
+  ...
+# Subtest: truncated, malformed, oversized or cancelled guidance is not presented as a completed answer
+ok 29 - truncated, malformed, oversized or cancelled guidance is not presented as a completed answer
+  ---
+  duration_ms: 1.63675
+  type: 'test'
+  ...
+# Subtest: interview persistence falls back to local session storage without Supabase credentials
+ok 30 - interview persistence falls back to local session storage without Supabase credentials
+  ---
+  duration_ms: 1.583834
+  type: 'test'
+  ...
+# Subtest: local interview persistence stores transcript, question, guidance, and end state
+ok 31 - local interview persistence stores transcript, question, guidance, and end state
+  ---
+  duration_ms: 0.584833
+  type: 'test'
+  ...
+# Subtest: selects OpenAI only when an OpenAI key is available
+ok 32 - selects OpenAI only when an OpenAI key is available
+  ---
+  duration_ms: 7.268834
+  type: 'test'
+  ...
+# Subtest: OpenAI provider streams chat-completion delta content
+ok 33 - OpenAI provider streams chat-completion delta content
+  ---
+  duration_ms: 29.354833
+  type: 'test'
+  ...
+# Subtest: provider stream requires completion and releases its reader
+ok 34 - provider stream requires completion and releases its reader
+  ---
+  duration_ms: 0.780333
+  type: 'test'
+  ...
+# Subtest: provider stream handles split UTF8 and CRLF frames with explicit completion
+ok 35 - provider stream handles split UTF8 and CRLF frames with explicit completion
+  ---
+  duration_ms: 0.683
+  type: 'test'
+  ...
+# Subtest: saved empty Prompt Vault stays empty across reads and subsequent writes
+ok 36 - saved empty Prompt Vault stays empty across reads and subsequent writes
+  ---
+  duration_ms: 1.239375
+  type: 'test'
+  ...
+# Subtest: missing and malformed Prompt Vault storage retain prior starter fallback
+ok 37 - missing and malformed Prompt Vault storage retain prior starter fallback
+  ---
+  duration_ms: 0.266
+  type: 'test'
+  ...
+# Subtest: auth return paths cannot escape origin through URL normalization
+ok 38 - auth return paths cannot escape origin through URL normalization
+  ---
+  duration_ms: 0.270542
+  type: 'test'
+  ...
+# Subtest: local fallback eligibility preserves billing authentication and route boundaries
+ok 39 - local fallback eligibility preserves billing authentication and route boundaries
+  ---
+  duration_ms: 0.117666
+  type: 'test'
+  ...
+# Subtest: mock interview asks role-specific first question using shared profile context
+ok 40 - mock interview asks role-specific first question using shared profile context
+  ---
+  duration_ms: 5.39375
+  type: 'test'
+  ...
+# Subtest: mock interview scores candidate answers and asks follow-up prompts
+ok 41 - mock interview scores candidate answers and asks follow-up prompts
+  ---
+  duration_ms: 2.154208
+  type: 'test'
+  ...
+# Subtest: mock interview can finish with a report
+ok 42 - mock interview can finish with a report
+  ---
+  duration_ms: 2.369292
+  type: 'test'
+  ...
+# Subtest: natural speaking policy rejects routine AI-style openings
+ok 43 - natural speaking policy rejects routine AI-style openings
+  ---
+  duration_ms: 0.859625
+  type: 'test'
+  ...
+# Subtest: technical prompt keeps speak-now concise while preserving deeper detail
+ok 44 - technical prompt keeps speak-now concise while preserving deeper detail
+  ---
+  duration_ms: 0.174875
+  type: 'test'
+  ...
+# Subtest: candidate evidence policy allows personalization without invented experience
+ok 45 - candidate evidence policy allows personalization without invented experience
+  ---
+  duration_ms: 0.13975
+  type: 'test'
+  ...
+# Subtest: debugging prompt starts with actionable diagnosis
+ok 46 - debugging prompt starts with actionable diagnosis
+  ---
+  duration_ms: 0.13525
+  type: 'test'
+  ...
+# Subtest: behavioral prompt stays natural and does not expose template labels
+ok 47 - behavioral prompt stays natural and does not expose template labels
+  ---
+  duration_ms: 0.097333
+  type: 'test'
+  ...
+# Subtest: system design prompt separates architecture direction from components
+ok 48 - system design prompt separates architecture direction from components
+  ---
+  duration_ms: 0.083875
+  type: 'test'
+  ...
+# Subtest: user prompt carries context without asking to repeat the question
+ok 49 - user prompt carries context without asking to repeat the question
+  ---
+  duration_ms: 0.141042
+  type: 'test'
+  ...
+# Subtest: provider auth fails closed when authentication is unconfigured
+ok 50 - provider auth fails closed when authentication is unconfigured
+  ---
+  duration_ms: 20.566208
+  type: 'test'
+  ...
+# Subtest: provider auth rejects absent and invalid sessions
+ok 51 - provider auth rejects absent and invalid sessions
+  ---
+  duration_ms: 0.196834
+  type: 'test'
+  ...
+# Subtest: provider auth rejects service roles, anonymous accounts and role-less identities
+ok 52 - provider auth rejects service roles, anonymous accounts and role-less identities
+  ---
+  duration_ms: 0.179875
+  type: 'test'
+  ...
+# Subtest: provider auth returns the verified ordinary user's ID
+ok 53 - provider auth returns the verified ordinary user's ID
+  ---
+  duration_ms: 0.610834
+  type: 'test'
+  ...
+# Subtest: authentication outages do not authorize provider access or leak errors
+ok 54 - authentication outages do not authorize provider access or leak errors
+  ---
+  duration_ms: 0.629666
+  type: 'test'
+  ...
+# Subtest: detects implicit technical prompts and classifies cloud debugging context
+ok 55 - detects implicit technical prompts and classifies cloud debugging context
+  ---
+  duration_ms: 2.058625
+  type: 'test'
+  ...
+# Subtest: suppresses previously seen questions by normalized dedupe key
+ok 56 - suppresses previously seen questions by normalized dedupe key
+  ---
+  duration_ms: 0.13125
+  type: 'test'
+  ...
+# Subtest: extracts resume and job profiles, then packs only relevant evidence
+ok 57 - extracts resume and job profiles, then packs only relevant evidence
+  ---
+  duration_ms: 2.364625
+  type: 'test'
+  ...
+# Subtest: classifies screen text from terminal and extracts operational errors
+ok 58 - classifies screen text from terminal and extracts operational errors
+  ---
+  duration_ms: 0.39225
+  type: 'test'
+  ...
+# Subtest: diagnoses terminal debugging artifacts with safe next steps
+ok 59 - diagnoses terminal debugging artifacts with safe next steps
+  ---
+  duration_ms: 0.373209
+  type: 'test'
+  ...
+# Subtest: generates a post-interview report from transcript text
+ok 60 - generates a post-interview report from transcript text
+  ---
+  duration_ms: 0.807542
+  type: 'test'
+  ...
+# [transcription][stream-session] event-publish {
+#   sessionId: '52540b06-9b0a-4c77-890e-caaa310743c9',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '52540b06-9b0a-4c77-890e-caaa310743c9',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '16d8ef1b-95fe-4b66-91c6-851239341c15',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# [transcription][stream-session] event-publish {
+#   sessionId: '16d8ef1b-95fe-4b66-91c6-851239341c15',
+#   type: 'status',
+#   chunkIndex: undefined,
+#   listeners: 0
+# }
+# Subtest: a streaming session cannot be read, subscribed to or stopped by another account
+ok 61 - a streaming session cannot be read, subscribed to or stopped by another account
+  ---
+  duration_ms: 3.410833
+  type: 'test'
+  ...
+# Subtest: cross-account chunk ingest is rejected before provider invocation
+ok 62 - cross-account chunk ingest is rejected before provider invocation
+  ---
+  duration_ms: 0.373084
+  type: 'test'
+  ...
+# Subtest: empty owners cannot create or access streaming sessions
+ok 63 - empty owners cannot create or access streaming sessions
+  ---
+  duration_ms: 0.165292
+  type: 'test'
+  ...
+# Subtest: transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+ok 64 - transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+  ---
+  duration_ms: 23.754208
+  type: 'test'
+  ...
+# Subtest: durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+ok 65 - durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+  ---
+  duration_ms: 0.747625
+  type: 'test'
+  ...
+# Subtest: chunk deadline aborts its upload; repeated stop closes resources without new uploads
+ok 66 - chunk deadline aborts its upload; repeated stop closes resources without new uploads
+  ---
+  duration_ms: 22.554875
+  type: 'test'
+  ...
+# Subtest: pre-open event failure rejects immediately and stops the orphaned owned session
+ok 67 - pre-open event failure rejects immediately and stops the orphaned owned session
+  ---
+  duration_ms: 0.414875
+  type: 'test'
+  ...
+# Subtest: recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+ok 68 - recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+  ---
+  duration_ms: 2.074375
+  type: 'test'
+  ...
+# Subtest: cross-account recovery/deletion denial never falls back to another account's local record
+ok 69 - cross-account recovery/deletion denial never falls back to another account's local record
+  ---
+  duration_ms: 0.268083
+  type: 'test'
+  ...
+# Subtest: upload queue bounds concurrent count and individual bytes, then stop aborts all pending work
+ok 70 - upload queue bounds concurrent count and individual bytes, then stop aborts all pending work
+  ---
+  duration_ms: 1.0595
+  type: 'test'
+  ...
+# Subtest: account session discovery works without a remembered browser cursor and bounds metadata to recent100
+ok 71 - account session discovery works without a remembered browser cursor and bounds metadata to recent100
+  ---
+  duration_ms: 0.307667
+  type: 'test'
+  ...
+# Subtest: denied account session discovery returns no browser-local substitute
+ok 72 - denied account session discovery returns no browser-local substitute
+  ---
+  duration_ms: 0.300708
+  type: 'test'
+  ...
+# Subtest: malformed, oversized and over-count session lists are rejected instead of becoming selectable IDs
+ok 73 - malformed, oversized and over-count session lists are rejected instead of becoming selectable IDs
+  ---
+  duration_ms: 0.588958
+  type: 'test'
+  ...
+# Subtest: late durable HTTP response after Stop cannot acknowledge save or deliver text
+ok 74 - late durable HTTP response after Stop cannot acknowledge save or deliver text
+  ---
+  duration_ms: 1.86475
+  type: 'test'
+  ...
+# Subtest: HTTP authentication/storage errors preserve status for terminal recovery without transport reconnect
+ok 75 - HTTP authentication/storage errors preserve status for terminal recovery without transport reconnect
+  ---
+  duration_ms: 0.384917
+  type: 'test'
+  ...
+1..75
+# tests 75
+# suites 0
+# pass 75
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 238.413083
+
+> cloud-nexus-pilot@0.1.0 test:routes
+> tsc -p tsconfig.test.json && node --test dist/realtime-tests/tests/routes/*.test.js
+
+TAP version 13
+# Subtest: rejects non-object or malformed JSON: "null"
+ok 1 - rejects non-object or malformed JSON: "null"
+  ---
+  duration_ms: 2.816625
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "[]"
+ok 2 - rejects non-object or malformed JSON: "[]"
+  ---
+  duration_ms: 0.24525
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "\\"text\\""
+ok 3 - rejects non-object or malformed JSON: "\\"text\\""
+  ---
+  duration_ms: 0.425416
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "42"
+ok 4 - rejects non-object or malformed JSON: "42"
+  ---
+  duration_ms: 0.243208
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "true"
+ok 5 - rejects non-object or malformed JSON: "true"
+  ---
+  duration_ms: 1.008209
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: "{broken"
+ok 6 - rejects non-object or malformed JSON: "{broken"
+  ---
+  duration_ms: 0.419
+  type: 'test'
+  ...
+# Subtest: rejects non-object or malformed JSON: ""
+ok 7 - rejects non-object or malformed JSON: ""
+  ---
+  duration_ms: 0.225167
+  type: 'test'
+  ...
+# Subtest: accepts a synthetic interview object
+ok 8 - accepts a synthetic interview object
+  ---
+  duration_ms: 3.348833
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 129.696583
+
+> cloud-nexus-pilot@0.1.0 test:connectivity
+> node --test scripts/test-supabase-connectivity.mjs
+
+TAP version 13
+# Subtest: missing or invalid configuration does not issue a request
+ok 1 - missing or invalid configuration does not issue a request
+  ---
+  duration_ms: 0.705041
+  type: 'test'
+  ...
+# Subtest: health probe uses only a credential-free GET and preserves HTTP success
+ok 2 - health probe uses only a credential-free GET and preserves HTTP success
+  ---
+  duration_ms: 16.143625
+  type: 'test'
+  ...
+# Subtest: HTTP 401 remains an HTTP failure, never a DNS claim
+ok 3 - HTTP 401 remains an HTTP failure, never a DNS claim
+  ---
+  duration_ms: 0.126833
+  type: 'test'
+  ...
+# Subtest: HTTP 503 remains an HTTP failure, never a DNS claim
+ok 4 - HTTP 503 remains an HTTP failure, never a DNS claim
+  ---
+  duration_ms: 0.091167
+  type: 'test'
+  ...
+# Subtest: generic failure TypeError: Failed to fetch keeps the cause unknown
+ok 5 - generic failure TypeError: Failed to fetch keeps the cause unknown
+  ---
+  duration_ms: 0.228916
+  type: 'test'
+  ...
+# Subtest: generic failure TypeError: fetch failed keeps the cause unknown
+ok 6 - generic failure TypeError: fetch failed keeps the cause unknown
+  ---
+  duration_ms: 0.079084
+  type: 'test'
+  ...
+# Subtest: generic failure opaque failure keeps the cause unknown
+ok 7 - generic failure opaque failure keeps the cause unknown
+  ---
+  duration_ms: 0.130958
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: lookup failed identifies only lookup failure
+ok 8 - specific DNS evidence Error: lookup failed identifies only lookup failure
+  ---
+  duration_ms: 0.0665
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence TypeError: fetch failed identifies only lookup failure
+ok 9 - specific DNS evidence TypeError: fetch failed identifies only lookup failure
+  ---
+  duration_ms: 0.237
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: net::ERR_NAME_NOT_RESOLVED identifies only lookup failure
+ok 10 - specific DNS evidence Error: net::ERR_NAME_NOT_RESOLVED identifies only lookup failure
+  ---
+  duration_ms: 0.310583
+  type: 'test'
+  ...
+# Subtest: specific DNS evidence Error: temporary lookup failure identifies only lookup failure
+ok 11 - specific DNS evidence Error: temporary lookup failure identifies only lookup failure
+  ---
+  duration_ms: 0.110417
+  type: 'test'
+  ...
+# Subtest: TimeoutError is reported separately from DNS
+ok 12 - TimeoutError is reported separately from DNS
+  ---
+  duration_ms: 0.065167
+  type: 'test'
+  ...
+# Subtest: AbortError is reported separately from DNS
+ok 13 - AbortError is reported separately from DNS
+  ---
+  duration_ms: 0.037666
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 297.531334
+
+> cloud-nexus-pilot@0.1.0 test:provider-routes
+> node --test scripts/test-provider-routes.mjs
+
+TAP version 13
+# Subtest: interview-context rejects malformed and non-object bodies without a provider call
+ok 1 - interview-context rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 100.384916
+  type: 'test'
+  ...
+# Subtest: interview-report rejects malformed and non-object bodies without a provider call
+ok 2 - interview-report rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 25.190625
+  type: 'test'
+  ...
+# Subtest: debug-diagnosis rejects malformed and non-object bodies without a provider call
+ok 3 - debug-diagnosis rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 9.942541
+  type: 'test'
+  ...
+# Subtest: generate-guidance rejects malformed and non-object bodies without a provider call
+ok 4 - generate-guidance rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 56.431834
+  type: 'test'
+  ...
+# Subtest: mock-interview rejects malformed and non-object bodies without a provider call
+ok 5 - mock-interview rejects malformed and non-object bodies without a provider call
+  ---
+  duration_ms: 16.490083
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 401
+ok 6 - provider-backed routes stop before provider or session work on auth 401
+  ---
+  duration_ms: 45.987083
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 403
+ok 7 - provider-backed routes stop before provider or session work on auth 403
+  ---
+  duration_ms: 37.307541
+  type: 'test'
+  ...
+# Subtest: provider-backed routes stop before provider or session work on auth 503
+ok 8 - provider-backed routes stop before provider or session work on auth 503
+  ---
+  duration_ms: 31.041125
+  type: 'test'
+  ...
+# Subtest: guidance without a configured provider emits error and done, never a final answer
+ok 9 - guidance without a configured provider emits error and done, never a final answer
+  ---
+  duration_ms: 24.21925
+  type: 'test'
+  ...
+# Subtest: guidance provider exception finishes with an error and done
+ok 10 - guidance provider exception finishes with an error and done
+  ---
+  duration_ms: 21.876333
+  type: 'test'
+  ...
+# Subtest: guidance malformed model output finishes with an error and done
+ok 11 - guidance malformed model output finishes with an error and done
+  ---
+  duration_ms: 18.814166
+  type: 'test'
+  ...
+# Subtest: verified ordinary user guidance publishes validated final and done contracts
+ok 12 - verified ordinary user guidance publishes validated final and done contracts
+  ---
+  duration_ms: 16.503667
+  type: 'test'
+  ...
+# Subtest: stream creation binds the verified user and ignores a caller-supplied owner
+ok 13 - stream creation binds the verified user and ignores a caller-supplied owner
+  ---
+  duration_ms: 4.52025
+  type: 'test'
+  ...
+# Subtest: stream events passes verified ownership and denies foreign sessions
+ok 14 - stream events passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 5.306166
+  type: 'test'
+  ...
+# Subtest: stream stop passes verified ownership and denies foreign sessions
+ok 15 - stream stop passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 4.141959
+  type: 'test'
+  ...
+# Subtest: stream chunk passes verified ownership and denies foreign sessions
+ok 16 - stream chunk passes verified ownership and denies foreign sessions
+  ---
+  duration_ms: 16.418583
+  type: 'test'
+  ...
+# Subtest: transcription hides unexpected provider details
+ok 17 - transcription hides unexpected provider details
+  ---
+  duration_ms: 6.707208
+  type: 'test'
+  ...
+# Subtest: valid deterministic tools keep their response contracts
+ok 18 - valid deterministic tools keep their response contracts
+  ---
+  duration_ms: 18.043
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 704.400542
+
+> cloud-nexus-pilot@0.1.0 test:transcription-errors
+> node --test scripts/test-transcription-errors.mjs
+
+TAP version 13
+# Subtest: deepgram upstream string failure is absent from HTTP, SSE and logs
+ok 1 - deepgram upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 856.966083
+  type: 'test'
+  ...
+# Subtest: deepgram upstream object failure is absent from HTTP, SSE and logs
+ok 2 - deepgram upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 811.322125
+  type: 'test'
+  ...
+# Subtest: openai upstream string failure is absent from HTTP, SSE and logs
+ok 3 - openai upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 806.273125
+  type: 'test'
+  ...
+# Subtest: openai upstream object failure is absent from HTTP, SSE and logs
+ok 4 - openai upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 798.869916
+  type: 'test'
+  ...
+# Subtest: unknown transport exception fields cannot become public errors or logs
+ok 5 - unknown transport exception fields cannot become public errors or logs
+  ---
+  duration_ms: 800.0125
+  type: 'test'
+  ...
+# Subtest: known provider error codes never authorize upstream message/detail text
+ok 6 - known provider error codes never authorize upstream message/detail text
+  ---
+  duration_ms: 2378.814791
+  type: 'test'
+  ...
+# Subtest: provider HTTP failures retain their existing file-route status
+ok 7 - provider HTTP failures retain their existing file-route status
+  ---
+  duration_ms: 214.021791
+  type: 'test'
+  ...
+# Subtest: exported provider exceptions sanitize caller-supplied diagnostic fields
+ok 8 - exported provider exceptions sanitize caller-supplied diagnostic fields
+  ---
+  duration_ms: 12.9545
+  type: 'test'
+  ...
+# Subtest: SSE boundary closes safely on raw repository errors without exposing payloads
+ok 9 - SSE boundary closes safely on raw repository errors without exposing payloads
+  ---
+  duration_ms: 4.264083
+  type: 'test'
+  ...
+# Subtest: chunk HTTP boundary sanitizes raw repository errors and error logs
+ok 10 - chunk HTTP boundary sanitizes raw repository errors and error logs
+  ---
+  duration_ms: 12.955041
+  type: 'test'
+  ...
+# Subtest: unknown and hostile error fields fail closed without being stringified
+ok 11 - unknown and hostile error fields fail closed without being stringified
+  ---
+  duration_ms: 3.182167
+  type: 'test'
+  ...
+# Subtest: missing provider and empty audio retain 503/400 behavior without provider work
+ok 12 - missing provider and empty audio retain 503/400 behavior without provider work
+  ---
+  duration_ms: 2312.903958
+  type: 'test'
+  ...
+# Subtest: foreign stream rejection remains 404 before provider work
+ok 13 - foreign stream rejection remains 404 before provider work
+  ---
+  duration_ms: 38.559
+  type: 'test'
+  ...
+# Subtest: deepgram successful HTTP and streamed transcript contracts are preserved
+ok 14 - deepgram successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 767.249084
+  type: 'test'
+  ...
+# Subtest: openai successful HTTP and streamed transcript contracts are preserved
+ok 15 - openai successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 786.153125
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10865.844917
+
+> cloud-nexus-pilot@0.1.0 test:report-persistence
+> node --test scripts/test-interview-report-persistence.mjs
+
+TAP version 13
+# Subtest: same-owner auth refocus preserves pending retry; actual switch/sign-out invalidates it
+ok 1 - same-owner auth refocus preserves pending retry; actual switch/sign-out invalidates it
+  ---
+  duration_ms: 1.139458
+  type: 'test'
+  ...
+# Subtest: report input picker excludes foreign, guest-to-account, unknown-owner and malformed transcripts
+ok 2 - report input picker excludes foreign, guest-to-account, unknown-owner and malformed transcripts
+  ---
+  duration_ms: 0.154041
+  type: 'test'
+  ...
+# Subtest: guest report survives repository reload and retry does not duplicate or overwrite
+ok 3 - guest report survives repository reload and retry does not duplicate or overwrite
+  ---
+  duration_ms: 2.694292
+  type: 'test'
+  ...
+# Subtest: cloud report reloads from account rows, never from guest storage
+ok 4 - cloud report reloads from account rows, never from guest storage
+  ---
+  duration_ms: 4.721292
+  type: 'test'
+  ...
+# Subtest: account B cannot list account A or guest reports; sign-out reveals guest scope only
+ok 5 - account B cannot list account A or guest reports; sign-out reveals guest scope only
+  ---
+  duration_ms: 0.7715
+  type: 'test'
+  ...
+# Subtest: pending save refuses account switch before any database or browser write
+ok 6 - pending save refuses account switch before any database or browser write
+  ---
+  duration_ms: 0.388708
+  type: 'test'
+  ...
+# Subtest: account switch between session and report write stops the report write
+ok 7 - account switch between session and report write stops the report write
+  ---
+  duration_ms: 0.60325
+  type: 'test'
+  ...
+# Subtest: late reads after account switch are rejected rather than returned to another user
+ok 8 - late reads after account switch are rejected rather than returned to another user
+  ---
+  duration_ms: 0.457917
+  type: 'test'
+  ...
+# Subtest: returned foreign row is rejected even if a client ignores the owner query filter
+ok 9 - returned foreign row is rejected even if a client ignores the owner query filter
+  ---
+  duration_ms: 0.745458
+  type: 'test'
+  ...
+# Subtest: lost report acknowledgement retries the same IDs without duplicate session/report or overwrite
+ok 10 - lost report acknowledgement retries the same IDs without duplicate session/report or overwrite
+  ---
+  duration_ms: 0.91875
+  type: 'test'
+  ...
+# Subtest: session failure does not write a report or fall back to browser success
+ok 11 - session failure does not write a report or fall back to browser success
+  ---
+  duration_ms: 0.331916
+  type: 'test'
+  ...
+# Subtest: report write rejection remains a failure and retry reuses the owned session
+ok 12 - report write rejection remains a failure and retry reuses the owned session
+  ---
+  duration_ms: 0.450042
+  type: 'test'
+  ...
+# Subtest: identical client IDs in separate accounts produce separate owned report and session IDs
+ok 13 - identical client IDs in separate accounts produce separate owned report and session IDs
+  ---
+  duration_ms: 0.589042
+  type: 'test'
+  ...
+# Subtest: unconfirmed read after cloud write is retryable and never duplicates the committed record
+ok 14 - unconfirmed read after cloud write is retryable and never duplicates the committed record
+  ---
+  duration_ms: 0.342667
+  type: 'test'
+  ...
+# Subtest: auth outages and thrown SDK errors do not read guest reports or mutate storage
+ok 15 - auth outages and thrown SDK errors do not read guest reports or mutate storage
+  ---
+  duration_ms: 0.164709
+  type: 'test'
+  ...
+# Subtest: expected missing session supports guest mode while storage errors stay explicit
+ok 16 - expected missing session supports guest mode while storage errors stay explicit
+  ---
+  duration_ms: 0.1465
+  type: 'test'
+  ...
+# Subtest: corrupt guest storage and malformed report fail without replacing existing data
+ok 17 - corrupt guest storage and malformed report fail without replacing existing data
+  ---
+  duration_ms: 0.105458
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 315.655333
+
+> cloud-nexus-pilot@0.1.0 test:security-boundary
+> node --test scripts/test-security-boundary.mjs
+
+TAP version 13
+# Subtest: unauthenticated transcription rejects before reading or provider work
+ok 1 - unauthenticated transcription rejects before reading or provider work
+  ---
+  duration_ms: 76.976458
+  type: 'test'
+  ...
+# Subtest: foreign user cannot chunk an owned session
+ok 2 - foreign user cannot chunk an owned session
+  ---
+  duration_ms: 26.775125
+  type: 'test'
+  ...
+# Subtest: foreign user cannot stop an owned session
+ok 3 - foreign user cannot stop an owned session
+  ---
+  duration_ms: 10.978125
+  type: 'test'
+  ...
+# Subtest: foreign user cannot events an owned session
+ok 4 - foreign user cannot events an owned session
+  ---
+  duration_ms: 8.508292
+  type: 'test'
+  ...
+# Subtest: foreign user cannot GET saved records/export
+ok 5 - foreign user cannot GET saved records/export
+  ---
+  duration_ms: 8.693916
+  type: 'test'
+  ...
+# Subtest: foreign user cannot DELETE saved records/export
+ok 6 - foreign user cannot DELETE saved records/export
+  ---
+  duration_ms: 6.6475
+  type: 'test'
+  ...
+# Subtest: oversize without Content-Length stops stream consumption and never invokes provider
+ok 7 - oversize without Content-Length stops stream consumption and never invokes provider
+  ---
+  duration_ms: 15.9175
+  type: 'test'
+  ...
+# Subtest: misleading Content-Length cannot bypass measured-byte bound
+ok 8 - misleading Content-Length cannot bypass measured-byte bound
+  ---
+  duration_ms: 11.181042
+  type: 'test'
+  ...
+# Subtest: malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+ok 9 - malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+  ---
+  duration_ms: 39.458625
+  type: 'test'
+  ...
+# Subtest: exhausted quota rejects valid audio with no provider work
+ok 10 - exhausted quota rejects valid audio with no provider work
+  ---
+  duration_ms: 9.178125
+  type: 'test'
+  ...
+# Subtest: authorized valid audio reaches provider and commits once; retry replays saved result
+ok 11 - authorized valid audio reaches provider and commits once; retry replays saved result
+  ---
+  duration_ms: 12.587917
+  type: 'test'
+  ...
+# Subtest: chunk retry is owner/idempotency-bound and changed bytes conflict
+ok 12 - chunk retry is owner/idempotency-bound and changed bytes conflict
+  ---
+  duration_ms: 9.365542
+  type: 'test'
+  ...
+# Subtest: parallel retry cannot start a second provider call
+ok 13 - parallel retry cannot start a second provider call
+  ---
+  duration_ms: 12.166833
+  type: 'test'
+  ...
+# Subtest: interrupted body is cancelled with zero provider invocation
+ok 14 - interrupted body is cancelled with zero provider invocation
+  ---
+  duration_ms: 19.088667
+  type: 'test'
+  ...
+# Subtest: provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+ok 15 - provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+  ---
+  duration_ms: 8.577292
+  type: 'test'
+  ...
+# Subtest: provider exception details never escape the boundary
+ok 16 - provider exception details never escape the boundary
+  ---
+  duration_ms: 7.694834
+  type: 'test'
+  ...
+# Subtest: stopped session cannot restart processing and stop is idempotent
+ok 17 - stopped session cannot restart processing and stop is idempotent
+  ---
+  duration_ms: 13.099458
+  type: 'test'
+  ...
+# Subtest: JSON reader bounds actual bytes and rejects non-object/malformed content
+ok 18 - JSON reader bounds actual bytes and rejects non-object/malformed content
+  ---
+  duration_ms: 3.548375
+  type: 'test'
+  ...
+# Subtest: guidance quota denial invokes no model, permitted path persists validated final once
+ok 19 - guidance quota denial invokes no model, permitted path persists validated final once
+  ---
+  duration_ms: 47.107208
+  type: 'test'
+  ...
+# Subtest: guidance malformed or oversized body causes zero model invocations
+ok 20 - guidance malformed or oversized body causes zero model invocations
+  ---
+  duration_ms: 21.907208
+  type: 'test'
+  ...
+# Subtest: server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+ok 21 - server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+  ---
+  duration_ms: 0.810167
+  type: 'test'
+  ...
+# Subtest: spoofed or inconsistent WAV containers never invoke the provider
+ok 22 - spoofed or inconsistent WAV containers never invoke the provider
+  ---
+  duration_ms: 63.194667
+  type: 'test'
+  ...
+# Subtest: invalid provider shape is not saved as a final transcript
+ok 23 - invalid provider shape is not saved as a final transcript
+  ---
+  duration_ms: 8.699625
+  type: 'test'
+  ...
+# Subtest: leading-zero chunk-index aliases replay the same saved operation
+ok 24 - leading-zero chunk-index aliases replay the same saved operation
+  ---
+  duration_ms: 7.64725
+  type: 'test'
+  ...
+# Subtest: durable repository false deletion cannot be acknowledged as deleted
+ok 25 - durable repository false deletion cannot be acknowledged as deleted
+  ---
+  duration_ms: 11.487667
+  type: 'test'
+  ...
+# Subtest: identity verification is interrupted without accepting a stale cookie principal
+ok 26 - identity verification is interrupted without accepting a stale cookie principal
+  ---
+  duration_ms: 16.913916
+  type: 'test'
+  ...
+# [transcription][upload] verification-start { fileName: 'reference.txt', contentType: 'text/plain', size: 20 }
+# [transcription][upload] local-text-ingest-success { fileName: 'reference.txt', contentType: 'text/plain', chars: 20 }
+# Subtest: per-runtime ingress bounds concurrent buffers before reading another owned request
+ok 27 - per-runtime ingress bounds concurrent buffers before reading another owned request
+  ---
+  duration_ms: 13.861292
+  type: 'test'
+  ...
+# Subtest: origin verification uses configured public origin rather than internal Next/proxy host
+ok 28 - origin verification uses configured public origin rather than internal Next/proxy host
+  ---
+  duration_ms: 3.120417
+  type: 'test'
+  ...
+# Subtest: oversized file input is rejected before browser reads or provider fetches
+ok 29 - oversized file input is rejected before browser reads or provider fetches
+  ---
+  duration_ms: 4.322875
+  type: 'test'
+  ...
+# Subtest: account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+ok 30 - account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+  ---
+  duration_ms: 6.795958
+  type: 'test'
+  ...
+# Subtest: capability disclosure requires identity and never returns configured credential values
+ok 31 - capability disclosure requires identity and never returns configured credential values
+  ---
+  duration_ms: 2.354375
+  type: 'test'
+  ...
+# Subtest: profile upload authenticates before any file parsing
+ok 32 - profile upload authenticates before any file parsing
+  ---
+  duration_ms: 24.796292
+  type: 'test'
+  ...
+# Subtest: authorized bounded text profile upload still reaches the file adapter
+ok 33 - authorized bounded text profile upload still reaches the file adapter
+  ---
+  duration_ms: 6.187
+  type: 'test'
+  ...
+# Subtest: expired settlement credential rejects before reservation or provider dispatch
+ok 34 - expired settlement credential rejects before reservation or provider dispatch
+  ---
+  duration_ms: 10.372583
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 790.752958

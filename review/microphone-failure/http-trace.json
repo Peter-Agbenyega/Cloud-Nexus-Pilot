@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-29T21:39:15.108Z",
+  "sessionId": "837cf18a-de98-48df-bc9a-b8963a35b5ae",
+  "synthetic": true,
+  "physicalMicrophone": false,
+  "provider": "loopback fixture only",
+  "records": [
+    {
+      "index": 0,
+      "bytes": 127020,
+      "status": 503,
+      "elapsedMs": 62,
+      "saved": false,
+      "code": "processing_settlement_unavailable",
+      "transcriptCharacters": 0
+    },
+    {
+      "index": 1,
+      "bytes": 128384,
+      "status": 503,
+      "elapsedMs": 38,
+      "saved": false,
+      "code": "processing_settlement_unavailable",
+      "transcriptCharacters": 0
+    }
+  ],
+  "savedEventCount": 0
+}

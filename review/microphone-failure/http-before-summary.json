@@ -1,0 +1,24 @@
+{
+  "record_kind": "sanitized summary of original tool-observed response, not retained raw log",
+  "at": "2026-10-29T20:31:27.591Z",
+  "sessionId": "cede6540-361a-4b25-aa36-6d3c6b6442db",
+  "source": "96a8eec804eb5d1ca0163c26a6463d055cc6762e",
+  "synthetic": true,
+  "responses": [
+    {
+      "index": 0,
+      "bytes": 127020,
+      "status": 503,
+      "code": "processing_store_unavailable",
+      "elapsedMs": 114
+    },
+    {
+      "index": 1,
+      "bytes": 128384,
+      "status": 503,
+      "code": "processing_store_unavailable",
+      "elapsedMs": 68
+    }
+  ],
+  "savedEventCount": 0
+}

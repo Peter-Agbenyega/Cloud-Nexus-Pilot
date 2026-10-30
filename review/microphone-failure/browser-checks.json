@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-29T21:43:19.759395+00:00",
+  "before_repair": {
+    "screenshot_text_reproduced": true,
+    "microphone_recording_indicator_after_capture_failed": true,
+    "pause_disabled": true,
+    "end_enabled_but_faint": true,
+    "end_clicked": true,
+    "end_released_recording_indicator": true
+  },
+  "after_rebuild": {
+    "existing_tab_reloaded": true,
+    "saved_record_recovery_acknowledged": true,
+    "typed_guidance_enabled_with_question": true,
+    "question_cleared_after_check": true,
+    "microphone_recording_indicator": false,
+    "start_visible": true,
+    "microphone_selected_without_capture": true,
+    "start_pause_failure_restart_with_physical_input": "NOT_RUN; microphone deliberately not reactivated"
+  },
+  "bridge": "DOM browser access unavailable; native Chrome accessibility controls used",
+  "raw_audio_retained": false,
+  "live_provider_verified": false
+}

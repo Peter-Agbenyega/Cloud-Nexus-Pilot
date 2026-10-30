@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-29T20:44:24.050761+00:00",
+  "configuration_name": "PILOT_PROCESSING_SERVICE_KEY",
+  "present": true,
+  "expires_at": "2026-10-28T01:21:29+00:00",
+  "trusted_storage_probe_status": 401,
+  "trusted_storage_probe_code": "PGRST303",
+  "probe_read_only": true,
+  "secret_value_recorded": false,
+  "credentials_changed": false
+}

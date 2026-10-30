@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "--env-file=/private/tmp/cnp-pilot-local-stack/pilot.env",
+    "scripts/pilot/local.mjs",
+    "build"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "96a8eec804eb5d1ca0163c26a6463d055cc6762e",
+  "started_at": "2026-10-29T20:56:21.762870+00:00",
+  "finished_at": "2026-10-29T20:56:36.387307+00:00",
+  "exit_code": 0,
+  "log": "mic-repair-build.log",
+  "sha256": "bcece7ca096754012d2b205a98ca2fc9af751cabbe232579f9d82031de4aecea"
+}

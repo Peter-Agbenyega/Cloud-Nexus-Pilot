@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-29T23:24:57.264339+00:00",
+  "implementation_sha": "043ceca9f5ce47d5f3e1775bf880e3bcee340182",
+  "receipts": [
+    {
+      "path": "review/completion-server/mic-repair-build.json",
+      "sha256": "33567b22318b828cbfdadfab459e475810ef76a3e3dc89d478144e22d4cb898d"
+    },
+    {
+      "path": "review/completion-server/mic-repair-clean-frontend-tests.json",
+      "sha256": "91caf6c2ea69f0b89ac78b6fdc94976b6bd2f194328e2a498b482b273c917f77"
+    },
+    {
+      "path": "review/completion-server/mic-repair-committed-client-tests.json",
+      "sha256": "a86031a3fcbae6d3a6b3dd108be14fe0d53b7abf990fa944e4394115fbf8329c"
+    },
+    {
+      "path": "review/completion-server/mic-repair-committed-security.json",
+      "sha256": "703d0245a3cb6da5bba237bf74be1217bc89a280f62ce23c0fa04c2fcebeafd3"
+    },
+    {
+      "path": "review/completion-server/mic-repair-frontend-tests.json",
+      "sha256": "3b3f6521692716f1df074917aaf5bd6935040d8474121986f84cedc2d412a35f"
+    },
+    {
+      "path": "review/completion-server/mic-repair-lint.json",
+      "sha256": "e071b16589e6f9f5ac87140c5a1d58863172b64c9d66fe9dd304f6bd289e0841"
+    },
+    {
+      "path": "review/completion-server/mic-repair-typecheck.json",
+      "sha256": "ec45ce00a07d4995300bfc4d7d535dc4d1cbb019650c645a61d2c66ceb8a0ca9"
+    }
+  ],
+  "frontend_tests_passed": 204,
+  "build_lint_typecheck": "passed on matching reviewed source bytes",
+  "initial_suite_failure": "Fixture env was inadvertently loaded into unit tests, overriding expected official-provider URL; clean unit-env rerun passed. Failed log retained.",
+  "physical_audio": "partial historical signal and microphone-release observation only; new Start/Pause/failure/restart browser test NOT_RUN",
+  "live_provider": "NOT_RUN; current app intentionally uses loopback synthetic fixture, live key absent",
+  "remaining_blocker": "Expired local settlement JWT rejected401/PGRST303; no credential changed"
+}

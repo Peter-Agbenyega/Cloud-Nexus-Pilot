@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "apps/cloud-nexus-pilot/dist/realtime-tests/tests/intelligence/capture-recovery.test.js",
+    "apps/cloud-nexus-pilot/dist/realtime-tests/tests/intelligence/streaming-transcript-client.test.js"
+  ],
+  "cwd": "/private/tmp/cnp-quality-gates",
+  "source_head": "043ceca9f5ce47d5f3e1775bf880e3bcee340182",
+  "started_at": "2026-10-29T23:24:56.091910+00:00",
+  "finished_at": "2026-10-29T23:24:56.299695+00:00",
+  "exit_code": 0,
+  "log": "mic-repair-committed-client-tests.log",
+  "sha256": "ee9d552112c4792fd3b25dc7ffac9efb69964035cf8c063ba5f17a5f22a93449"
+}

@@ -1,3 +1,4 @@
+import { pilotAuthCookieOptions } from "./pilot-auth-cookies";
 import { createBrowserClient } from "@supabase/ssr";
 import { probeSupabaseConnectivity } from "./supabase-connectivity";
 
@@ -66,6 +67,7 @@ const supabaseSigninEndpoint = supabaseUrl
 export const supabase =
   supabaseUrl && supabaseAnonKey
     ? createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: pilotAuthCookieOptions(supabaseUrl),
         auth: {
           persistSession: true,
           autoRefreshToken: true,

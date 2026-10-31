@@ -1,3 +1,4 @@
+import { pilotAuthCookieOptions } from "../pilot-auth-cookies";
 import { processingScope, withAbort } from "./request-boundary";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -16,6 +17,7 @@ export async function requireProviderUser(request?: Request): Promise<ProviderAu
     }
     const cookieStore = await cookies();
     const client = createServerClient(url, key, {
+    cookieOptions: pilotAuthCookieOptions(url),
       global: { fetch: (input, init) => fetch(input, { ...init, signal: scope.signal }) },
       cookies: {
         getAll: () => cookieStore.getAll(),

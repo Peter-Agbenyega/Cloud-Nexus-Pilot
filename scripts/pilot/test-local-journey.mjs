@@ -23,6 +23,7 @@ const steps = [];
 async function login(email) {
   const jar = new Map();
   const client = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    cookieOptions: recovery ? { name: "sb-pilot-recovery-test-auth-token" } : undefined,
     cookies: { getAll: () => [...jar].map(([name, value]) => ({ name, value })), setAll: (items) => { for (const item of items) jar.set(item.name, item.value); } },
   });
   const { data, error } = await client.auth.signInWithPassword({ email, password: configuration.user_password });

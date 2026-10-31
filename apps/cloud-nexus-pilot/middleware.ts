@@ -1,3 +1,4 @@
+import { pilotAuthCookieOptions } from "./lib/pilot-auth-cookies";
 import { processingScope, withAbort, readBoundedBytes } from "./lib/server/request-boundary";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr/dist/module/createServerClient";
@@ -34,6 +35,7 @@ export async function middleware(request: NextRequest) {
 
   const authScope = processingScope(request.signal, 8_000);
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: pilotAuthCookieOptions(supabaseUrl),
     global: { fetch: async (input, init) => {
       const upstream = await fetch(input, { ...init, signal: authScope.signal });
       const bytes = await readBoundedBytes(new Request("http://localhost/auth-reply", { method: "POST", body: upstream.body, signal: authScope.signal, duplex: "half" } as RequestInit), 262_144);

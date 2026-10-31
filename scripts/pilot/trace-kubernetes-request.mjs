@@ -1,0 +1,30 @@
+// Explicitly synthetic spoken-file diagnosis of the existing recovery stack.
+import assert from 'node:assert/strict';
+import {readFile,writeFile} from 'node:fs/promises';
+import {homedir} from 'node:os';
+import {resolve} from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(new URL('../../apps/cloud-nexus-pilot/package.json',import.meta.url));
+const{createServerClient}=require('@supabase/ssr');const WebSocket=require('ws');
+const p=resolve(homedir(),'.local/share/cloud-nexus-pilot/recovery-test');
+const config=JSON.parse(await readFile(resolve(p,'private.json'),'utf8'));
+assert.equal(process.env.PILOT_RECOVERY_STACK,'1');assert.equal(process.env.OPENAI_BASE_URL,'http://127.0.0.1:59093/v1');
+const app='http://127.0.0.1:43101',fixture='http://127.0.0.1:59093';
+const jar=new Map(),records=[];
+const client=createServerClient('http://127.0.0.1:59090',config.anon_key,{cookieOptions:{name:'sb-pilot-recovery-test-auth-token'},cookies:{getAll:()=>[...jar].map(([name,value])=>({name,value})),setAll:items=>items.forEach(x=>jar.set(x.name,x.value))}});
+const{data,error}=await client.auth.signInWithPassword({email:config.email_a,password:config.user_password});assert.ok(!error);
+async function call(path,init={}){const started=performance.now();const r=await fetch(app+path,{...init,headers:{origin:app,cookie:[...jar].map(([k,v])=>`${k}=${v}`).join('; '),...init.headers},signal:AbortSignal.timeout(45000)});const text=await r.text();records.push({path:path.replace(/[a-f0-9-]{36}/g,'<test-session>'),method:init.method??'GET',status:r.status,totalMs:Math.round(performance.now()-started)});return{status:r.status,text,json:()=>JSON.parse(text)};}
+const before=await(await fetch(fixture+'/fixture-status')).json();
+const caps=await call('/api/processing-capabilities');assert.equal(caps.status,200);
+const wave=await readFile(resolve(p,'investigation-kubernetes/kubernetes-spoken.wav'));assert.equal(wave.toString('ascii',0,4),'RIFF');
+const created=await call('/api/transcribe/stream/session',{method:'POST'});assert.equal(created.status,201);const{sessionId}=created.json();const base='/api/transcribe/stream/session/'+sessionId;
+const stream=await call(base+'/chunk',{method:'POST',headers:{'content-type':'audio/wav','x-chunk-index':'0','x-transcript-source':'microphone'},body:wave});assert.equal(stream.status,202);assert.equal(stream.json().saved,true);
+const upload=await call('/api/transcribe',{method:'POST',headers:{'content-type':'audio/wav','x-request-id':'kubernetes-upload-'+crypto.randomUUID(),'x-transcript-source':'microphone'},body:wave});assert.equal(upload.status,200);
+const guidance=await call('/api/generate-guidance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId,question:'What is Kubernetes?',questionId:'kubernetes-'+crypto.randomUUID(),transcriptRevision:'controlled-typed-input',interviewMode:'kubernetes',resumeText:'Synthetic test context only.'})});assert.equal(guidance.status,200);const events=guidance.text.trim().split('\n\n').map(x=>JSON.parse(x.replace(/^data: /,'')));const final=events.find(x=>x.type==='final');assert.ok(final);const answer=JSON.parse(final.content);
+const saved=(await call(base)).json();assert.equal(saved.events.length,1);assert.ok(saved.guidance.some(x=>x.result.question==='What is Kubernetes?'));
+await call(base+'/stop',{method:'POST'});
+const websocket=[];
+await new Promise((resolveWs,reject)=>{const ws=new WebSocket('ws://127.0.0.1:43310/ws/session',{origin:app});const timer=setTimeout(()=>{ws.terminate();reject(new Error('WS test timeout'));},8000);ws.on('error',reject);ws.on('message',raw=>{const value=JSON.parse(raw.toString());websocket.push({type:value.type,at:new Date().toISOString()});if(value.type==='session.auth_required')ws.send(JSON.stringify({type:'session.authenticate',accessToken:data.session.access_token}));if(value.type==='session.ready')ws.send(JSON.stringify({type:'ping'}));if(value.type==='pong')ws.send(JSON.stringify({type:'session.end',reason:'controlled diagnostic; no audio'}));});ws.on('close',code=>{clearTimeout(timer);websocket.push({closeCode:code});assert.equal(code,1000);resolveWs();});});
+const after=await(await fetch(fixture+'/fixture-status')).json();
+const report={at:new Date().toISOString(),expectedQuestion:'What is Kubernetes?',input:{kind:'macOS TTS-generated spoken WAV; NOT physical microphone',bytes:wave.length},capabilities:caps.json(),streamingChunk:{status:stream.status,transcript:stream.json().response.text,saved:stream.json().saved},completedFileUpload:{status:upload.status,transcript:upload.json().text},typedQuestion:'What is Kubernetes?',answer,questionSpecific:/kubernetes/i.test(answer.full_answer),providerDispatchDelta:{transcription:after.transcriptionCalls-before.transcriptionCalls,guidance:after.guidanceCalls-before.guidanceCalls},savedEventCount:saved.events.length,websocket,requests:records,liveProviderUsed:false,originalSpokenWordsNotRecoverable:true};
+await writeFile(resolve(p,'investigation-kubernetes/kubernetes-trace.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});console.log(JSON.stringify(report,null,2));

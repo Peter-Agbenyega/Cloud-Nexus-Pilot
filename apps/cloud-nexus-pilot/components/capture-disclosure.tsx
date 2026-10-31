@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 type CaptureConfiguration = {
-  transcriptionProvider: "OpenAI" | "Deepgram" | null;
-  guidanceProvider: "OpenAI" | null;
+  transcriptionProvider: "OpenAI" | "Deepgram" | "Synthetic fixture" | null;
+  guidanceProvider: "OpenAI" | "Synthetic fixture" | null;
   syntheticFixture: boolean;
 };
 
@@ -37,8 +37,8 @@ export function CaptureDisclosure({ appearance = "light", sharedSession = false 
           text += decoder.decode();
         } finally { void reader.cancel().catch(() => {}); reader.releaseLock(); }
         const value = JSON.parse(text) as Record<string, unknown>;
-        if (!value || !["OpenAI", "Deepgram", null].includes(value.transcriptionProvider as string | null) ||
-            !["OpenAI", null].includes(value.guidanceProvider as string | null) || typeof value.syntheticFixture !== "boolean" ||
+        if (!value || !["OpenAI", "Deepgram", "Synthetic fixture", null].includes(value.transcriptionProvider as string | null) ||
+            !["OpenAI", "Synthetic fixture", null].includes(value.guidanceProvider as string | null) || typeof value.syntheticFixture !== "boolean" ||
             value.rawAudioRetained !== false || value.acceptedAudio !== "Complete PCM16 WAV" || value.sessionLimitMinutes !== 30) {
           throw new Error("Configuration response could not be verified");
         }
@@ -62,7 +62,7 @@ export function CaptureDisclosure({ appearance = "light", sharedSession = false 
       <p role="status" aria-live="polite" style={{ marginTop: 8 }}>
         {state === "checking" ? "Checking processor configuration…" : configuration ? <>
           Configured transcription: {configuration.transcriptionProvider ?? "not configured"}. Guidance: {configuration.guidanceProvider ?? "not configured"}.
-          {configuration.syntheticFixture ? " A synthetic test fixture is selected for this local test." : ""}
+          {configuration.syntheticFixture ? " SYNTHETIC TEST MODE: audio delivery and saving can be tested, but this fixture does not recognize spoken words or generate question-specific AI answers." : ""}
           {" "}This is configuration information; live provider availability and account allowance are checked separately. The configured processor receives the audio or text needed for the requested operation.
         </> : "Processor configuration could not be verified. Sign in and retry; this display does not confirm provider availability."}
       </p>

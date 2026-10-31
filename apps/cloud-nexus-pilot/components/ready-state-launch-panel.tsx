@@ -1,5 +1,7 @@
 "use client";
 
+import { recordGuidanceTiming, formatGuidanceTiming, describeSaveAcknowledgement, type GuidanceTiming } from "@/lib/guidance-latency";
+
 import { capturePresentation } from "@/features/transcription/capture-recovery";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -355,7 +357,7 @@ export function ReadyStateLaunchPanel() {
   const lastPersistedDetectedQuestionIdRef = useRef<string | null>(null);
   const captureStartedAtRef = useRef<number | null>(null);
   const firstTranscriptAtRef = useRef<number | null>(null);
-  const lastGuidanceStartedAtRef = useRef<number | null>(null);
+  const firstCaptureGuidanceAtRef = useRef<number | null>(null);
   const sessionExecutionIdRef = useRef<SessionExecutionId | null>(null);
   const transcriptionWorkflow = useTranscriptionWorkflow({ repositoryMode: "local-only" });
   const realtimeConnection = usePilotRealtimeConnection();
@@ -367,7 +369,8 @@ export function ReadyStateLaunchPanel() {
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
   const [guidanceStatus, setGuidanceStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [questionsCoached, setQuestionsCoached] = useState(0);
-  const [sessionStartTime] = useState<number>(Date.now());
+  const [guidanceTiming, setGuidanceTiming] = useState<GuidanceTiming>({ completed: 0, totalMs: 0 });
+  const syntheticMode = process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE === "1";
   const [streamedFullAnswer, setStreamedFullAnswer] = useState("");
   const [latencySnapshot, setLatencySnapshot] = useState<{
     sttFirstPartialMs: number | null;
@@ -559,6 +562,8 @@ export function ReadyStateLaunchPanel() {
 
       activeStreamRef.current = stream;
       captureStartedAtRef.current = performance.now();
+      firstCaptureGuidanceAtRef.current = null;
+      setLatencySnapshot({ sttFirstPartialMs: null, totalFirstGuidanceMs: null });
       firstTranscriptAtRef.current = null;
       setCaptureState({ status: "live-stream-confirmed", detail: "Live audio connected. Starting transcription...", streamId: stream.id });
       setLaunchFlowStep("live");
@@ -636,7 +641,7 @@ export function ReadyStateLaunchPanel() {
     lastPersistedDetectedQuestionIdRef.current = null;
     captureStartedAtRef.current = null;
     firstTranscriptAtRef.current = null;
-    lastGuidanceStartedAtRef.current = null;
+    firstCaptureGuidanceAtRef.current = null;
     sessionExecutionIdRef.current = null;
     setGuidanceText("");
     setGuidanceData(null);
@@ -672,7 +677,6 @@ export function ReadyStateLaunchPanel() {
 
     try {
       const guidanceStartedAt = performance.now();
-      lastGuidanceStartedAtRef.current = guidanceStartedAt;
       void ensureSessionExecution();
       const userBackground = getParsedResumeBackground();
       const { sessionId: ownedSessionId, response, signal: guidanceSignal } = await requestOwnedGuidance({
@@ -710,6 +714,9 @@ export function ReadyStateLaunchPanel() {
       }
       if (!structured) throw new Error("The provider did not return a valid completed guidance answer.");
       completedGuidance = structured;
+      const guidanceCompletedAt = performance.now();
+      const guidanceResponseMs = Math.round(guidanceCompletedAt - guidanceStartedAt);
+      setGuidanceTiming(current => recordGuidanceTiming(current, guidanceStartedAt, guidanceCompletedAt));
       setGuidanceData(structured);
       setGuidanceText(finalGuidanceText);
       setStreamedFullAnswer(structured.full_answer);
@@ -722,12 +729,13 @@ export function ReadyStateLaunchPanel() {
       setQuestionsCoached((prev) => prev + 1);
       setGuidanceStatus("ready");
       const totalFirstGuidanceMs =
-        captureStartedAtRef.current === null
+        captureStartedAtRef.current === null || firstCaptureGuidanceAtRef.current !== null || Boolean(typedOverride)
           ? null
-          : Math.round(performance.now() - captureStartedAtRef.current);
+          : Math.round(guidanceCompletedAt - captureStartedAtRef.current);
+      if (totalFirstGuidanceMs !== null) firstCaptureGuidanceAtRef.current = guidanceCompletedAt;
       setLatencySnapshot((current) => ({
         ...current,
-        totalFirstGuidanceMs,
+        totalFirstGuidanceMs: current.totalFirstGuidanceMs ?? totalFirstGuidanceMs,
       }));
       if (totalFirstGuidanceMs !== null) {
         realtimeConnection.sendRuntimeEvent({
@@ -758,7 +766,7 @@ export function ReadyStateLaunchPanel() {
               followUp: completedGuidance.followUp ?? null,
               provider: "configured-llm",
               model: null,
-              latencyMs: totalFirstGuidanceMs,
+              latencyMs: guidanceResponseMs,
             },
           });
         })
@@ -1012,7 +1020,7 @@ export function ReadyStateLaunchPanel() {
     );
   }, [preferredDetectedQuestion, transcriptSegments]);
 
-  const avgResponseTime = questionsCoached > 0 ? `${Math.round((Date.now() - sessionStartTime) / 1000 / questionsCoached)}s` : "--";
+  const avgResponseTime = formatGuidanceTiming(guidanceTiming);
   const realtimeStatusLabel = getRealtimeStatusLabel(realtimeConnection.state);
   const realtimeStatusColor = getRealtimeStatusColor(realtimeConnection.state);
 
@@ -1024,7 +1032,7 @@ export function ReadyStateLaunchPanel() {
       </label>
       <p style={{ fontSize: 12, margin: "8px 0" }}>Generating requires a signed-in account, an owned saved session and available server allowance. Typed coaching does not acquire audio.</p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <button type="button" disabled={!typedQuestion.trim() || guidanceStatus === "loading" || launchFlowStep === "requesting" || transcriptionWorkflow.isPaused} onClick={() => void handleGetGuidance(typedQuestion)} style={{ padding: "8px 12px", borderRadius: 6, background: "#4F46E5", color: "white" }}>{guidanceStatus === "loading" ? "Generating..." : "Generate typed guidance"}</button>
+        <button type="button" disabled={!typedQuestion.trim() || guidanceStatus === "loading" || launchFlowStep === "requesting" || transcriptionWorkflow.isPaused} onClick={() => void handleGetGuidance(typedQuestion)} style={{ padding: "8px 12px", borderRadius: 6, background: "#4F46E5", color: "white" }}>{guidanceStatus === "loading" ? "Generating..." : syntheticMode ? "Generate sample guidance (synthetic)" : "Generate typed guidance"}</button>
         <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.recoverServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Recover saved session</button>
         <button type="button" disabled={!transcriptionWorkflow.serverSessionId} onClick={() => void transcriptionWorkflow.exportServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Export saved session</button>
         <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.deleteServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Delete saved session</button>
@@ -1032,7 +1040,7 @@ export function ReadyStateLaunchPanel() {
       <SavedSessionPicker appearance="dark" sessions={transcriptionWorkflow.savedServerSessions} loading={transcriptionWorkflow.isFindingServerSessions}
         disabled={transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"}
         find={transcriptionWorkflow.findServerSessions} recover={transcriptionWorkflow.recoverServerSession} />
-      <p style={{ marginTop: 8, fontSize: 12 }}>Server acknowledgement: {transcriptionWorkflow.serverSaveState}. {transcriptionWorkflow.error || transcriptionWorkflow.feedback}</p>
+      <p role="status" style={{ marginTop: 8, fontSize: 12 }}>{describeSaveAcknowledgement(transcriptionWorkflow.serverSaveState, transcriptionWorkflow.error, transcriptionWorkflow.feedback)}</p>
       {guidanceError ? <p role="status" style={{ color: "#FBBF24", fontSize: 12 }}>{guidanceError}</p> : null}
       {launchFlowStep !== "live" && guidanceStatus !== "failed" && guidanceData ? <article style={{ marginTop: 12 }}><h3>{guidanceData.headline || "Completed guidance"}</h3><p>{guidanceData.speakNow || guidanceData.gist}</p><p>{guidanceData.full_answer}</p></article> : null}
       {transcriptionWorkflow.savedGuidance.length > 0 ? <div style={{ marginTop: 12 }}>
@@ -1781,7 +1789,7 @@ export function ReadyStateLaunchPanel() {
           marginTop: 8,
           padding: "8px 10px",
         }}>
-          <span>STT first partial: {latencySnapshot.sttFirstPartialMs === null ? "--" : `${latencySnapshot.sttFirstPartialMs}ms`}</span>
+          <span>First saved transcript: {latencySnapshot.sttFirstPartialMs === null ? "--" : `${latencySnapshot.sttFirstPartialMs}ms`}</span>
           <span>First guidance: {latencySnapshot.totalFirstGuidanceMs === null ? "--" : `${latencySnapshot.totalFirstGuidanceMs}ms`}</span>
         </div>
       )}

@@ -3,7 +3,8 @@
 from pathlib import Path
 import json, os, signal, socket, subprocess, sys, time
 P=Path.home()/'.local/share/cloud-nexus-pilot/recovery-test'
-R=Path.home()/'Cloud-Nexus-Pilot-recovery-acceptance'
+R=Path(json.loads((P/'runtime.json').read_text()).get('checkout',str(Path.home()/'Cloud-Nexus-Pilot-recovery-acceptance')))
+assert R in (Path.home()/'Cloud-Nexus-Pilot-recovery-acceptance',Path.home()/'Cloud-Nexus-Pilot-voice-investigation')
 NODE='/opt/homebrew/opt/node@22/bin/node'
 
 

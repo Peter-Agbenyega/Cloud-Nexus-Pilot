@@ -23,7 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SiteHeader />
           {process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE === "1" ? (
             <aside role="status" className="border-b border-amber-500 bg-amber-50 px-4 py-2 text-sm text-amber-950">
-              Local synthetic acceptance environment. Transcript and guidance responses use a test fixture, not live AI. Use synthetic test material only.
+              SYNTHETIC TEST MODE — audio is delivered to a test fixture. Spoken words are not recognized; transcripts and answers are fixed test text. Live speech transcription and question-specific AI answers are not enabled.
             </aside>
           ) : null}
           <main className="flex-1">{children}</main>

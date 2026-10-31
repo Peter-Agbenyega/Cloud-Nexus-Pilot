@@ -4,10 +4,17 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const auth = await requireProviderUser(request);
   if (auth.response) return auth.response;
+  const hasOpenAi = Boolean(process.env.OPENAI_API_KEY?.trim());
+  const hasDeepgram = Boolean(process.env.DEEPGRAM_API_KEY?.trim());
+  let loopback = false;
+  try { loopback = ["127.0.0.1", "localhost", "[::1]"].includes(new URL(process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").hostname); } catch { /* invalid endpoint is not certified */ }
+  const fixture = process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE === "1" && loopback && hasOpenAi;
   return Response.json({
-    transcriptionProvider: process.env.DEEPGRAM_API_KEY?.trim() ? "Deepgram" : process.env.OPENAI_API_KEY?.trim() ? "OpenAI" : null,
-    guidanceProvider: process.env.OPENAI_API_KEY?.trim() ? "OpenAI" : null,
-    syntheticFixture: process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE === "1",
+    transcriptionProvider: hasDeepgram ? "Deepgram" : hasOpenAi ? (fixture ? "Synthetic fixture" : "OpenAI") : null,
+    guidanceProvider: hasOpenAi ? (fixture ? "Synthetic fixture" : "OpenAI") : null,
+    syntheticFixture: fixture,
+    speechRecognitionConfigured: hasDeepgram || (hasOpenAi && !fixture),
+    questionSpecificGuidanceConfigured: hasOpenAi && !fixture,
     acceptedAudio: "Complete PCM16 WAV",
     rawAudioRetained: false,
     sessionLimitMinutes: 30,

@@ -1,0 +1,85 @@
+{
+  "at": "2026-10-31T15:44:42.326853+00:00",
+  "origin": "https://github.com/Peter-Agbenyega/Cloud-Nexus-Pilot.git",
+  "checkout": "/private/tmp/cnp-quality-gates",
+  "branch": "fix/pilot-quality-gates",
+  "head": "ed9c086e098b606891689fe9384c572f8d346b4f",
+  "retained_tracked_files_matching": 726,
+  "tracked_files_restored_from_HEAD_without_overwrite": 331,
+  "retained_tracked_differences": 0,
+  "repair_source_hashes": [
+    {
+      "path": "apps/cloud-nexus-pilot/components/ready-state-launch-panel.tsx",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/capture-recovery.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/streaming-transcript-service.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/features/transcription/use-transcription-workflow.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/lib/server/processing-repository.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/scripts/test-security-boundary.mjs",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/tests/intelligence/capture-recovery.test.ts",
+      "matches": true
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/tests/intelligence/streaming-transcript-client.test.ts",
+      "matches": true
+    }
+  ],
+  "applicable_AGENTS_found": false,
+  "credential_read_only_http_status": 401,
+  "credential_error_code": "PGRST303",
+  "container_ids_and_purpose_verified": true,
+  "auth_rest_signing_material_matches": true,
+  "configured_issuer": "http://127.0.0.1:58090/auth/v1",
+  "credential_changed": false,
+  "missing_supported_setup_prerequisite": "/private/tmp/cnp-pilot-local-stack/private.json",
+  "frontend_listener_found": false,
+  "live_provider_key_present": false,
+  "synthetic_processing": "blocked; not rerun successfully",
+  "physical_microphone": "not activated; not verified",
+  "live_transcription": "not run",
+  "production": "not verified",
+  "initial_test_attempt": "default Node25 fails missing simdjson dylib; Node22.23.3 works but TypeScript package is incomplete; lockfile dependency repair in progress",
+  "dependency_repair": "npm ci --ignore-scripts --no-audit --no-fund under Node22: 1957 packages installed, exit0; damaged dependencies preserved outside tracked files",
+  "fresh_checks": {
+    "transcription_errors_and_security": {
+      "tests": 49,
+      "pass": 49,
+      "exit": 0
+    },
+    "test_typescript_compile": {
+      "exit": 0
+    },
+    "capture_recovery_and_streaming_client": {
+      "tests": 15,
+      "pass": 15,
+      "exit": 0
+    }
+  },
+  "logs": [
+    {
+      "path": "review/microphone-failure/continuation-focused.log",
+      "sha256": "cc88a278a6c4e9ce46b79f3c6391c8a5615197e15281d15b970a2988ca1c634e"
+    },
+    {
+      "path": "review/microphone-failure/continuation-client.log",
+      "sha256": "1d22b5fae674a09cfe020f80f95c8bd9edf0800486607bc66edc1e0b97145b92"
+    }
+  ]
+}

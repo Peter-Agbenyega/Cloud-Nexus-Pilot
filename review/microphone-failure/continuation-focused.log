@@ -1,0 +1,306 @@
+TAP version 13
+# Subtest: unauthenticated transcription rejects before reading or provider work
+ok 1 - unauthenticated transcription rejects before reading or provider work
+  ---
+  duration_ms: 74.973917
+  type: 'test'
+  ...
+# Subtest: foreign user cannot chunk an owned session
+ok 2 - foreign user cannot chunk an owned session
+  ---
+  duration_ms: 25.382041
+  type: 'test'
+  ...
+# Subtest: foreign user cannot stop an owned session
+ok 3 - foreign user cannot stop an owned session
+  ---
+  duration_ms: 10.360667
+  type: 'test'
+  ...
+# Subtest: foreign user cannot events an owned session
+ok 4 - foreign user cannot events an owned session
+  ---
+  duration_ms: 8.460584
+  type: 'test'
+  ...
+# Subtest: foreign user cannot GET saved records/export
+ok 5 - foreign user cannot GET saved records/export
+  ---
+  duration_ms: 8.244625
+  type: 'test'
+  ...
+# Subtest: foreign user cannot DELETE saved records/export
+ok 6 - foreign user cannot DELETE saved records/export
+  ---
+  duration_ms: 6.521417
+  type: 'test'
+  ...
+# Subtest: oversize without Content-Length stops stream consumption and never invokes provider
+ok 7 - oversize without Content-Length stops stream consumption and never invokes provider
+  ---
+  duration_ms: 14.352208
+  type: 'test'
+  ...
+# Subtest: misleading Content-Length cannot bypass measured-byte bound
+ok 8 - misleading Content-Length cannot bypass measured-byte bound
+  ---
+  duration_ms: 9.046291
+  type: 'test'
+  ...
+# Subtest: malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+ok 9 - malformed audio, invalid index, cross-origin requests and length mismatch are rejected
+  ---
+  duration_ms: 34.545792
+  type: 'test'
+  ...
+# Subtest: exhausted quota rejects valid audio with no provider work
+ok 10 - exhausted quota rejects valid audio with no provider work
+  ---
+  duration_ms: 7.555042
+  type: 'test'
+  ...
+# Subtest: authorized valid audio reaches provider and commits once; retry replays saved result
+ok 11 - authorized valid audio reaches provider and commits once; retry replays saved result
+  ---
+  duration_ms: 10.092209
+  type: 'test'
+  ...
+# Subtest: chunk retry is owner/idempotency-bound and changed bytes conflict
+ok 12 - chunk retry is owner/idempotency-bound and changed bytes conflict
+  ---
+  duration_ms: 7.471667
+  type: 'test'
+  ...
+# Subtest: parallel retry cannot start a second provider call
+ok 13 - parallel retry cannot start a second provider call
+  ---
+  duration_ms: 11.983917
+  type: 'test'
+  ...
+# Subtest: interrupted body is cancelled with zero provider invocation
+ok 14 - interrupted body is cancelled with zero provider invocation
+  ---
+  duration_ms: 18.267292
+  type: 'test'
+  ...
+# Subtest: provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+ok 15 - provider cancellation settles unknown, keeps bounded reservation, forbids automatic replay
+  ---
+  duration_ms: 6.493917
+  type: 'test'
+  ...
+# Subtest: provider exception details never escape the boundary
+ok 16 - provider exception details never escape the boundary
+  ---
+  duration_ms: 6.097875
+  type: 'test'
+  ...
+# Subtest: stopped session cannot restart processing and stop is idempotent
+ok 17 - stopped session cannot restart processing and stop is idempotent
+  ---
+  duration_ms: 12.005625
+  type: 'test'
+  ...
+# Subtest: JSON reader bounds actual bytes and rejects non-object/malformed content
+ok 18 - JSON reader bounds actual bytes and rejects non-object/malformed content
+  ---
+  duration_ms: 4.804583
+  type: 'test'
+  ...
+# Subtest: guidance quota denial invokes no model, permitted path persists validated final once
+ok 19 - guidance quota denial invokes no model, permitted path persists validated final once
+  ---
+  duration_ms: 41.645667
+  type: 'test'
+  ...
+# Subtest: guidance malformed or oversized body causes zero model invocations
+ok 20 - guidance malformed or oversized body causes zero model invocations
+  ---
+  duration_ms: 21.440667
+  type: 'test'
+  ...
+# Subtest: server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+ok 21 - server provider endpoint cannot be overridden by body and rejects unsafe schemes/credentials
+  ---
+  duration_ms: 0.744583
+  type: 'test'
+  ...
+# Subtest: spoofed or inconsistent WAV containers never invoke the provider
+ok 22 - spoofed or inconsistent WAV containers never invoke the provider
+  ---
+  duration_ms: 56.317375
+  type: 'test'
+  ...
+# Subtest: invalid provider shape is not saved as a final transcript
+ok 23 - invalid provider shape is not saved as a final transcript
+  ---
+  duration_ms: 7.26525
+  type: 'test'
+  ...
+# Subtest: leading-zero chunk-index aliases replay the same saved operation
+ok 24 - leading-zero chunk-index aliases replay the same saved operation
+  ---
+  duration_ms: 6.415375
+  type: 'test'
+  ...
+# Subtest: durable repository false deletion cannot be acknowledged as deleted
+ok 25 - durable repository false deletion cannot be acknowledged as deleted
+  ---
+  duration_ms: 8.69975
+  type: 'test'
+  ...
+# Subtest: identity verification is interrupted without accepting a stale cookie principal
+ok 26 - identity verification is interrupted without accepting a stale cookie principal
+  ---
+  duration_ms: 16.252208
+  type: 'test'
+  ...
+# [transcription][upload] verification-start { fileName: 'reference.txt', contentType: 'text/plain', size: 20 }
+# [transcription][upload] local-text-ingest-success { fileName: 'reference.txt', contentType: 'text/plain', chars: 20 }
+# Subtest: per-runtime ingress bounds concurrent buffers before reading another owned request
+ok 27 - per-runtime ingress bounds concurrent buffers before reading another owned request
+  ---
+  duration_ms: 12.270167
+  type: 'test'
+  ...
+# Subtest: origin verification uses configured public origin rather than internal Next/proxy host
+ok 28 - origin verification uses configured public origin rather than internal Next/proxy host
+  ---
+  duration_ms: 2.617583
+  type: 'test'
+  ...
+# Subtest: oversized file input is rejected before browser reads or provider fetches
+ok 29 - oversized file input is rejected before browser reads or provider fetches
+  ---
+  duration_ms: 3.246375
+  type: 'test'
+  ...
+# Subtest: account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+ok 30 - account discovery uses verified owner and authenticated RLS credential, ignoring supplied owner IDs
+  ---
+  duration_ms: 5.726791
+  type: 'test'
+  ...
+# Subtest: capability disclosure requires identity and never returns configured credential values
+ok 31 - capability disclosure requires identity and never returns configured credential values
+  ---
+  duration_ms: 1.718041
+  type: 'test'
+  ...
+# Subtest: profile upload authenticates before any file parsing
+ok 32 - profile upload authenticates before any file parsing
+  ---
+  duration_ms: 22.044083
+  type: 'test'
+  ...
+# Subtest: authorized bounded text profile upload still reaches the file adapter
+ok 33 - authorized bounded text profile upload still reaches the file adapter
+  ---
+  duration_ms: 5.925292
+  type: 'test'
+  ...
+# Subtest: expired settlement credential rejects before reservation or provider dispatch
+ok 34 - expired settlement credential rejects before reservation or provider dispatch
+  ---
+  duration_ms: 9.436917
+  type: 'test'
+  ...
+# Subtest: deepgram upstream string failure is absent from HTTP, SSE and logs
+ok 35 - deepgram upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 853.128792
+  type: 'test'
+  ...
+# Subtest: deepgram upstream object failure is absent from HTTP, SSE and logs
+ok 36 - deepgram upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 787.231333
+  type: 'test'
+  ...
+# Subtest: openai upstream string failure is absent from HTTP, SSE and logs
+ok 37 - openai upstream string failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 799.325541
+  type: 'test'
+  ...
+# Subtest: openai upstream object failure is absent from HTTP, SSE and logs
+ok 38 - openai upstream object failure is absent from HTTP, SSE and logs
+  ---
+  duration_ms: 783.481
+  type: 'test'
+  ...
+# Subtest: unknown transport exception fields cannot become public errors or logs
+ok 39 - unknown transport exception fields cannot become public errors or logs
+  ---
+  duration_ms: 799.18575
+  type: 'test'
+  ...
+# Subtest: known provider error codes never authorize upstream message/detail text
+ok 40 - known provider error codes never authorize upstream message/detail text
+  ---
+  duration_ms: 2354.279584
+  type: 'test'
+  ...
+# Subtest: provider HTTP failures retain their existing file-route status
+ok 41 - provider HTTP failures retain their existing file-route status
+  ---
+  duration_ms: 203.277625
+  type: 'test'
+  ...
+# Subtest: exported provider exceptions sanitize caller-supplied diagnostic fields
+ok 42 - exported provider exceptions sanitize caller-supplied diagnostic fields
+  ---
+  duration_ms: 11.547792
+  type: 'test'
+  ...
+# Subtest: SSE boundary closes safely on raw repository errors without exposing payloads
+ok 43 - SSE boundary closes safely on raw repository errors without exposing payloads
+  ---
+  duration_ms: 4.085208
+  type: 'test'
+  ...
+# Subtest: chunk HTTP boundary sanitizes raw repository errors and error logs
+ok 44 - chunk HTTP boundary sanitizes raw repository errors and error logs
+  ---
+  duration_ms: 11.586
+  type: 'test'
+  ...
+# Subtest: unknown and hostile error fields fail closed without being stringified
+ok 45 - unknown and hostile error fields fail closed without being stringified
+  ---
+  duration_ms: 2.776208
+  type: 'test'
+  ...
+# Subtest: missing provider and empty audio retain 503/400 behavior without provider work
+ok 46 - missing provider and empty audio retain 503/400 behavior without provider work
+  ---
+  duration_ms: 2304.3585
+  type: 'test'
+  ...
+# Subtest: foreign stream rejection remains 404 before provider work
+ok 47 - foreign stream rejection remains 404 before provider work
+  ---
+  duration_ms: 19.44375
+  type: 'test'
+  ...
+# Subtest: deepgram successful HTTP and streamed transcript contracts are preserved
+ok 48 - deepgram successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 771.792291
+  type: 'test'
+  ...
+# Subtest: openai successful HTTP and streamed transcript contracts are preserved
+ok 49 - openai successful HTTP and streamed transcript contracts are preserved
+  ---
+  duration_ms: 793.647083
+  type: 'test'
+  ...
+1..49
+# tests 49
+# suites 0
+# pass 49
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10761.004375

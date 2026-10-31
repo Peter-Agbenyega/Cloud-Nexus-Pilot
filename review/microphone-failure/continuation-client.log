@@ -1,0 +1,100 @@
+TAP version 13
+# Subtest: retry exhaustion is bounded; auth/quota/storage failures require explicit recovery
+ok 1 - retry exhaustion is bounded; auth/quota/storage failures require explicit recovery
+  ---
+  duration_ms: 1.054
+  type: 'test'
+  ...
+# Subtest: stop clears timers and stale timer callbacks cannot revive stopped or restarted capture
+ok 2 - stop clears timers and stale timer callbacks cannot revive stopped or restarted capture
+  ---
+  duration_ms: 0.124833
+  type: 'test'
+  ...
+# Subtest: terminal capture never advertises listening/retrying or offers Pause; restart remains explicit
+ok 3 - terminal capture never advertises listening/retrying or offers Pause; restart remains explicit
+  ---
+  duration_ms: 0.1535
+  type: 'test'
+  ...
+# Subtest: transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+ok 4 - transcript transport rejects malformed/cross-session events, deduplicates uploads and orders final delivery
+  ---
+  duration_ms: 23.112458
+  type: 'test'
+  ...
+# Subtest: durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+ok 5 - durable HTTP acknowledgement completes during event reconnect and does not duplicate its later SSE final
+  ---
+  duration_ms: 0.72
+  type: 'test'
+  ...
+# Subtest: chunk deadline aborts its upload; repeated stop closes resources without new uploads
+ok 6 - chunk deadline aborts its upload; repeated stop closes resources without new uploads
+  ---
+  duration_ms: 22.399583
+  type: 'test'
+  ...
+# Subtest: pre-open event failure rejects immediately and stops the orphaned owned session
+ok 7 - pre-open event failure rejects immediately and stops the orphaned owned session
+  ---
+  duration_ms: 0.42475
+  type: 'test'
+  ...
+# Subtest: recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+ok 8 - recovery uses owned server records, orders and deduplicates events, and verifies deletion acknowledgement
+  ---
+  duration_ms: 1.846
+  type: 'test'
+  ...
+# Subtest: cross-account recovery/deletion denial never falls back to another account's local record
+ok 9 - cross-account recovery/deletion denial never falls back to another account's local record
+  ---
+  duration_ms: 0.244458
+  type: 'test'
+  ...
+# Subtest: upload queue bounds concurrent count and individual bytes, then stop aborts all pending work
+ok 10 - upload queue bounds concurrent count and individual bytes, then stop aborts all pending work
+  ---
+  duration_ms: 1.241792
+  type: 'test'
+  ...
+# Subtest: account session discovery works without a remembered browser cursor and bounds metadata to recent100
+ok 11 - account session discovery works without a remembered browser cursor and bounds metadata to recent100
+  ---
+  duration_ms: 1.42175
+  type: 'test'
+  ...
+# Subtest: denied account session discovery returns no browser-local substitute
+ok 12 - denied account session discovery returns no browser-local substitute
+  ---
+  duration_ms: 0.310125
+  type: 'test'
+  ...
+# Subtest: malformed, oversized and over-count session lists are rejected instead of becoming selectable IDs
+ok 13 - malformed, oversized and over-count session lists are rejected instead of becoming selectable IDs
+  ---
+  duration_ms: 0.655583
+  type: 'test'
+  ...
+# Subtest: late durable HTTP response after Stop cannot acknowledge save or deliver text
+ok 14 - late durable HTTP response after Stop cannot acknowledge save or deliver text
+  ---
+  duration_ms: 1.388125
+  type: 'test'
+  ...
+# Subtest: HTTP authentication/storage errors preserve status for terminal recovery without transport reconnect
+ok 15 - HTTP authentication/storage errors preserve status for terminal recovery without transport reconnect
+  ---
+  duration_ms: 0.676125
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 117.42975

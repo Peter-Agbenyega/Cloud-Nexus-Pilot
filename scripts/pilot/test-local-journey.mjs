@@ -3,14 +3,17 @@
 import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "../..");
 const require = createRequire(resolve(root, "apps/cloud-nexus-pilot/package.json"));
 const { createServerClient } = require("@supabase/ssr");
-const localRoot = "/private/tmp/cnp-pilot-local-stack";
+const recovery = process.env.PILOT_RECOVERY_STACK === "1";
+const localRoot = recovery ? resolve(homedir(), ".local/share/cloud-nexus-pilot/recovery-test") : "/private/tmp/cnp-pilot-local-stack";
+const fixture = recovery ? "http://127.0.0.1:59093" : "http://127.0.0.1:58093";
 const configuration = JSON.parse(await readFile(`${localRoot}/private.json`, "utf8"));
 const app = process.env.PILOT_JOURNEY_URL ?? "http://127.0.0.1:3100";
-assert.ok(["http://127.0.0.1:3100", "http://127.0.0.1:43101"].includes(app), "Only the two isolated local acceptance instances are supported");
+assert.ok(app === (recovery ? "http://127.0.0.1:43101" : "http://127.0.0.1:3100"), "Only the two isolated local acceptance instances are supported");
 for (const key of ["NEXT_PUBLIC_SUPABASE_URL", "PILOT_DATA_API_URL", "OPENAI_BASE_URL"]) {
   const value = process.env[key];
   assert.ok(value && new URL(value).hostname === "127.0.0.1", `Local-only ${key} required`);
@@ -39,7 +42,7 @@ function wav() {
 const a = await login(configuration.email_a), b = await login(configuration.email_b);
 steps.push("two real local account logins with SSR cookies");
 if (mode === "exercise") {
- const before = await(await fetch("http://127.0.0.1:58093/fixture-status")).json();
+ const before = await(await fetch(fixture+"/fixture-status")).json();
  assert.equal((await call(null,"/api/transcribe",{method:"POST",body:wav(),headers:{"content-type":"audio/wav"}})).status,401);
  const created = await call(a,"/api/transcribe/stream/session",{method:"POST"});assert.equal(created.status,201,`Session create failed: ${await created.clone().text()}`);const {sessionId} = await created.json();assert.match(sessionId,/^[a-f0-9-]{36}$/);
  const base = `/api/transcribe/stream/session/${sessionId}`;
@@ -51,14 +54,14 @@ if (mode === "exercise") {
  const guidance=await call(a,"/api/generate-guidance",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(guidanceBody)});assert.equal(guidance.status,200);const events=(await guidance.text()).trim().split("\n\n").map(x=>JSON.parse(x.replace(/^data: /,"")));assert.ok(events.some(e=>e.type==="final"));assert.equal(events.at(-1).type,"done");
  const saved=await(await call(a,base)).json();assert.equal(saved.saved,true);assert.equal(saved.events.length,2);assert.equal(saved.guidance.filter(g=>g.state==="succeeded").length,1);assert.equal(saved.guidance[0].result.questionId,"fixture-turn-1");
  for(let i=0;i<2;i++)assert.equal((await call(a,base+"/stop",{method:"POST"})).status,200);
- const after=await(await fetch("http://127.0.0.1:58093/fixture-status")).json();assert.equal(after.transcriptionCalls-before.transcriptionCalls,2);assert.equal(after.guidanceCalls-before.guidanceCalls,1);
+ const after=await(await fetch(fixture+"/fixture-status")).json();assert.equal(after.transcriptionCalls-before.transcriptionCalls,2);assert.equal(after.guidanceCalls-before.guidanceCalls,1);
  await writeFile(`${localRoot}/journey-session.json`,JSON.stringify({sessionId,steps,created_at:new Date().toISOString()})+"\n",{mode:0o600});
  steps.push("cross-account denial; replay has no extra provider call; guidance saved with source association; idempotent stop");
 } else if(mode === "recover") {
  const {sessionId}=JSON.parse(await readFile(`${localRoot}/journey-session.json`,"utf8"));const base=`/api/transcribe/stream/session/${sessionId}`;
  const restored=await call(a,base);assert.equal(restored.status,200);const body=await restored.json();assert.equal(body.events.length,2);assert.equal(body.status,"ended");assert.ok(body.guidance.some(g=>g.state==="succeeded"));
  const exported=await call(a,base+"?format=export");assert.equal(exported.status,200);assert.match(exported.headers.get("content-disposition"),/attachment/);assert.equal((await exported.json()).events.length,2);
- assert.equal((await call(b,base,{method:"DELETE"})).status,404);assert.equal((await call(a,base,{method:"DELETE"})).status,200);assert.equal((await call(a,base)).status,404);
- steps.push("reload durable stopped session via new HTTP requests; complete bounded export; cross-account deletion denial; owned deletion confirmed");
+ assert.equal((await call(b,base,{method:"DELETE"})).status,404);if (!recovery) { assert.equal((await call(a,base,{method:"DELETE"})).status,200);assert.equal((await call(a,base)).status,404); }
+ steps.push("reload durable stopped session via new HTTP requests; complete bounded export; cross-account deletion denial; owned deletion confirmed for original fixture; recovery fixture retained");
 } else throw new Error("Use exercise or recover");
 console.log(JSON.stringify({passed:true,mode,layer:"compiled local app + real local identity/database + synthetic provider; no microphone or paid provider",steps},null,2));

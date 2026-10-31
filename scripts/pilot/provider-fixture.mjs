@@ -2,6 +2,8 @@
 // inference and never contacts a provider. Do not deploy as a provider service.
 import { createServer } from "node:http";
 import { inspectFixtureWav } from "./audio-diagnostics.mjs";
+const port = Number(process.env.PILOT_FIXTURE_PORT ?? 58093);
+if (![58093, 59093].includes(port)) throw new Error("Unapproved local fixture port");
 let transcriptionCalls = 0, guidanceCalls = 0;
 const audio = { wavChunks: 0, nonSilentChunks: 0, wavBytes: 0, peak: 0, lastChunk: null };
 const server = createServer(async (request, response) => {
@@ -43,6 +45,6 @@ const server = createServer(async (request, response) => {
     response.writeHead(404).end();
   } catch { if (!response.headersSent) response.writeHead(400); response.end(); }
 });
-server.listen(58093, "127.0.0.1", () => console.log("Synthetic Pilot provider fixture at http://127.0.0.1:58093 (no inference, no external calls)."));
+server.listen(port, "127.0.0.1", () => console.log(`Synthetic Pilot provider fixture at http://127.0.0.1:${port} (no inference, no external calls).`));
 process.once("SIGTERM", () => server.close());
 process.once("SIGINT", () => server.close());

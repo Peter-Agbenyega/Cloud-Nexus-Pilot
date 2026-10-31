@@ -4,11 +4,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import hmac
 import http.client
 import json
+import os
 from pathlib import Path
 
-PRIVATE = Path('/private/tmp/cnp-pilot-local-stack/private.json')
+RECOVERY = os.environ.get('PILOT_RECOVERY_STACK') == '1'
+PRIVATE = (Path.home()/'.local/share/cloud-nexus-pilot/recovery-test/private.json') if RECOVERY else Path('/private/tmp/cnp-pilot-local-stack/private.json')
+AUTH_PORT, REST_PORT, GATEWAY_PORT = (59091, 59092, 59090) if RECOVERY else (58091, 58092, 58090)
 config = json.loads(PRIVATE.read_text())
-allowed_origins = {'http://127.0.0.1:3100', 'http://localhost:3100', 'http://127.0.0.1:3000', 'http://localhost:3000'}
+allowed_origins = {'http://127.0.0.1:43101', 'http://localhost:43101'} if RECOVERY else {'http://127.0.0.1:3100', 'http://localhost:3100', 'http://127.0.0.1:3000', 'http://localhost:3000'}
 
 
 class Gateway(BaseHTTPRequestHandler):
@@ -49,13 +52,13 @@ class Gateway(BaseHTTPRequestHandler):
         if origin and origin not in allowed_origins:
             return self.reply(403, {'error': 'origin_denied'})
         if self.path.startswith('/auth/v1/'):
-            port, path = 58091, self.path[len('/auth/v1'):]
+            port, path = AUTH_PORT, self.path[len('/auth/v1'):]
         elif self.path.startswith('/rest/v1/'):
-            port, path = 58092, self.path[len('/rest/v1'):]
+            port, path = REST_PORT, self.path[len('/rest/v1'):]
         else:
             return self.reply(404, {'error': 'not_found'})
         key = self.headers.get('apikey', '')
-        health = self.command == 'GET' and path.split('?')[0] == '/health' and port == 58091
+        health = self.command == 'GET' and path.split('?')[0] == '/health' and port == AUTH_PORT
         if not health and not any(hmac.compare_digest(key, config[name]) for name in ('anon_key', 'service_key')):
             return self.reply(401, {'error': 'invalid_api_key'})
         try:
@@ -69,7 +72,7 @@ class Gateway(BaseHTTPRequestHandler):
             headers = {key: value for key, value in self.headers.items()
                        if key.lower() not in {'host', 'connection', 'transfer-encoding', 'content-length'}}
             headers['x-forwarded-proto'] = 'http'
-            headers['x-forwarded-host'] = '127.0.0.1:58090'
+            headers['x-forwarded-host'] = '127.0.0.1:'+str(GATEWAY_PORT)
             conn = http.client.HTTPConnection('127.0.0.1', port, timeout=10)
             try:
                 conn.request(self.command, path, body, headers)
@@ -99,6 +102,6 @@ class Gateway(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server = ThreadingHTTPServer(('127.0.0.1', 58090), Gateway)
-    print('Pilot local acceptance gateway listening on 127.0.0.1:58090', flush=True)
+    server = ThreadingHTTPServer(('127.0.0.1', GATEWAY_PORT), Gateway)
+    print('Pilot local acceptance gateway listening on 127.0.0.1:'+str(GATEWAY_PORT), flush=True)
     server.serve_forever()

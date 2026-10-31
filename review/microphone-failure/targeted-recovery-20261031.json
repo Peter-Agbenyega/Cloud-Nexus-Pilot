@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-31T17:02:30.441921+00:00",
+  "base": "24ceda55a478d50184dd3fb17b671ac7539fc0bd",
+  "recovered_fields": [
+    "anon_key",
+    "service_key"
+  ],
+  "separate_protected_issuer_recovered": true,
+  "permissions": "0600",
+  "existing_signer_matches_auth_rest": true,
+  "old_service_signature_verified": true,
+  "service_credential_unchanged": true,
+  "candidate_verifier_status": 503,
+  "candidate_verifier_code": "PGRST000",
+  "database_error_category": "could not open file global/pg_filenode.map: No such file or directory",
+  "map_missing_on_recorded_bind_mount": true,
+  "pg_control_exists": true,
+  "database_restarted": false,
+  "schema_or_data_mutated": false,
+  "provider_calls": 0,
+  "synthetic_acceptance": "blocked by original database integrity",
+  "physical_microphone": "not activated/not verified",
+  "live_transcription": "not run",
+  "production": "not verified",
+  "proposed_ports_free_at_probe": {
+    "43101": true,
+    "43310": true,
+    "59090": true,
+    "59091": true,
+    "59092": true,
+    "59093": true
+  }
+}

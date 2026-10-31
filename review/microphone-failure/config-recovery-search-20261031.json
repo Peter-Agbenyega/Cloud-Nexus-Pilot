@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-31T16:18:09.011112+00:00",
+  "base_commit": "746366c5a468d0c5a33657637218a15e42ce9b18",
+  "container_checks": {
+    "db": {
+      "id_matches": true,
+      "purpose_matches": true,
+      "running": true
+    },
+    "auth": {
+      "id_matches": true,
+      "purpose_matches": true,
+      "running": true
+    },
+    "rest": {
+      "id_matches": true,
+      "purpose_matches": true,
+      "running": true
+    }
+  },
+  "issuer_matches": true,
+  "signers_match": true,
+  "read_only_probe": {
+    "http_status": 401,
+    "code": "PGRST303"
+  },
+  "original_private_config_exists": false,
+  "backup_is_PGDMP": true,
+  "backup_sha256": "481ea53009da749929eb9d93ef4dcbca59c80ad5f2db42be1fbe35faa3c0886d",
+  "backup_locations_checked": [
+    "/private/tmp/cnp-pilot-local-stack",
+    "/private/tmp/cnp-pilot-local-stack/lifecycle-before-resume",
+    "/private/tmp/cnp-pilot-local-stack/staging/restore-rehearsal",
+    "/private/tmp/cnp-prior-attempt-artifacts",
+    "/Users/peterchristianagbenyega/cloud-nexus-pilot-supabase-backup"
+  ],
+  "original_config_found": false,
+  "credential_changes": false,
+  "provider_calls": 0,
+  "physical_microphone": "not activated/not verified",
+  "live_transcription": "not run",
+  "production": "not verified"
+}

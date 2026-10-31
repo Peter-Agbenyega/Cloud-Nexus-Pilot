@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: capability disclosure labels the actual fixture, not live OpenAI recognition
+ok 1 - capability disclosure labels the actual fixture, not live OpenAI recognition
+  ---
+  duration_ms: 45.772791
+  type: 'test'
+  ...
+# Subtest: official configuration is not reported as an authenticated health result
+ok 2 - official configuration is not reported as an authenticated health result
+  ---
+  duration_ms: 4.442292
+  type: 'test'
+  ...
+# Subtest: Deepgram selection remains independent of fixture guidance
+ok 3 - Deepgram selection remains independent of fixture guidance
+  ---
+  duration_ms: 4.0945
+  type: 'test'
+  ...
+# Subtest: answer latency excludes an hour of idle time
+ok 4 - answer latency excludes an hour of idle time
+  ---
+  duration_ms: 5.092416
+  type: 'test'
+  ...
+# Subtest: a saved guidance acknowledgement does not relabel failed audio
+ok 5 - a saved guidance acknowledgement does not relabel failed audio
+  ---
+  duration_ms: 2.202875
+  type: 'test'
+  ...
+# Subtest: Kubernetes question survives the real prompt builder and mocked transport
+ok 6 - Kubernetes question survives the real prompt builder and mocked transport
+  ---
+  duration_ms: 16.343916
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 369.16175

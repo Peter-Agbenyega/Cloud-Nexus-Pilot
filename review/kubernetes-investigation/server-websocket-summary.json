@@ -1,0 +1,84 @@
+{
+  "source": "durable recovery application.log; sanitized metadata only",
+  "message_counts": {
+    "Realtime WebSocket session connected": 14,
+    "Realtime WebSocket session authenticated": 14,
+    "Realtime WebSocket runtime event accepted": 163,
+    "Realtime WebSocket session disconnected": 13,
+    "Closing idle WebSocket session": 9,
+    "Closing WebSocket session because authentication token expired": 1
+  },
+  "recent_events": [
+    {
+      "time": 1793474515377,
+      "msg": "Realtime WebSocket session connected"
+    },
+    {
+      "time": 1793474515434,
+      "msg": "Realtime WebSocket session authenticated"
+    },
+    {
+      "time": 1793474815437,
+      "msg": "Closing idle WebSocket session",
+      "closeCode": 1001
+    },
+    {
+      "time": 1793474815440,
+      "msg": "Realtime WebSocket session disconnected",
+      "closeCode": 1001
+    },
+    {
+      "time": 1793474816374,
+      "msg": "Realtime WebSocket session connected"
+    },
+    {
+      "time": 1793474816416,
+      "msg": "Realtime WebSocket session authenticated"
+    },
+    {
+      "time": 1793475033008,
+      "msg": "Closing WebSocket session because authentication token expired",
+      "closeCode": 1008
+    },
+    {
+      "time": 1793475033017,
+      "msg": "Realtime WebSocket session disconnected",
+      "closeCode": 1008
+    },
+    {
+      "time": 1793477029975,
+      "msg": "Realtime WebSocket session connected"
+    },
+    {
+      "time": 1793477030017,
+      "msg": "Realtime WebSocket session authenticated"
+    },
+    {
+      "time": 1793477030023,
+      "msg": "Realtime WebSocket session disconnected",
+      "closeCode": 1000
+    },
+    {
+      "time": 1793479722480,
+      "msg": "Realtime WebSocket session connected"
+    },
+    {
+      "time": 1793479722523,
+      "msg": "Realtime WebSocket session authenticated"
+    },
+    {
+      "time": 1793479722526,
+      "msg": "Realtime WebSocket session disconnected",
+      "closeCode": 1000
+    },
+    {
+      "time": 1793479761120,
+      "msg": "Realtime WebSocket session connected"
+    },
+    {
+      "time": 1793479761174,
+      "msg": "Realtime WebSocket session authenticated"
+    }
+  ],
+  "raw_tokens_audio_prompts_not_retained": true
+}

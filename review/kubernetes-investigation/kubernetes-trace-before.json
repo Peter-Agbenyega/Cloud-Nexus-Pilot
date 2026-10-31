@@ -1,0 +1,120 @@
+{
+  "at": "2026-10-31T20:03:50.024Z",
+  "expectedQuestion": "What is Kubernetes?",
+  "input": {
+    "kind": "macOS TTS-generated spoken WAV; NOT physical microphone",
+    "bytes": 33636
+  },
+  "capabilities": {
+    "transcriptionProvider": "OpenAI",
+    "guidanceProvider": "OpenAI",
+    "syntheticFixture": true,
+    "acceptedAudio": "Complete PCM16 WAV",
+    "rawAudioRetained": false,
+    "sessionLimitMinutes": 30,
+    "note": "Configuration information only. Account allowance is enforced before processing; live provider availability is not certified by this response."
+  },
+  "streamingChunk": {
+    "status": 202,
+    "transcript": "What is infrastructure as code?",
+    "saved": true
+  },
+  "completedFileUpload": {
+    "status": 200,
+    "transcript": "What is infrastructure as code?"
+  },
+  "typedQuestion": "What is Kubernetes?",
+  "answer": {
+    "headline": "General technical explanation",
+    "speakNow": "Infrastructure as code defines resources in versioned configuration. Review a plan, test changes, and apply through an approved workflow.",
+    "keyPoints": [
+      "Version changes",
+      "Review plans",
+      "Test before applying"
+    ],
+    "example": "Hypothetical: a reviewed Terraform configuration creates a test network.",
+    "technicalDetail": null,
+    "caution": "Synthetic local fixture; no live model was called.",
+    "followUp": null,
+    "gist": "Infrastructure as code defines resources in versioned configuration. Review a plan, test changes, and apply through an approved workflow.",
+    "key_points": [
+      "Version changes",
+      "Review plans",
+      "Test before applying"
+    ],
+    "full_answer": "Infrastructure as code defines resources in versioned configuration. This is a general explanation, not a claim of personal work experience."
+  },
+  "questionSpecific": false,
+  "providerDispatchDelta": {
+    "transcription": 2,
+    "guidance": 1
+  },
+  "savedEventCount": 1,
+  "websocket": [
+    {
+      "type": "session.auth_required",
+      "at": "2026-10-31T20:03:49.976Z"
+    },
+    {
+      "type": "session.ready",
+      "at": "2026-10-31T20:03:50.017Z"
+    },
+    {
+      "type": "pong",
+      "at": "2026-10-31T20:03:50.022Z"
+    },
+    {
+      "type": "session.ended",
+      "at": "2026-10-31T20:03:50.023Z"
+    },
+    {
+      "closeCode": 1000
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/processing-capabilities",
+      "method": "GET",
+      "status": 200,
+      "totalMs": 78
+    },
+    {
+      "path": "/api/transcribe/stream/session",
+      "method": "POST",
+      "status": 201,
+      "totalMs": 80
+    },
+    {
+      "path": "/api/transcribe/stream/session/<test-session>/chunk",
+      "method": "POST",
+      "status": 202,
+      "totalMs": 90
+    },
+    {
+      "path": "/api/transcribe",
+      "method": "POST",
+      "status": 200,
+      "totalMs": 48
+    },
+    {
+      "path": "/api/generate-guidance",
+      "method": "POST",
+      "status": 200,
+      "totalMs": 47
+    },
+    {
+      "path": "/api/transcribe/stream/session/<test-session>",
+      "method": "GET",
+      "status": 200,
+      "totalMs": 26
+    },
+    {
+      "path": "/api/transcribe/stream/session/<test-session>/stop",
+      "method": "POST",
+      "status": 200,
+      "totalMs": 32
+    }
+  ],
+  "liveProviderUsed": false,
+  "originalSpokenWordsNotRecoverable": true
+}

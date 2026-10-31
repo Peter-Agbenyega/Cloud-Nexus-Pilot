@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-31T19:56:04.206194+00:00",
+  "usage": {
+    "granted_units": 20000000,
+    "consumed_units": 19987464,
+    "reserved_units": 0,
+    "max_concurrency": 2
+  },
+  "operations": [
+    {
+      "kind": "guidance",
+      "state": "succeeded",
+      "count": 3,
+      "used_units": 3000,
+      "first_at": "2026-10-31T18:29:24.361565+00:00",
+      "last_at": "2026-10-31T18:30:43.514376+00:00"
+    },
+    {
+      "kind": "transcription",
+      "state": "succeeded",
+      "count": 157,
+      "used_units": 19984464,
+      "first_at": "2026-10-31T18:29:24.285716+00:00",
+      "last_at": "2026-10-31T18:40:28.408062+00:00"
+    }
+  ],
+  "transcripts": [
+    {
+      "events": 314,
+      "distinct_texts": 1,
+      "first_at": "2026-10-31T18:29:24.312167+00:00",
+      "last_at": "2026-10-31T18:40:28.443426+00:00",
+      "all_fixed_iac": true
+    }
+  ]
+}

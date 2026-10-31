@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-31T20:51:29.095968+00:00",
+  "base": "b0210db66a0f5336559ff773439bba3848f85d13",
+  "application_implementation": "a3aa61f",
+  "probe_implementation": "2440be5",
+  "branch": "fix/pilot-voice-provider-diagnosis-20261031",
+  "runtime_checkout": "/Users/peterchristianagbenyega/Cloud-Nexus-Pilot-voice-investigation",
+  "build_id": "bKw8EdyTxmrGgp5OLHOxf",
+  "frontend_tests": 210,
+  "cookie_isolation_tests": 4,
+  "lint": "pass",
+  "typecheck": "pass",
+  "scoped_build": "pass",
+  "kubernetes_live_acceptance": "BLOCKED; missing authorized OPENAI_API_KEY; synthetic content remains intentionally incorrect for this question",
+  "physical_capture": "historic audio delivery confirmed numerically and user-reported; no new microphone activated or meter movement observed",
+  "source_hashes": [
+    {
+      "path": "apps/cloud-nexus-pilot/lib/guidance-latency.ts",
+      "sha256": "37cdfea04ec8dedeb3cfbe8905e524e86ee368d67a8cd67212c5c612dd895747"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/app/api/processing-capabilities/route.ts",
+      "sha256": "67665febde02a8d8612d270af5e6cffedf3a4f00997f940017471cf99964d4d4"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/components/ready-state-launch-panel.tsx",
+      "sha256": "d92e26d6f7af9d38a71bbacc65705c8797b374dff6d0a2477e5008744fbedb7a"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/components/capture-disclosure.tsx",
+      "sha256": "05cfc28a9d9035e9fd62cf48367723c2256a9efee8b280b3052d963d9969ca98"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/app/layout.tsx",
+      "sha256": "bb8db31ff615c77fa1081e2200ed727aa5fad2ceaa8c6d77d1543f21bfcb886f"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "review/kubernetes-investigation/initial-browser-state.json",
+      "sha256": "af8885a790c9b2dba011080f02b47e50ceeb1534ac929201d73787f509851335"
+    },
+    {
+      "path": "review/kubernetes-investigation/kubernetes-trace-before.json",
+      "sha256": "d841ea3d35c11c6cb4e9f44a87effe1c8f10ca80a40bae5ec6a5da40e7ed9c73"
+    },
+    {
+      "path": "review/kubernetes-investigation/kubernetes-trace-after.json",
+      "sha256": "69e0748b82f92b1b363b70c89e25f21cb308d6e900c110adbc1d6eb4f30f9317"
+    },
+    {
+      "path": "review/kubernetes-investigation/quota-negative.json",
+      "sha256": "f1fcd5aef4149b0910f534b99711c4fd27082bb9a9cb83da2c0124a8cb950d12"
+    },
+    {
+      "path": "review/kubernetes-investigation/quota-restored.json",
+      "sha256": "6f1f3c74f21c3b8389e21802ff736dee38746de57f519fb5105a65712b1023d0"
+    },
+    {
+      "path": "review/kubernetes-investigation/allowance-and-connectivity.json",
+      "sha256": "78095200b31c04cf2e5c1bd8fae10b1022513c07617955d20282b11c23f2e6b9"
+    },
+    {
+      "path": "review/kubernetes-investigation/frontend-tests.log",
+      "sha256": "64d195c9f915021b1fa1b7516b6cc4afb115935ac7004a8157e5066b3c7ee9e3"
+    },
+    {
+      "path": "review/kubernetes-investigation/cookie-isolation-tests.log",
+      "sha256": "b48b18b39fd35bb932394c787d7cfbeef3d477d3bacd8a5a3b08dbf4ceb03107"
+    },
+    {
+      "path": "review/kubernetes-investigation/diagnostic-tests.log",
+      "sha256": "1e739184d0ba8fdf08b30a2f98ad7f33a80d19fe183cb3a836bedd932ac70fb7"
+    },
+    {
+      "path": "review/kubernetes-investigation/lint.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "path": "review/kubernetes-investigation/typecheck.log",
+      "sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+    },
+    {
+      "path": "review/kubernetes-investigation/build.log",
+      "sha256": "0dc279b1c6410a250c4b65367327e11b4e7aea16fb5a4a260a3ee56a5d719f27"
+    }
+  ]
+}

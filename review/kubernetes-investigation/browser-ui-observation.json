@@ -1,0 +1,33 @@
+{
+  "source": "native Chrome accessibility observations recorded during this task; not a captured original network/console log",
+  "workspace": "http://127.0.0.1:43101/workspace",
+  "before": {
+    "synthetic_banner_visible": true,
+    "audio_capture": "stopped",
+    "input_meter": 0,
+    "server_error": "Processing allowance or concurrency is exhausted",
+    "detected_question": "What is infrastructure as code?",
+    "displayed_answer_topic": "infrastructure as code",
+    "average_response_display": "3599s",
+    "first_transcript_display_ms": 4180,
+    "first_guidance_display_ms": 4260
+  },
+  "controlled_typed_reproduction": {
+    "input": "What is Kubernetes?",
+    "saved_question": "What is Kubernetes?",
+    "saved_answer_topic": "infrastructure as code",
+    "average_response_changed_from": "5289s",
+    "average_response_changed_to": "2646s",
+    "first_guidance_display_after_typed_ms": 5284293,
+    "contradictory_status": "Server acknowledgement: saved beside prior audio quota error"
+  },
+  "after_patched_build_reload": {
+    "synthetic_banner_explicit_no_speech_recognition": true,
+    "transcription_provider": "Synthetic fixture",
+    "guidance_provider": "Synthetic fixture",
+    "typed_action": "Generate sample guidance (synthetic)",
+    "start_session_visible": true,
+    "microphone_not_activated_by_agent": true
+  },
+  "console_and_original_network_logs": "not captured; production Next log has no original HTTP payloads; native console attempts coincided with user window changes. No original console errors fabricated."
+}

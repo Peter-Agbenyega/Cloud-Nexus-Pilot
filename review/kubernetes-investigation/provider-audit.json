@@ -1,0 +1,46 @@
+{
+  "synthetic_fixture": {
+    "configured": true,
+    "endpoint": "http://127.0.0.1:59093/v1",
+    "transcription_model_label": "synthetic-transcription",
+    "guidance_model_label": "synthetic-guidance",
+    "reachable": true,
+    "provider_authentication": "not implemented by fixture; synthetic placeholder credential, NOT a real vendor key",
+    "app_account_authentication": "verified separately with local GoTrue",
+    "actually_used": true,
+    "speech_recognition": false,
+    "question_specific_ai": false
+  },
+  "official_openai": {
+    "prepared_endpoint": "https://api.openai.com/v1",
+    "models": [
+      "gpt-4o-mini-transcribe",
+      "gpt-4o-mini"
+    ],
+    "OPENAI_API_KEY_present_in_approved_local_sources": false,
+    "unauthenticated_models_status": 401,
+    "authenticated_model_access": "not verified; missing key",
+    "rate_limits_and_allowance": "not verifiable without authorized key",
+    "actually_used": false
+  },
+  "deepgram": {
+    "DEEPGRAM_API_KEY_present": false,
+    "selected": false,
+    "network_probed": false
+  },
+  "other_named_providers": {
+    "names": [
+      "Azure OpenAI",
+      "Google Speech",
+      "Gemini",
+      "AssemblyAI",
+      "local Whisper/STT",
+      "Ollama",
+      "Anthropic"
+    ],
+    "configured_in_Pilot_runtime": false,
+    "actually_used_by_traced_routes": false,
+    "not_probed": "No configured Pilot adapter/endpoint/credential; no unrelated credential/service search"
+  },
+  "live_key_prerequisite": "/Users/peterchristianagbenyega/.local/share/cloud-nexus-pilot/recovery-test/live-provider.env : OPENAI_API_KEY; authorized transcription/chat access and existing test allowance; never chat"
+}

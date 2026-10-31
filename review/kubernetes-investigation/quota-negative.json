@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-31T20:42:22.395Z",
+  "mode": "synthetic quota negative probe; no microphone",
+  "audioBytes": 33636,
+  "status": 429,
+  "code": "quota_exhausted",
+  "providerDispatchDelta": 0
+}

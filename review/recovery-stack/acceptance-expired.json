@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-31T17:43:40.849Z",
+  "mode": "expired",
+  "synthetic": true,
+  "physicalMicrophone": false,
+  "liveProvider": false,
+  "status": 503,
+  "code": "processing_settlement_unavailable",
+  "providerDispatchDelta": 0,
+  "usageUnchanged": true,
+  "savedEvents": 0,
+  "idempotentStop": true
+}

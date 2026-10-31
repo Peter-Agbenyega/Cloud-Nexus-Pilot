@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-31T17:34:37.363048+00:00",
+  "anonymous_rejected": 401,
+  "invalid_signature_rejected": 401,
+  "unapproved_origin_rejected": 403,
+  "service_authorized_read_only": 200,
+  "clock_skew_under_30s": true,
+  "credential_ttl_seconds": 86400,
+  "credential_expires_at": "2026-11-01T17:14:19+00:00",
+  "new_database_mount_type": "volume",
+  "new_volume": "cnp-pilot-recovery-test-fc69334c-data",
+  "new_container_identity_verified": true,
+  "original_container_ids_preserved_and_running": true,
+  "durable_configuration": "/Users/peterchristianagbenyega/.local/share/cloud-nexus-pilot/recovery-test",
+  "physical_microphone": "pending user action",
+  "live_transcription": "not run",
+  "production": "not verified"
+}

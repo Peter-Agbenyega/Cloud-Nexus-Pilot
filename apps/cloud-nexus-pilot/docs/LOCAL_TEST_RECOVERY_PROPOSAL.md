@@ -1,4 +1,8 @@
-# Separate local acceptance stack proposal — approval required
+# Separate local acceptance stack — approved and implemented
+
+Approved31October2026. Durable configuration/runtime paths supersede the proposed
+temporary paths below. See RECOVERY_TEST_STACK.md and review/recovery-stack for
+actual installation and acceptance results. Original database recovery is separate.
 
 Original stack stays untouched. Its recovered original gateway keys and signer
 are protected outside Git. Its database currently cannot open global/pg_filenode.map.

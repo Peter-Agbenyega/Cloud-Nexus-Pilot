@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-31T17:47:28.517128+00:00",
+  "implementation": "57563cc7ffec84baa2414dfe996f5cbc7851ce8d",
+  "engineering_branch": "fix/pilot-quality-gates",
+  "runtime_checkout": "/Users/peterchristianagbenyega/Cloud-Nexus-Pilot-recovery-acceptance",
+  "runtime_HEAD": "57563cc7ffec84baa2414dfe996f5cbc7851ce8d",
+  "runtime_build_id": "lzMh8tW9WQ87XK5KM2puf",
+  "private_configuration_directory": "/Users/peterchristianagbenyega/.local/share/cloud-nexus-pilot/recovery-test",
+  "new_named_database_volume": "cnp-pilot-recovery-test-fc69334c-data",
+  "frontend_tests": 204,
+  "auth_isolation_tests": 4,
+  "realtime_tests": 57,
+  "lint": "pass",
+  "typecheck": "pass",
+  "production_build_and_realtime_compile": "pass",
+  "synthetic_processing": "pass; real local identity/REST/PostgreSQL with fixed local provider responses",
+  "retry_deduplication": "pass; 1 dispatch and 0 additional usage for replay",
+  "invalid_processing_configuration": "503; zero dispatch, no usage change, zero saved events",
+  "fresh_request_recovery_after_app_restart": "pass",
+  "capture_cleanup": "helper/client/audio-pipeline mocks pass; physical not verified",
+  "physical_capture": "pending user action; browser account0 sessions at observer snapshot",
+  "live_transcription": "not run",
+  "production": "not verified",
+  "original_saved_session_recovery": "unresolved; missing original database map; original resources untouched",
+  "initial_realtime_sandbox_failure": "EPERM loopback bind; authorized rerun57 pass",
+  "source": [
+    {
+      "path": "apps/cloud-nexus-pilot/lib/pilot-auth-cookies.ts",
+      "sha256": "13db704c65e3601a2d18ee3bcc7734e4c0665960947fe35baab7a37af65a1ba9"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/lib/supabase.ts",
+      "sha256": "b9cad5f1ae122d8636a3ab4b48d80ed52a284c74c0906741c84dfa64512c9c6c"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/lib/server/provider-auth.ts",
+      "sha256": "aa3f87b2f025e678cdaaa93be08b8a29c72db499bf704c17007d48877f13fef3"
+    },
+    {
+      "path": "apps/cloud-nexus-pilot/middleware.ts",
+      "sha256": "9f451192d8d5f4c64aeed8a60049bf62ca05208f7da87a37ad0664dda5d3595d"
+    },
+    {
+      "path": "scripts/pilot/provider-fixture.mjs",
+      "sha256": "0feae7fd0e927086182aab90eb310fdf0f0db86e7e84873876ae92933ce8bc49"
+    },
+    {
+      "path": "scripts/db-test/local_pilot_gateway.py",
+      "sha256": "a7ec4941c2ebbd93a8ff8fb6c848744fa822a2a288a21e9b4a29e081f57244fe"
+    },
+    {
+      "path": "scripts/pilot/test-local-journey.mjs",
+      "sha256": "6d3db7bcfaeedd0d3757c256a2f7909b0cce61048d2c24f5ae17dfccfe569748"
+    },
+    {
+      "path": "scripts/pilot/test-recovery-acceptance.mjs",
+      "sha256": "39fa4213a27f2dba41d1864b797995334df51938eecdddb8930bdb5da768a717"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "review/recovery-stack/build-browser-config.log",
+      "sha256": "6e43aa6e99e5d86b15811c6546fe37ed44808e19d4d81ef321c541032e66d74c"
+    },
+    {
+      "path": "review/recovery-stack/frontend-tests-final.log",
+      "sha256": "08ff5834e513e803be8c8fe91e3737d0fdaf51dde39e1367bb8170fbad615b04"
+    },
+    {
+      "path": "review/recovery-stack/auth-isolation-tests.log",
+      "sha256": "da6bccd362ec657433119acce8f0e937980746370955c517bc4093f357d1959a"
+    },
+    {
+      "path": "review/recovery-stack/lint-final.log",
+      "sha256": "02e134ffcd6641c4bea022dd869562a7ca363347b4d5c42fc441b12a0b64f230"
+    },
+    {
+      "path": "review/recovery-stack/typecheck-final.log",
+      "sha256": "bc0ca8de37ae13a355be09392aa117fa7f5d74b45f4d7c0cc8ddcd17a9e428bd"
+    },
+    {
+      "path": "review/recovery-stack/realtime-tests-authorized.log",
+      "sha256": "c40c053a182505d214b16f69e81980d5c5944ebe75f775795cfbbd0a6f451930"
+    },
+    {
+      "path": "review/recovery-stack/acceptance-normal.json",
+      "sha256": "683bc65d98bdbb1954ee66cfcad66c7a4e9a8dffabf176b32d80958803bbd8a0"
+    },
+    {
+      "path": "review/recovery-stack/acceptance-expired.json",
+      "sha256": "0e7d07d0131b125ddbf0bf19165052f549ddde7c97b02c92b689317bcbcc9c84"
+    },
+    {
+      "path": "review/recovery-stack/acceptance-recover.json",
+      "sha256": "23134523237f5de566b282da0de76b981ee758a02014e7b8b3427475525b6ad8"
+    },
+    {
+      "path": "review/recovery-stack/workspace-preflight.json",
+      "sha256": "40b54cba0354c23c906b141e16904ffd598a1bbc5b36bd304a4cc40abc5f6f30"
+    },
+    {
+      "path": "review/recovery-stack/stack-security.json",
+      "sha256": "d218721ff88ab3f39947da0499e872598aab69d401bd787ef51ea31390eec69e"
+    },
+    {
+      "path": "review/recovery-stack/microphone-observer.json",
+      "sha256": "2c939ffdb92a9942007418c1cb27985c5539d6446414b4fba7b918eaaa4b75d7"
+    }
+  ]
+}

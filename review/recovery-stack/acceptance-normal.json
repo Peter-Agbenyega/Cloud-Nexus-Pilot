@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-31T17:40:08.299Z",
+  "mode": "normal",
+  "synthetic": true,
+  "physicalMicrophone": false,
+  "liveProvider": false,
+  "firstStatus": 202,
+  "replayStatus": 200,
+  "acknowledged": true,
+  "eventCount": 1,
+  "providerDispatchDelta": 1,
+  "replayAdditionalUsage": 0,
+  "reservedUnits": 0,
+  "idempotentStop": true
+}

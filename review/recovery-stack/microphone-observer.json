@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-31T17:46:51.625397+00:00",
+  "numeric_browser_account_observations": {
+    "browser_sessions": 0,
+    "browser_final_events": 0,
+    "browser_reserved_operations": 0
+  },
+  "fixture_audio_chunks": 1,
+  "fixture_non_silent_chunks": 1,
+  "fixture_transcription_calls": 1,
+  "physical_capture_verified": false,
+  "note": "fixture counts include identified automated tone acceptance; no physical microphone inference from these counters alone",
+  "gateway_durable_source": true
+}

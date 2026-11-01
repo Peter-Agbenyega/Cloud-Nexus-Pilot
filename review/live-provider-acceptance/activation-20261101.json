@@ -1,0 +1,46 @@
+{
+  "key": {
+    "created": true,
+    "name": "Cloud-Nexus-Pilot",
+    "organization": "Personal",
+    "project": "Cloudnexususa",
+    "authenticationHttpStatus": 200,
+    "configuredModelsListed": true,
+    "secretInReport": false
+  },
+  "renewal": {
+    "renewed": true,
+    "ttl_seconds": 86400,
+    "expires_at": "2026-11-02T21:02:33+00:00",
+    "signer_preserved": true,
+    "accounts_and_public_rows_preserved": true,
+    "original_stack_state_unchanged": true,
+    "synthetic_app_stopped": true,
+    "live_gateway_cors_verified": true
+  },
+  "liveAttempt": {
+    "at": "2026-11-01T21:03:54.431Z",
+    "liveProvider": true,
+    "physicalMicrophone": false,
+    "audioSource": "macOS generated Kubernetes speech",
+    "transcriptionRequests": 1,
+    "guidanceRequests": 0,
+    "passed": false,
+    "sessionId": "9fa3a79d-df5e-4da0-bf0d-fd24595ee53e",
+    "transcriptionStatus": 429,
+    "transcriptionErrorCode": "transcript_processing_failed",
+    "failure": "Transcription failed\n\n429 !== 202\n",
+    "cleanup": {
+      "readStatus": 200,
+      "sessionStatus": "ended",
+      "eventCount": 0,
+      "guidanceCount": 0,
+      "usage": {
+        "consumed_units": 20055736,
+        "reserved_units": 0,
+        "granted_units": 40000000
+      }
+    }
+  },
+  "browserBillingInspection": "connection timeout; exact 429 reason unconfirmed"
+}

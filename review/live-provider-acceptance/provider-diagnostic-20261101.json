@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-01T21:39:39.639Z",
+  "requests": 1,
+  "model": "gpt-4o-mini-transcribe",
+  "status": 429,
+  "errorCode": "credit_balance_exhausted",
+  "errorType": "insufficient_quota",
+  "quotaLanguage": true,
+  "rateLanguage": false
+}

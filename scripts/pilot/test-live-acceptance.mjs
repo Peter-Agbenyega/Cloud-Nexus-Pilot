@@ -6,16 +6,21 @@ import {homedir} from 'node:os';
 import {resolve} from 'node:path';
 import {createRequire} from 'node:module';
 import {randomUUID} from 'node:crypto';
-assert.deepEqual(process.argv.slice(2),['--execute-once']);
+assert.equal(process.argv[2],'--execute-once');
+assert.ok(process.argv.length <= 4);
+const attemptId=process.argv[3] ?? '20261101';
+assert.match(attemptId,/^[a-zA-Z0-9_-]{1,64}$/);
 const require=createRequire(new URL('../../apps/cloud-nexus-pilot/package.json',import.meta.url));
 const {createServerClient}=require('@supabase/ssr');
 const p=resolve(homedir(),'.local/share/cloud-nexus-pilot/recovery-test');
 const app='http://127.0.0.1:43102', gateway='http://127.0.0.1:59090', fixture='http://127.0.0.1:59093';
 const report={at:new Date().toISOString(),liveProvider:true,physicalMicrophone:false,audioSource:'macOS generated Kubernetes speech',transcriptionRequests:0,guidanceRequests:0,passed:false};
-const reportPath=resolve(p,'live-acceptance-20261101.json');
+const reportPath=resolve(p,'live-acceptance-'+attemptId+'.json');
 let sessionBase,request;
 try {
- const html=await(await fetch(app+'/login',{signal:AbortSignal.timeout(10000)})).text();
+ const page=await fetch(app+'/auth/login',{signal:AbortSignal.timeout(10000)});
+ assert.equal(page.status,200,'Live sign-in page unavailable');
+ const html=await page.text();
  assert.ok(html.includes('LIVE PROVIDER TEST'),'Live disclosure missing');
  const cfg=JSON.parse(await readFile(resolve(p,'private.json'),'utf8'));
  const jar=new Map();
@@ -33,7 +38,7 @@ try {
  assert.ok(usageBefore.granted_units-usageBefore.consumed_units-usageBefore.reserved_units>=wav.length+1000,'Insufficient local test allowance');
  assert.ok(wav.length>1000&&wav.toString('ascii',0,4)==='RIFF','Speech WAV missing');
  // Durable one-shot marker prevents accidental paid reruns.
- const marker=await open(resolve(p,'live-acceptance-20261101.attempt'),'wx',0o600);
+ const marker=await open(resolve(p,'live-acceptance-'+attemptId+'.attempt'),'wx',0o600);
  await marker.writeFile(report.at+'\n');await marker.close();
  const created=await request('/api/transcribe/stream/session',{method:'POST'});
  const createdBody=await created.json();

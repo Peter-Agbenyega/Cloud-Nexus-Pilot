@@ -1,6 +1,6 @@
 # Live provider acceptance — 2026-11-01
 
-Status: key provisioned and authenticated; live application running locally; semantic acceptance BLOCKED by upstream HTTP 429.
+Status: key provisioned and authenticated; live application running locally; semantic acceptance BLOCKED by confirmed OpenAI credit_balance_exhausted.
 
 ## Current result
 - User approved creation and the private local destination. The OpenAI Developers encrypted setup created Cloud-Nexus-Pilot in Personal / Cloudnexususa.
@@ -8,7 +8,9 @@ Status: key provisioned and authenticated; live application running locally; sem
 - Official /v1/models returned 200. Both gpt-4o-mini and gpt-4o-mini-transcribe were listed. This proves authentication/model listing, not inference entitlement.
 - One generated Kubernetes speech WAV was submitted through the authenticated application. OpenAI transcription returned HTTP 429; the app returned transcript_processing_failed.
 - No guidance request was sent. No inference retry was made.
-- Provider error bodies are currently discarded by the adapter. Therefore the exact reason (rate, credits, spend or usage limits) is NOT established.
+- A later user-authorized continuation made one direct diagnostic request: HTTP 429, code credit_balance_exhausted, type insufficient_quota. The connected organization has exhausted API credits. No further paid requests were made.
+- Provider adapters now read only bounded error envelopes and translate recognized codes into safe app-owned messages. Audio and typed guidance distinguish credits, spend limits, usage limits and temporary rate limits; raw provider payloads are never exposed.
+- Existing capture stop/no-retry behavior is preserved. Billing-block feedback no longer suggests typed guidance on the same exhausted account.
 - Browser billing inspection timed out. No payment, billing or limit change was made.
 - The attempt session is ended, with no transcript or guidance events and zero remaining reserved local units. The existing conservative accounting retains usage for an unknown provider outcome.
 - A durable one-shot marker prevents accidental reruns of the acceptance script.
@@ -33,6 +35,7 @@ Status: key provisioned and authenticated; live application running locally; sem
 - Checkout: ~/Cloud-Nexus-Pilot-live-acceptance.
 - Prior preparation commit ecb45d2: frontend lint/typecheck, 210 frontend tests, 14 profile/auth-isolation tests and scoped production build passed.
 - Activation: scoped production frontend build and realtime compilation passed; live profile check passed.
+- Quota remediation: 221 frontend tests passed, including 11 new regressions. Lint and typecheck passed.
 - Renewal and acceptance scripts pass Python compilation / Node syntax validation; git whitespace check passed.
 - Live and synthetic profiles share the recovery identity/cookie namespace. Original-stack cookie namespace is unchanged.
 - Live build excludes the provider key and requires a matching public configuration fingerprint.
@@ -40,8 +43,8 @@ Status: key provisioned and authenticated; live application running locally; sem
 - Old quality-gates checkout with missing files was not restored/reset/edited.
 
 ## Continuation
-1. Confirm billing and limits for the key's actual organization/project: Personal / Cloudnexususa. Browser screenshot previously showed final-round-ai, so do not assume it is the same project.
-2. Preserve safe provider error-code diagnostics on any newly authorized retry; never expose raw error bodies or credentials.
+1. Add API credits to the key's actual organization Personal (project Cloudnexususa). The confirmed error is credit_balance_exhausted. Browser screenshot previously showed final-round-ai, so do not assume it is the same project.
+2. Safe quota diagnostics are now implemented and tested. Resume bounded semantic acceptance after the user confirms credits are available.
 3. Review the recorded attempt before explicitly authorizing another bounded test. Do not delete or bypass the one-shot marker automatically.
 4. Verify actual transcript and relevant Kubernetes answer, saved association, replay and reload after provider access works.
 5. Arrange test-account browser sign-in to 43102 and perform a user-started physical microphone check.

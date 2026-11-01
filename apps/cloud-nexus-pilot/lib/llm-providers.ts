@@ -1,3 +1,4 @@
+import { readOpenAiLimitError } from "./server/openai-failure";
 import { openAiEndpoint } from "./server/provider-endpoint";
 export type LLMProviderName = "openai";
 
@@ -134,6 +135,10 @@ export function createOpenAiProvider(params: {
         signal: input.signal,
       });
 
+      if (!response.ok) {
+        const limitError = await readOpenAiLimitError(response, input.signal);
+        if (limitError) throw limitError;
+      }
       yield* streamOpenAiTokens(requireBody(response, "openai"));
     },
   };

@@ -1,0 +1,10 @@
+{
+  "localPageStatus": 200,
+  "liveDisclosurePresent": true,
+  "inferenceRetriedAfterQuotaDiagnosis": false,
+  "fullFrontendTests": 221,
+  "lint": "passed",
+  "typecheck": "passed",
+  "build": "passed",
+  "blockedBy": "credit_balance_exhausted"
+}

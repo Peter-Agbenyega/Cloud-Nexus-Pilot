@@ -2,7 +2,7 @@
 
 import { ensureOwnedGuidanceSession, savedGuidanceAssociations, type SavedGuidanceAssociation } from "./guidance-session-client";
 import { loadSavedTranscriptSession, deleteSavedTranscriptSession, listOwnedTranscriptSessions, type OwnedTranscriptSessionSummary } from "./saved-session-service";
-import { CaptureRetryQueue, shouldRetryChunk } from "./capture-recovery";
+import { CaptureRetryQueue, shouldRetryChunk, stoppedCaptureFeedback } from "./capture-recovery";
 import { CaptureOwnership } from "@/lib/realtime/capture-ownership";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -1096,7 +1096,7 @@ export function useTranscriptionWorkflow(
             : "Unable to process the latest audio chunk.";
         if (stoppingRef.current || !shouldRetryChunk(uploadError, attempt)) {
           if (!stoppingRef.current) stopInternal();
-          setFeedback("Capture stopped. No retries are running. Resolve the error, then explicitly restart capture or use typed guidance.");
+          setFeedback(stoppedCaptureFeedback(uploadError));
           setError(`${message} The latest audio may not have been saved. Retained text remains available.`);
           setStatus("failed");
           return;

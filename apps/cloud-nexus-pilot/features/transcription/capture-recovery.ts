@@ -1,3 +1,4 @@
+import { isProviderBillingBlock } from "../../lib/provider-limits";
 import type { TranscriptionStatus } from "./use-transcription-workflow";
 
 /** Only an explicit capture start opens a new retry generation. */
@@ -42,4 +43,10 @@ export function capturePresentation(recording: boolean, paused: boolean, status:
     canPause: !stopped && status !== "connecting",
     canRetry: stopped && status !== "stopping" && status !== "connecting",
   };
+}
+
+export function stoppedCaptureFeedback(error: unknown): string {
+  return isProviderBillingBlock(error)
+    ? "Capture stopped. No retries are running. OpenAI billing must be restored before audio or typed AI guidance can work."
+    : "Capture stopped. No retries are running. Resolve the error, then explicitly restart capture or use typed guidance.";
 }

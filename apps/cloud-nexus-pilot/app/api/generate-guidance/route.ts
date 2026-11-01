@@ -1,3 +1,4 @@
+import { ProviderLimitError, providerLimitErrors } from "@/lib/provider-limits";
 import { createHash } from "node:crypto";
 import { processingRepository, type Principal, type Reservation } from "@/lib/server/processing-repository";
 import { boundaryResponse, processingScope, RequestBoundaryError, withAbort } from "@/lib/server/request-boundary";
@@ -77,8 +78,8 @@ function normalizeInterviewMode(value: string): InterviewMode {
   return allowed.includes(normalized as InterviewMode) ? (normalized as InterviewMode) : "general";
 }
 
-async function streamFailure(controller: ReadableStreamDefaultController<Uint8Array>, message: string) {
-  controller.enqueue(toSseChunk({ type: "error", code: "guidance_processing_failed", message }));
+async function streamFailure(controller: ReadableStreamDefaultController<Uint8Array>, message: string, code = "guidance_processing_failed") {
+  controller.enqueue(toSseChunk({ type: "error", code, message }));
   controller.enqueue(toSseChunk({ type: "done" }));
   controller.close();
 }
@@ -339,7 +340,11 @@ export async function POST(request: Request) {
             if (modelContent.length > 32_768) { scope.abort(); throw new Error("Output limit exceeded"); }
             // Publish only the validated final guidance payload.
           }
-        } catch {
+        } catch (error) {
+          if (error instanceof ProviderLimitError && Object.hasOwn(providerLimitErrors, error.code)) {
+            await streamFailure(controller, providerLimitErrors[error.code].message, error.code);
+            return;
+          }
           await streamFailure(controller, "The guidance provider failed. No AI guidance was generated.");
           return;
         }

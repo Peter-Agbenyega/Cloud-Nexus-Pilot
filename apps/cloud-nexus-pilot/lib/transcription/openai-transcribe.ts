@@ -1,3 +1,4 @@
+import { readOpenAiLimitError } from "../server/openai-failure";
 import { readBoundedBytes } from "../server/request-boundary";
 import { openAiEndpoint } from "../server/provider-endpoint";
 import { cleanTranscriptText } from "@/features/transcription/transcript-bridge";
@@ -120,10 +121,10 @@ export async function transcribeWithOpenAi(params: {
   });
 
   if (!openAiResponse.ok) {
-    await openAiResponse.body?.cancel().catch(() => {});
+    const limitError = await readOpenAiLimitError(openAiResponse, params.signal);
     throw new OpenAiTranscriptionError({
       status: openAiResponse.status,
-      code: "transcript_processing_failed",
+      code: limitError?.code ?? "transcript_processing_failed",
     });
   }
 

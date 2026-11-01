@@ -1,4 +1,6 @@
+import { providerLimitErrors } from "../provider-limits";
 const publicErrors = {
+  ...providerLimitErrors,
   transcript_backend_unavailable: { status: 503, message: "Transcription is currently unavailable. Please try again later." },
   transcript_validation_failed: { status: 400, message: "Audio chunk is empty." },
   transcript_processing_failed: { status: 500, message: "Unable to transcribe this audio chunk. Please try again." },

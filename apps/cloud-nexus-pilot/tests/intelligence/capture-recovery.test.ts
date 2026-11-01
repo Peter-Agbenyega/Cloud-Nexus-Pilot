@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CaptureRetryQueue, capturePresentation, shouldRetryChunk } from "../../features/transcription/capture-recovery";
+import { CaptureRetryQueue, capturePresentation, shouldRetryChunk, stoppedCaptureFeedback } from "../../features/transcription/capture-recovery";
 
 test("retry exhaustion is bounded; auth/quota/storage failures require explicit recovery", () => {
   assert.deepEqual([0,1,2,3].map(n => shouldRetryChunk(new Error("network timeout"),n)),[true,true,false,false]);
@@ -29,4 +29,16 @@ test("terminal capture never advertises listening/retrying or offers Pause; rest
   assert.equal(capturePresentation(true,true,"paused").canPause,true);
   assert.equal(capturePresentation(true,false,"listening").stopped,false);
   assert.equal(capturePresentation(true,false,"failed").canPause,false);
+});
+
+
+test("billing failures stop retries and do not suggest typed guidance on the same exhausted provider", () => {
+  for (const code of ["provider_credit_balance_exhausted", "provider_spend_limit_exceeded", "provider_usage_limit_exceeded", "provider_quota_exhausted"]) {
+    const error = { status: 429, code };
+    assert.equal(shouldRetryChunk(error, 0), false);
+    const feedback = stoppedCaptureFeedback(error);
+    assert.match(feedback, /billing must be restored/);
+    assert.doesNotMatch(feedback, /or use typed guidance/);
+  }
+  assert.match(stoppedCaptureFeedback({ status: 401 }), /explicitly restart/);
 });

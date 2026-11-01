@@ -148,3 +148,27 @@ test("valid deterministic tools keep their response contracts", async () => {
     assert.ok((await response.json())[field], route);
   }
 });
+
+for (const [providerCode, expectedCode] of [
+  ["credit_balance_exhausted", "provider_credit_balance_exhausted"],
+  ["rate_limit_exceeded", "provider_rate_limited"],
+]) {
+  test(`guidance surfaces safe ${providerCode} remediation, closes the stream, and publishes no answer`, async () => {
+    let requests = 0;
+    const load = sourceLoader({
+      "@/lib/server/provider-auth": { requireProviderUser: async () => ({ userId: "synthetic-owner" }) },
+      "@/lib/server/processing-repository": { processingRepository: permittedRepository },
+    }, {
+      process: { env: { OPENAI_API_KEY: "SYNTHETIC_KEY_SENTINEL", OPENAI_MODEL: "synthetic-test" } },
+      fetch: async () => {
+        requests++;
+        return Response.json({ error: { code: providerCode, message: "PRIVATE_BILLING_SENTINEL" } }, { status: 429 });
+      },
+    });
+    const result = await events(await load("@/app/api/generate-guidance/route").POST(request({ question: "What is Kubernetes?" })));
+    assert.deepEqual(result.map(e => e.type), ["start", "error", "done"]);
+    assert.equal(result[1].code, expectedCode);
+    assert.equal(requests, 1);
+    assert.doesNotMatch(JSON.stringify(result), /PRIVATE_BILLING_SENTINEL|SYNTHETIC_KEY_SENTINEL/);
+  });
+}

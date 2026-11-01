@@ -259,3 +259,41 @@ for (const provider of ["deepgram", "openai"]) {
     assert.deepEqual(event.response, payload);
   });
 }
+
+for (const [providerCode, providerType, expectedCode] of [
+  ["credit_balance_exhausted", "insufficient_quota", "provider_credit_balance_exhausted"],
+  ["organization_spend_limit_exceeded", "insufficient_quota", "provider_spend_limit_exceeded"],
+  ["project_spend_limit_exceeded", "insufficient_quota", "provider_spend_limit_exceeded"],
+  ["organization_usage_limit_exceeded", "insufficient_quota", "provider_usage_limit_exceeded"],
+  ["insufficient_quota", "insufficient_quota", "provider_quota_exhausted"],
+  ["rate_limit_exceeded", "rate_limit_error", "provider_rate_limited"],
+  ["slow_down", "rate_limit_error", "provider_rate_limited"],
+]) {
+  test(`OpenAI ${providerCode} has an actionable safe error without raw diagnostics or fabricated text`, async () => {
+    const f = fixture("openai", { status: 429, body: { error: { code: providerCode, type: providerType, message: sentinel }, private: sentinel } });
+    const session = f.create("owner-a");
+    const response = await f.route("transcribe/stream/session/[sessionId]/chunk").POST(audio(), context(session.sessionId));
+    const body = await response.json();
+    assert.equal(response.status, 429);
+    assert.equal(body.error.code, expectedCode);
+    assert.doesNotMatch(JSON.stringify(body) + f.logs.join("\n"), new RegExp(sentinel));
+    assert.equal(session.events.length, 0);
+    assert.equal(f.requests(), 1);
+  });
+}
+
+test("malformed, oversized and mismatched-status quota errors keep the safe generic fallback", async () => {
+  for (const [status, body] of [
+    [429, "{broken"],
+    [429, "x".repeat(16_385)],
+    [429, null],
+    [503, { error: { code: "credit_balance_exhausted", message: sentinel } }],
+  ]) {
+    const f = fixture("openai", { status, body });
+    const response = await f.route("transcribe").POST(audio());
+    const safe = await response.json();
+    assert.equal(response.status, status);
+    assert.equal(safe.error.code, "transcript_processing_failed");
+    assert.doesNotMatch(JSON.stringify(safe) + f.logs.join("\n"), new RegExp(sentinel));
+  }
+});

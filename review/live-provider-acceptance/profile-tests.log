@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: recovery browser requires explicit loopback permission and isolates its session cookie
+ok 1 - recovery browser requires explicit loopback permission and isolates its session cookie
+  ---
+  duration_ms: 42.930083
+  type: 'test'
+  ...
+# Subtest: original test stack retains its existing cookie namespace
+ok 2 - original test stack retains its existing cookie namespace
+  ---
+  duration_ms: 13.444833
+  type: 'test'
+  ...
+# Subtest: loopback is still denied without explicit test configuration
+ok 3 - loopback is still denied without explicit test configuration
+  ---
+  duration_ms: 12.974709
+  type: 'test'
+  ...
+# Subtest: hosted identity does not inherit the local recovery cookie namespace
+ok 4 - hosted identity does not inherit the local recovery cookie namespace
+  ---
+  duration_ms: 7.273542
+  type: 'test'
+  ...
+# Subtest: live acceptance keeps recovery cookies separate from original sessions
+ok 5 - live acceptance keeps recovery cookies separate from original sessions
+  ---
+  duration_ms: 6.488042
+  type: 'test'
+  ...
+# Subtest: live flag cannot change hosted or original cookie namespaces
+ok 6 - live flag cannot change hosted or original cookie namespaces
+  ---
+  duration_ms: 12.458292
+  type: 'test'
+  ...
+# Subtest: explicit live configuration permits build and start without dispatching providers
+ok 7 - explicit live configuration permits build and start without dispatching providers
+  ---
+  duration_ms: 0.726833
+  type: 'test'
+  ...
+# Subtest: live startup rejects missing and synthetic credentials without printing them
+ok 8 - live startup rejects missing and synthetic credentials without printing them
+  ---
+  duration_ms: 0.380208
+  type: 'test'
+  ...
+# Subtest: credentials cannot be redirected to a fixture, arbitrary host, or deceptive URL
+ok 9 - credentials cannot be redirected to a fixture, arbitrary host, or deceptive URL
+  ---
+  duration_ms: 0.065458
+  type: 'test'
+  ...
+# Subtest: live profile refuses original data, mixed modes, and altered ports/origin/models
+ok 10 - live profile refuses original data, mixed modes, and altered ports/origin/models
+  ---
+  duration_ms: 0.126083
+  type: 'test'
+  ...
+# Subtest: default launcher rejects mixed live flags before reading build or spawning children
+ok 11 - default launcher rejects mixed live flags before reading build or spawning children
+  ---
+  duration_ms: 61.545208
+  type: 'test'
+  ...
+# Subtest: default fixture launcher still rejects official provider selection
+ok 12 - default fixture launcher still rejects official provider selection
+  ---
+  duration_ms: 57.015917
+  type: 'test'
+  ...
+# Subtest: expired or wrong-role settlement credentials cannot start a live provider
+ok 13 - expired or wrong-role settlement credentials cannot start a live provider
+  ---
+  duration_ms: 0.531375
+  type: 'test'
+  ...
+# Subtest: runtime refuses an unbuilt or different public profile before spawning
+ok 14 - runtime refuses an unbuilt or different public profile before spawning
+  ---
+  duration_ms: 61.755583
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 344.505583

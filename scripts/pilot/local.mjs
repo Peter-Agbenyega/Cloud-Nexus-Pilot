@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Scoped local launcher: no database setup, migration, seed, or remote mutation.
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, createWriteStream } from "node:fs";
+import { createHash } from "node:crypto";
+import { validateLiveProfile } from "./live-profile.mjs";
+import { existsSync, mkdtempSync, createWriteStream, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRequire } from "node:module";
@@ -18,12 +20,20 @@ if (Number(process.versions.node.split(".")[0]) !== 22) throw new Error("Select 
 const local = (value) => {
   try { const u = new URL(value); return ["127.0.0.1", "localhost", "[::1]"].includes(u.hostname); } catch { return false; }
 };
+if (process.env.PILOT_LIVE_ACCEPTANCE !== "1" && process.env.NEXT_PUBLIC_PILOT_LIVE_ACCEPTANCE === "1") throw new Error("Mixed live and synthetic configuration is forbidden.");
+if (process.env.PILOT_LIVE_ACCEPTANCE === "1") {
+  validateLiveProfile(process.env, mode);
+} else {
 for (const name of ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL", "PILOT_DATA_API_URL", "OPENAI_BASE_URL"]) {
   if (process.env[name] && !local(process.env[name])) throw new Error(`This isolated launcher requires a loopback ${name}. Use the reviewed hosted runbook for other targets.`);
 }
 if (mode === "start" && (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY)) throw new Error("Realtime requires configured compatible identity. No authentication bypass is enabled.");
 if (process.env.DEEPGRAM_API_KEY || (process.env.OPENAI_API_KEY && !process.env.OPENAI_BASE_URL)) throw new Error("This isolated launcher requires a loopback provider fixture or no provider credentials.");
 if (process.env.OPENAI_API_KEY && process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE !== "1") throw new Error("Local fixture runs must display their synthetic test banner.");
+}
+const profileKeys = Object.keys(process.env).filter(key => key.startsWith("NEXT_PUBLIC_") || ["PILOT_LIVE_ACCEPTANCE", "OPENAI_BASE_URL", "OPENAI_MODEL", "OPENAI_TRANSCRIPTION_MODEL", "PILOT_LOCAL_FRONTEND_PORT", "PILOT_LOCAL_REALTIME_PORT"].includes(key)).sort();
+const profileHash = createHash("sha256").update(JSON.stringify(profileKeys.map(key => [key, process.env[key]]))).digest("hex");
+const profileFile = resolve(pilot, ".next/pilot-build-profile.json");
 const logDir = mode === "start" ? mkdtempSync(join(tmpdir(), "pilot-runtime-")) : null;
 if (logDir) console.log(`Scoped process logs: ${logDir}`);
 const children = new Set();
@@ -53,8 +63,10 @@ try {
   if (mode === "build") {
     await run([requirePilot.resolve("next/dist/bin/next"), "build"], pilot, { NODE_ENV: "production" });
     await run([requireRealtime.resolve("typescript/bin/tsc"), "-p", "tsconfig.json"], realtime);
+    writeFileSync(profileFile, JSON.stringify({ profileHash }) + "\n", { mode: 0o600 });
   } else {
     if (!existsSync(resolve(pilot, ".next/BUILD_ID")) || !existsSync(resolve(realtime, "dist/server.js"))) throw new Error("Run the scoped build first.");
+    if (!existsSync(profileFile) || JSON.parse(readFileSync(profileFile, "utf8")).profileHash !== profileHash) throw new Error("Build profile differs from runtime configuration. Rebuild the selected profile first.");
     const frontPort = process.env.PILOT_LOCAL_FRONTEND_PORT || "3100";
     const apiPort = process.env.PILOT_LOCAL_REALTIME_PORT || "3310";
     for (const port of [frontPort, apiPort]) if (!/^\d+$/.test(port) || Number(port) < 1024 || Number(port) > 65535) throw new Error("Invalid local port.");

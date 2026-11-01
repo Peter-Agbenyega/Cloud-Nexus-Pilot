@@ -11,7 +11,7 @@ RECOVERY = os.environ.get('PILOT_RECOVERY_STACK') == '1'
 PRIVATE = (Path.home()/'.local/share/cloud-nexus-pilot/recovery-test/private.json') if RECOVERY else Path('/private/tmp/cnp-pilot-local-stack/private.json')
 AUTH_PORT, REST_PORT, GATEWAY_PORT = (59091, 59092, 59090) if RECOVERY else (58091, 58092, 58090)
 config = json.loads(PRIVATE.read_text())
-allowed_origins = {'http://127.0.0.1:43101', 'http://localhost:43101'} if RECOVERY else {'http://127.0.0.1:3100', 'http://localhost:3100', 'http://127.0.0.1:3000', 'http://localhost:3000'}
+allowed_origins = {'http://127.0.0.1:43101', 'http://localhost:43101', 'http://127.0.0.1:43102'} if RECOVERY else {'http://127.0.0.1:3100', 'http://localhost:3100', 'http://127.0.0.1:3000', 'http://localhost:3000'}
 
 
 class Gateway(BaseHTTPRequestHandler):

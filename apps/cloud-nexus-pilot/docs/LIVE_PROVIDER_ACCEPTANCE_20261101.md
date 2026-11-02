@@ -51,3 +51,12 @@ Status: key provisioned and authenticated; live application running locally; sem
 6. Keep production rollout and original-session recovery unresolved until independently verified.
 
 Evidence: review/live-provider-acceptance/activation-20261101.json. No live semantic success is claimed.
+
+## 2026-11-02 continuation
+
+- A fresh saved-key check at 22:31 UTC again returned HTTP 429 `credit_balance_exhausted`.
+- The user supplied billing evidence for Peter Dev Lab. Connector metadata confirms this is a different organization from the saved key's Personal / Cloudnexususa target. The intended funded project is Peter Dev Lab / final-round-ai; explicit confirmation of that replacement target is pending. No new provider key or additional provider request was made during the organization check.
+- Updated the renewal helper to support the recorded live application with exact process/checkout guards. Fifteen mocked selection and ownership cases, Python syntax, and diff validation passed.
+- Renewed only the expired recovery API tokens using the existing signer. Accounts and all public rows, as well as original-stack state, were verified unchanged. Recovery credentials now expire 2026-11-03 23:46:28 UTC.
+- Scoped live frontend/realtime build passed; the restarted sign-in page returned HTTP 200 with its live-provider disclosure. No provider request was made during renewal or rebuild.
+- Evidence: `review/live-provider-acceptance/recovery-renewal-20261102.json`. Live transcription, answer acceptance, and physical microphone acceptance are still unverified.

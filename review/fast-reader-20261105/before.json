@@ -1,0 +1,61 @@
+{
+  "at": "2026-11-05T07:16:51.083Z",
+  "liveProvider": true,
+  "physicalMicrophone": false,
+  "audioSource": "macOS generated Kubernetes speech",
+  "transcriptionRequests": 1,
+  "guidanceRequests": 1,
+  "passed": true,
+  "sessionId": "d247679b-8afd-4d25-b364-12d7cdf7745f",
+  "timing": {
+    "clock": "performance.now (monotonic)",
+    "scope": "HTTP transport; excludes microphone chunk accumulation, frontend detection, browser paint, and test silence requests",
+    "captureAndEndpointingIncluded": false,
+    "browserPaintIncluded": false,
+    "transcriptionResponseMs": 931.1,
+    "guidanceHeadersMs": 45.25,
+    "guidance": {
+      "firstAnswerTextMs": 3938.3,
+      "firstAnswerEvent": "final",
+      "firstReadableAnswerMs": 3938.3,
+      "firstReadableAnswerEvent": "final",
+      "finalAnswerMs": 3938.29,
+      "streamDoneMs": 3938.3,
+      "previewEvents": 0,
+      "firstPreviewCharacters": null
+    },
+    "readableAnswerThresholdCharacters": 40
+  },
+  "transcriptionStatus": 202,
+  "transcript": "What is Kubernetes?",
+  "silentChunkRequests": 3,
+  "silenceUsageDelta": 0,
+  "silencePreservedTranscript": true,
+  "silenceReplayVerified": true,
+  "guidanceStatus": 200,
+  "answer": {
+    "headline": "Understanding Kubernetes Basics",
+    "speakNow": "Kubernetes is an open-source platform for managing containerized applications. It automates deployment, scaling, and operations of application containers across clusters of hosts.",
+    "keyPoints": [
+      "Orchestration for containerized apps",
+      "Automates deployment and scaling",
+      "Supports multi-cloud environments"
+    ],
+    "example": null,
+    "technicalDetail": "Kubernetes uses a master-slave architecture where the master node manages the cluster and the worker nodes run the applications. It provides features like load balancing, service discovery, and self-healing capabilities. You can define your application\u2019s desired state using YAML files, and Kubernetes works to maintain that state.",
+    "caution": "Consider security and networking configurations.",
+    "followUp": "Would you like to know more about its components?",
+    "gist": "Kubernetes is a powerful orchestration tool for containers.",
+    "key_points": [
+      "Orchestration for containerized apps",
+      "Automates deployment and scaling",
+      "Supports multi-cloud environments"
+    ],
+    "full_answer": "Kubernetes is an open-source platform designed to manage containerized applications efficiently. It automates various tasks such as deployment, scaling, and operations of application containers across clusters of hosts. With Kubernetes, you can easily manage the lifecycle of your applications, ensuring they run smoothly and can scale based on demand. It also supports multi-cloud environments, allowing for flexibility in deployment. The architecture consists of a master node that controls the cluster and worker nodes that run the applications, providing features like load balancing and self-healing."
+  },
+  "savedTranscriptAndGuidance": true,
+  "exportVerified": true,
+  "syntheticDispatchDelta": 0,
+  "usageDelta": 34636,
+  "reservedUnits": 0
+}

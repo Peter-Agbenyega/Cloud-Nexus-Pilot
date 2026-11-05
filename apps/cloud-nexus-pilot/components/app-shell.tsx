@@ -77,6 +77,7 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <style>{`@media (max-width: 760px) { [data-pilot-sidebar] { display: none; } [data-pilot-main] { padding: 14px !important; } }`}</style>
       {/* === TOP BAR === */}
       <header
         style={{
@@ -146,7 +147,7 @@ export function AppShell({ children }: AppShellProps) {
 
       <div style={{ display: "flex", flex: 1 }}>
         {/* === SIDEBAR === */}
-        <aside
+        <aside data-pilot-sidebar
           style={{
             width: 200,
             background: "#0F0F1E",
@@ -228,9 +229,10 @@ export function AppShell({ children }: AppShellProps) {
         </aside>
 
         {/* === MAIN CONTENT === */}
-        <main
+        <main data-pilot-main
           style={{
             flex: 1,
+            minWidth: 0,
             background: "#0D0D1A",
             padding: 24,
             overflowY: "auto",

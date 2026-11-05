@@ -101,3 +101,56 @@ test("truncated, malformed, oversized or cancelled guidance is not presented as 
   const pending = readFinalGuidance(new Response(stream), controller.signal); controller.abort();
   await assert.rejects(pending, { name: "AbortError" }); assert.equal(stream.locked, false);
 });
+
+
+test("provisional words arrive before final completion and never resolve the saved answer early", async () => {
+  let source!: ReadableStreamDefaultController<Uint8Array>;
+  const stream = new ReadableStream<Uint8Array>({ start(controller) { source = controller; } });
+  const previews: string[] = [];
+  let previewSeen!: () => void;
+  const previewReady = new Promise<void>(resolve => { previewSeen = resolve; });
+  let completed = false;
+  const pending = readFinalGuidance(new Response(stream), new AbortController().signal, {
+    onPreview(text) { previews.push(text); previewSeen(); },
+  }).then(value => { completed = true; return value; });
+  const emit = (value: object) => source.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(value)}\n\n`));
+  emit({ type: "preview", speakNow: "Kubernetes manages containers.", draft: true });
+  await previewReady;
+  assert.deepEqual(previews, ["Kubernetes manages containers."]);
+  assert.equal(completed, false, "a draft must not resolve the persisted final contract");
+  const final = JSON.stringify({ speakNow: previews[0], full_answer: "The completed saved answer." });
+  emit({ type: "final", content: final }); emit({ type: "done" });
+  assert.equal(await pending, final);
+  assert.equal(stream.locked, false);
+});
+
+test("provider errors and cancellation clear provisional text without yielding a completed answer", async () => {
+  for (const reason of ["error", "abort"] as const) {
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({ start(controller) { source = controller; } });
+    const controller = new AbortController(), previews: string[] = [];
+    let shown!: () => void;
+    const ready = new Promise<void>(resolve => { shown = resolve; });
+    const pending = readFinalGuidance(new Response(stream), controller.signal, {
+      onPreview(text) { previews.push(text); shown(); },
+    });
+    const rejection = assert.rejects(pending);
+    source.enqueue(new TextEncoder().encode('data: {"type":"preview","speakNow":"Draft answer starts here.","draft":true}\n\n'));
+    await ready;
+    if (reason === "abort") controller.abort();
+    else source.enqueue(new TextEncoder().encode('data: {"type":"error","message":"The answer could not be completed."}\n\n'));
+    await rejection;
+    assert.deepEqual(previews, ["Draft answer starts here.", ""]);
+    assert.equal(stream.locked, false);
+  }
+});
+
+test("invalid previews are rejected before callback delivery", async () => {
+  for (const preview of [{ type: "preview", speakNow: "Not marked as draft." }, { type: "preview", speakNow: "x".repeat(2401), draft: true }]) {
+    let calls = 0;
+    await assert.rejects(readFinalGuidance(new Response(`data: ${JSON.stringify(preview)}\n\n`), new AbortController().signal, {
+      onPreview() { calls += 1; },
+    }), /preview is invalid/);
+    assert.equal(calls, 0);
+  }
+});

@@ -75,8 +75,10 @@ test("verified ordinary user guidance publishes validated final and done contrac
     "@/lib/llm-providers": { selectConfiguredLLMProvider: () => ({ async *streamText() { yield output; } }) },
   })("generate-guidance");
   const result = await events(await POST(request({ question: "What is Terraform?" })));
-  assert.deepEqual(result.map((e) => e.type), ["start", "final", "done"]);
-  assert.equal(JSON.parse(result[1].content).speakNow, "Terraform manages infrastructure as code.");
+  assert.deepEqual(result.map((e) => e.type), ["start", "preview", "final", "done"]);
+  assert.equal(result[1].speakNow, "Terraform manages infrastructure as code.");
+  assert.equal(result[1].draft, true);
+  assert.equal(JSON.parse(result[2].content).speakNow, "Terraform manages infrastructure as code.");
 });
 
 test("stream creation binds the verified user and ignores a caller-supplied owner", async () => {
@@ -232,3 +234,83 @@ for (const status of [403, 429, 500]) {
     assert.equal(completions[0].outcome, "unknown");
   });
 }
+
+
+test("guidance streams useful provisional words while the model is still generating, then commits only final", { timeout: 3000 }, async () => {
+  let finish;
+  const remainingModel = new Promise(resolve => { finish = resolve; });
+  const completed = [];
+  const { POST } = routeLoader({
+    "@/lib/server/provider-auth": { requireProviderUser: async () => ({ userId: "synthetic-owner" }) },
+    "@/lib/server/processing-repository": { processingRepository: {
+      reserve: async () => ({ acquired: true, state: "reserved" }),
+      complete: async (_principal, input) => { completed.push(input); return { state: "succeeded" }; },
+    } },
+    "@/lib/llm-providers": { selectConfiguredLLMProvider: () => ({ async *streamText() {
+      yield '{"speakNow":"Kubernetes manages ';
+      await remainingModel;
+      yield 'containers.","headline":"Container orchestration","keyPoints":["Desired state"],"full_answer":"Kubernetes reconciles workloads with declared desired state."}';
+    } }) },
+  })("generate-guidance");
+  const response = await POST(request({ question: "What is Kubernetes?" }));
+  assert.equal(response.headers.get("x-accel-buffering"), "no");
+  const reader = response.body.getReader(), decoder = new TextDecoder();
+  let text = "";
+  while (!text.includes('"type":"preview"')) {
+    const next = await reader.read();
+    assert.equal(next.done, false);
+    text += decoder.decode(next.value);
+  }
+  assert.match(text, /Kubernetes manages/);
+  assert.doesNotMatch(text, /"type":"final"/);
+  assert.equal(completed.length, 0, "provisional words must not be persisted");
+  finish();
+  while (true) { const next = await reader.read(); if (next.done) break; text += decoder.decode(next.value); }
+  reader.releaseLock();
+  const result = text.trim().split("\n\n").map(line => JSON.parse(line.slice(6)));
+  assert.equal(result.at(-2).type, "final");
+  assert.equal(result.at(-1).type, "done");
+  assert.equal(completed.length, 1);
+  assert.equal(completed[0].outcome, "succeeded");
+  assert.equal(completed[0].result.speakNow, "Kubernetes manages containers.");
+  assert.deepEqual(completed[0].result.key_points, ["Desired state"]);
+});
+
+test("a model failure after a provisional preview never saves or publishes a final answer", async () => {
+  const completed = [];
+  const { POST } = routeLoader({
+    "@/lib/server/provider-auth": { requireProviderUser: async () => ({ userId: "synthetic-owner" }) },
+    "@/lib/server/processing-repository": { processingRepository: {
+      reserve: async () => ({ acquired: true, state: "reserved" }),
+      complete: async (_principal, input) => { completed.push(input); return { state: input.outcome }; },
+    } },
+    "@/lib/llm-providers": { selectConfiguredLLMProvider: () => ({ async *streamText() {
+      yield '{"speakNow":"A provisional answer ';
+      throw new Error("Private upstream failure");
+    } }) },
+  })("generate-guidance");
+  const result = await events(await POST(request({ question: "What is Kubernetes?" })));
+  assert.deepEqual(result.map(event => event.type), ["start", "preview", "error", "done"]);
+  assert.ok(completed.every(item => item.outcome !== "succeeded"));
+  assert.doesNotMatch(JSON.stringify(result), /Private upstream failure/);
+});
+
+
+test("cumulative previews stay bounded and leave room for the final response", async () => {
+  const { POST } = routeLoader({
+    "@/lib/server/provider-auth": { requireProviderUser: async () => ({ userId: "synthetic-owner" }) },
+    "@/lib/server/processing-repository": { processingRepository: permittedRepository },
+    "@/lib/llm-providers": { selectConfiguredLLMProvider: () => ({ async *streamText() {
+      yield '{"speakNow":"';
+      for (let index = 0; index < 800; index += 1) yield "word ";
+      yield '","full_answer":"Completed bounded answer."}';
+    } }) },
+  })("generate-guidance");
+  const result = await events(await POST(request({ question: "What is Kubernetes?" })));
+  const previews = result.filter(event => event.type === "preview");
+  assert.ok(previews.length > 1);
+  const bytes = previews.reduce((total, event) => total + new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`).byteLength, 0);
+  assert.ok(bytes <= 65_536);
+  assert.equal(result.at(-2).type, "final");
+  assert.equal(result.at(-1).type, "done");
+});

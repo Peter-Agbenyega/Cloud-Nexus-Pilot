@@ -6,6 +6,8 @@ import { capturePresentation } from "@/features/transcription/capture-recovery";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CaptureDisclosure } from "./capture-disclosure";
+import { CopilotReadingPanels } from "./copilot-reading-panels";
+import workspaceStyles from "./copilot-workspace.module.css";
 import { SavedSessionPicker } from "./saved-session-picker";
 import { captureFailureMessage } from "@/features/transcription/audio-capture";
 
@@ -57,16 +59,7 @@ const SESSION_COUNT_STORAGE_KEY = "cnp_session_count";
 const ONBOARDING_STORAGE_KEY = "cnp_onboarding_done";
 const INTERVIEW_CONTEXT_STORAGE_KEY = "cnp_interview_context_v1";
 const FALLBACK_GIST = "That's a great question. Let me take a moment to walk you through my thinking on that.";
-const FALLBACK_GUIDANCE: GuidanceData = {
-  headline: "Answer with structure",
-  speakNow: "Let me frame this around the problem, tradeoffs, and practical next step.",
-  keyPoints: ["Clarify scope", "Explain tradeoffs", "Close with impact"],
-  caution: null,
-  followUp: null,
-  gist: FALLBACK_GIST,
-  key_points: [],
-  full_answer: "",
-};
+
 
 type InterviewContextDraft = {
   resumeText: string;
@@ -366,13 +359,16 @@ export function ReadyStateLaunchPanel() {
 
   const [typedQuestion, setTypedQuestion] = useState("");
   const [guidanceText, setGuidanceText] = useState("");
+  const [guidanceQuestion, setGuidanceQuestion] = useState("");
+  const [guidancePreview, setGuidancePreview] = useState("");
+  const [firstAnswerMs, setFirstAnswerMs] = useState<number | null>(null);
   const [guidanceError, setGuidanceError] = useState("");
   const [guidanceData, setGuidanceData] = useState<GuidanceData | null>(null);
   const [guidanceStatus, setGuidanceStatus] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const [questionsCoached, setQuestionsCoached] = useState(0);
   const [guidanceTiming, setGuidanceTiming] = useState<GuidanceTiming>({ completed: 0, totalMs: 0 });
   const syntheticMode = process.env.NEXT_PUBLIC_PILOT_TEST_FIXTURE === "1";
-  const [streamedFullAnswer, setStreamedFullAnswer] = useState("");
+
   const [latencySnapshot, setLatencySnapshot] = useState<{
     sttFirstPartialMs: number | null;
     totalFirstGuidanceMs: number | null;
@@ -380,9 +376,9 @@ export function ReadyStateLaunchPanel() {
     sttFirstPartialMs: null,
     totalFirstGuidanceMs: null,
   });
-  const [showCard1, setShowCard1] = useState(false);
-  const [showCard2, setShowCard2] = useState(false);
-  const [showCard3, setShowCard3] = useState(false);
+
+
+
   const [answerReadyVisible, setAnswerReadyVisible] = useState(false);
   const [freeSessionCount, setFreeSessionCount] = useState(0);
   const [onboardingDone, setOnboardingDone] = useState(true);
@@ -496,12 +492,9 @@ export function ReadyStateLaunchPanel() {
   }
 
   const showFallbackGuidance = useCallback(() => {
-    setGuidanceData(FALLBACK_GUIDANCE);
-    setGuidanceText(JSON.stringify(FALLBACK_GUIDANCE));
-    setStreamedFullAnswer("");
-    setShowCard1(true);
-    setShowCard2(false);
-    setShowCard3(false);
+    setGuidanceData(null);
+    setGuidancePreview("");
+    setGuidanceText("");
     setGuidanceStatus("failed");
     setAnswerReadyVisible(true);
     window.setTimeout(() => setAnswerReadyVisible(false), 2_000);
@@ -561,6 +554,7 @@ export function ReadyStateLaunchPanel() {
         if (!ownership.adopt(token, stream)) return;
       }
 
+      setGuidanceQuestion(""); setGuidanceData(null); setGuidancePreview(""); setFirstAnswerMs(null);
       activeStreamRef.current = stream;
       captureStartedAtRef.current = performance.now();
       firstCaptureGuidanceAtRef.current = null;
@@ -647,10 +641,11 @@ export function ReadyStateLaunchPanel() {
     setGuidanceText("");
     setGuidanceData(null);
     setGuidanceStatus("idle");
-    setShowCard1(false);
-    setShowCard2(false);
-    setShowCard3(false);
     setAnswerReadyVisible(false);
+    activeGuidanceQuestionRef.current = null;
+    setGuidanceQuestion("");
+    setGuidancePreview("");
+    setFirstAnswerMs(null);
     setCaptureState({ status: "idle", detail: "Session ended.", streamId: null });
     setLaunchFlowStep("ready");
   }
@@ -665,16 +660,16 @@ export function ReadyStateLaunchPanel() {
     cancelActiveGuidanceRequest();
     const abortController = new AbortController();
     guidanceAbortControllerRef.current = abortController;
-    activeGuidanceQuestionRef.current = { question: detectedQuestion, source: typedOverride ? "typed" : "detected" };
+    const guidanceIdentity = { question: detectedQuestion, source: typedOverride ? "typed" as const : "detected" as const };
+    activeGuidanceQuestionRef.current = guidanceIdentity;
 
+    setGuidanceQuestion(detectedQuestion);
+    setGuidancePreview("");
+    setFirstAnswerMs(null);
     setGuidanceStatus("loading");
     setGuidanceError("");
     setGuidanceText("");
     setGuidanceData(null);
-    setStreamedFullAnswer("");
-    setShowCard1(false);
-    setShowCard2(false);
-    setShowCard3(false);
     setAnswerReadyVisible(false);
 
     try {
@@ -703,7 +698,17 @@ export function ReadyStateLaunchPanel() {
       }
       if (!response.body) throw new Error("Live guidance is unavailable right now.");
 
-      const finalGuidanceText = await readFinalGuidance(response, guidanceSignal);
+      let firstVisibleAt: number | null = null;
+      const finalGuidanceText = await readFinalGuidance(response, guidanceSignal, {
+        onPreview: (text) => {
+          if (abortController.signal.aborted || guidanceAbortControllerRef.current !== abortController) return;
+          setGuidancePreview(text);
+          if (text.trim().length >= 40 && firstVisibleAt === null) {
+            firstVisibleAt = performance.now();
+            setFirstAnswerMs(Math.round(firstVisibleAt - guidanceStartedAt));
+          }
+        },
+      });
       if (abortController.signal.aborted || guidanceAbortControllerRef.current !== abortController) return;
 
       // Try to parse structured JSON
@@ -719,11 +724,12 @@ export function ReadyStateLaunchPanel() {
       const guidanceCompletedAt = performance.now();
       const guidanceResponseMs = Math.round(guidanceCompletedAt - guidanceStartedAt);
       setGuidanceTiming(current => recordGuidanceTiming(current, guidanceStartedAt, guidanceCompletedAt));
+      setGuidancePreview("");
+      if (firstVisibleAt === null) setFirstAnswerMs(guidanceResponseMs);
       setGuidanceData(structured);
       setGuidanceText(finalGuidanceText);
-      setStreamedFullAnswer(structured.full_answer);
-      setShowCard1(true); setShowCard2(true); setShowCard3(true);
-      await transcriptionWorkflow.refreshServerGuidance(ownedSessionId).catch(() => {
+      void transcriptionWorkflow.refreshServerGuidance(ownedSessionId).catch(() => {
+        if (!mountedRef.current || abortController.signal.aborted || activeGuidanceQuestionRef.current !== guidanceIdentity) return;
         setGuidanceError("The answer was acknowledged, but saved guidance history could not be refreshed. Try recovery before relying on a reload.");
       });
       if (abortController.signal.aborted || guidanceAbortControllerRef.current !== abortController) return;
@@ -814,7 +820,7 @@ export function ReadyStateLaunchPanel() {
     if (guidanceStatus === "loading" && active?.source === "detected" &&
         shouldReplaceDetectedQuestion(active.question, preferredDetectedQuestion)) {
       cancelActiveGuidanceRequest();
-      setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
+      setGuidanceData(null); setGuidanceText(""); setGuidancePreview("");
       setGuidanceStatus("idle");
       setGuidanceError("The question changed; the previous answer was cancelled.");
     }
@@ -831,7 +837,7 @@ export function ReadyStateLaunchPanel() {
     if ((stopped || paused) && activeGuidanceQuestionRef.current?.source !== "typed") {
       cancelActiveGuidanceRequest();
       if (guidanceStatus === "loading") {
-        setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
+        setGuidanceData(null); setGuidanceText(""); setGuidancePreview("");
         setGuidanceStatus("idle"); setAnswerReadyVisible(false);
       }
       setGuidanceError(paused ? "Audio processing paused; pending detected-question guidance was cancelled. Saved answers remain recoverable." : "Audio capture stopped; pending detected-question guidance was cancelled. Saved answers remain recoverable.");
@@ -1023,131 +1029,19 @@ export function ReadyStateLaunchPanel() {
   const realtimeStatusLabel = getRealtimeStatusLabel(realtimeConnection.state);
   const realtimeStatusColor = getRealtimeStatusColor(realtimeConnection.state);
 
-  const ownedSessionTools = (
-    <section aria-label="Typed coaching and saved session" style={{ marginBottom: 18, padding: 16, border: "1px solid #49496A", borderRadius: 10, color: "#D8D8F0" }}>
-      <label style={{ display: "block", fontSize: 13 }}>
-        Type a question without recording
-        <textarea aria-label="Typed coaching question" maxLength={500} value={typedQuestion} onChange={event => setTypedQuestion(event.target.value)} style={{ display: "block", width: "100%", marginTop: 8, padding: 10, background: "#16162A", color: "#F0F0FF", border: "1px solid #636386", borderRadius: 8 }} />
-      </label>
-      <p style={{ fontSize: 12, margin: "8px 0" }}>Generating requires a signed-in account, an owned saved session and available server allowance. Typed coaching does not acquire audio.</p>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <button type="button" disabled={!typedQuestion.trim() || guidanceStatus === "loading" || launchFlowStep === "requesting" || transcriptionWorkflow.isPaused} onClick={() => void handleGetGuidance(typedQuestion)} style={{ padding: "8px 12px", borderRadius: 6, background: "#4F46E5", color: "white" }}>{guidanceStatus === "loading" ? "Generating..." : syntheticMode ? "Generate sample guidance (synthetic)" : "Generate typed guidance"}</button>
-        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.recoverServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Recover saved session</button>
-        <button type="button" disabled={!transcriptionWorkflow.serverSessionId} onClick={() => void transcriptionWorkflow.exportServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Export saved session</button>
-        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.deleteServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Delete saved session</button>
-      </div>
-      <SavedSessionPicker appearance="dark" sessions={transcriptionWorkflow.savedServerSessions} loading={transcriptionWorkflow.isFindingServerSessions}
-        disabled={transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"}
-        find={transcriptionWorkflow.findServerSessions} recover={transcriptionWorkflow.recoverServerSession} />
-      <p role="status" style={{ marginTop: 8, fontSize: 12 }}>{describeSaveAcknowledgement(transcriptionWorkflow.serverSaveState, transcriptionWorkflow.error, transcriptionWorkflow.feedback)}</p>
-      {guidanceError ? <p role="status" style={{ color: "#FBBF24", fontSize: 12 }}>{guidanceError}</p> : null}
-      {launchFlowStep !== "live" && guidanceStatus !== "failed" && guidanceData ? <article style={{ marginTop: 12 }}><h3>{guidanceData.headline || "Completed guidance"}</h3><p>{guidanceData.speakNow || guidanceData.gist}</p><p>{guidanceData.full_answer}</p></article> : null}
-      {transcriptionWorkflow.savedGuidance.length > 0 ? <div style={{ marginTop: 12 }}>
-        <h3>Saved guidance in this session</h3>
-        <p style={{ fontSize: 12 }}>Review each saved question before reusing its answer.</p>
-        {transcriptionWorkflow.savedGuidance.map(item => <article key={item.operationId} style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #49496A" }}>
-          <p style={{ fontWeight: 600 }}>{item.question}</p><p>{item.speakNow}</p>
-          {item.fullAnswer ? <details><summary>Full saved answer</summary><p>{item.fullAnswer}</p></details> : null}
-        </article>)}
-      </div> : null}
-    </section>
-  );
-
-  /* ================================================================
-     RENDER — IDLE STATE (two mode cards)
-     ================================================================ */
-  if (launchFlowStep !== "live") {
-    return (
-      <div>
-        <CaptureDisclosure appearance="dark" />
-        {ownedSessionTools}
-        <div style={{
-          alignItems: "center",
-          color: realtimeStatusColor,
-          display: "inline-flex",
-          fontSize: 12,
-          gap: 7,
-          marginBottom: 12,
-        }}>
-          <span style={{
-            background: realtimeStatusColor,
-            borderRadius: "50%",
-            display: "inline-block",
-            height: 7,
-            width: 7,
-          }} />
-          {realtimeStatusLabel}
-        </div>
-
-        {!onboardingDone && freeSessionCount === 0 && (
-          <div style={{
-            background: "#13131F",
-            border: "0.5px solid rgba(124,108,255,0.22)",
-            borderRadius: 10,
-            padding: "12px 14px",
-            marginBottom: 14,
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 12,
-            alignItems: "center",
-          }}>
-            <p style={{ fontSize: 12, lineHeight: 1.6, color: "#A0A0C0" }}>
-              1. Pick your audio source · 2. Join your interview call · 3. Answers appear here automatically
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                window.localStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
-                setOnboardingDone(true);
-              }}
-              style={{
-                background: "transparent",
-                border: "0.5px solid rgba(255,255,255,0.08)",
-                borderRadius: 6,
-                color: "#7C6CFF",
-                cursor: "pointer",
-                fontSize: 11,
-                padding: "5px 9px",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-
-        {isFreeLimitReached ? (
-          <div style={{
-            background: "#13131F",
-            border: "0.5px solid rgba(251,191,36,0.28)",
-            borderRadius: 10,
-            padding: 18,
-          }}>
-            <p style={{ fontSize: 16, fontWeight: 500, color: "#F0F0FF", marginBottom: 6 }}>
-              This browser has reached its 10-session preview limit
-            </p>
-            <p style={{ fontSize: 13, lineHeight: 1.6, color: "#A0A0C0", marginBottom: 14 }}>
-              This counter is stored only in this browser; it is not an account entitlement. Billing and paid upgrades are not connected. Your past transcripts stay available.
-            </p>
-            <a
-              href="/pricing"
-              style={{
-                background: "#4F46E5",
-                borderRadius: 8,
-                color: "white",
-                display: "inline-flex",
-                fontSize: 13,
-                fontWeight: 500,
-                padding: "9px 14px",
-                textDecoration: "none",
-              }}
-            >
-              View planned pricing
-            </a>
-          </div>
-        ) : (
-          <>
-        <div style={{
+  const recoveredAnswer = transcriptionWorkflow.savedGuidance.reduce<typeof transcriptionWorkflow.savedGuidance[number] | null>((latest, item) => !latest || item.createdAt >= latest.createdAt ? item : latest, null);
+  const showRecoveredAnswer = !guidanceQuestion && !transcriptionWorkflow.isRecording && guidanceStatus !== "loading" && recoveredAnswer;
+  const readerQuestion = guidanceQuestion || (showRecoveredAnswer ? recoveredAnswer.question : preferredDetectedQuestion);
+  const readerAnswer = guidanceStatus === "failed" ? null : guidanceData ? {
+    ...guidanceData, speakNow: guidanceData.speakNow || guidanceData.gist,
+    keyPoints: guidanceData.keyPoints ?? guidanceData.key_points, fullAnswer: guidanceData.full_answer,
+  } : showRecoveredAnswer ? recoveredAnswer : null;
+  const readingPanels = <CopilotReadingPanels question={readerQuestion}
+    hearingText={!readerQuestion ? (draftSegment || transcriptionWorkflow.latestSegment) : undefined}
+    answer={readerAnswer} preview={guidancePreview} status={guidanceStatus} error={guidanceError}
+    firstTextMs={firstAnswerMs} canRetry={Boolean(readerQuestion) && !transcriptionWorkflow.isPaused}
+    onRetry={() => void handleGetGuidance(guidanceQuestion || undefined)} />;
+  const sessionContext = (<div style={{
           background: "#13131F",
           border: "0.5px solid rgba(255,255,255,0.08)",
           borderRadius: 12,
@@ -1355,124 +1249,75 @@ export function ReadyStateLaunchPanel() {
               </span>
             )}
           </div>
-        </div>
-        {/* Mode selection cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {/* Microphone card */}
-          <button
-            type="button"
-            onClick={() => setAudioMode("microphone")}
-            style={{
-              background: audioMode === "microphone" ? "rgba(79,70,229,0.08)" : "#13131F",
-              border: audioMode === "microphone" ? "1px solid #4F46E5" : "0.5px solid rgba(255,255,255,0.08)",
-              borderRadius: 12,
-              padding: 20,
-              cursor: "pointer",
-              textAlign: "center",
-              transition: "border-color 0.2s, background 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              if (audioMode !== "microphone") {
-                e.currentTarget.style.borderColor = "rgba(79,70,229,0.4)";
-                e.currentTarget.style.background = "#16162A";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (audioMode !== "microphone") {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                e.currentTarget.style.background = "#13131F";
-              }
-            }}
-          >
-            <div style={{ fontSize: 28, color: "#7C6CFF", marginBottom: 10 }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z" />
-                <path d="M5 10a7 7 0 0 0 14 0" />
-                <path d="M8 21l8 0" />
-                <path d="M12 17l0 4" />
-              </svg>
-            </div>
-            <p style={{ fontSize: 14, fontWeight: 500, color: "#E0E0FF", marginBottom: 4 }}>Use Microphone</p>
-            <p style={{ fontSize: 12, color: "#5050A0", lineHeight: 1.5 }}>For phone screens and in-person interviews</p>
-          </button>
+        </div>);
 
-          {/* Tab audio card */}
-          <button
-            type="button"
-            onClick={() => setAudioMode("tab-audio")}
-            style={{
-              background: audioMode === "tab-audio" ? "rgba(79,70,229,0.08)" : "#13131F",
-              border: audioMode === "tab-audio" ? "1px solid #4F46E5" : "0.5px solid rgba(255,255,255,0.08)",
-              borderRadius: 12,
-              padding: 20,
-              cursor: "pointer",
-              textAlign: "center",
-              transition: "border-color 0.2s, background 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              if (audioMode !== "tab-audio") {
-                e.currentTarget.style.borderColor = "rgba(79,70,229,0.4)";
-                e.currentTarget.style.background = "#16162A";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (audioMode !== "tab-audio") {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                e.currentTarget.style.background = "#13131F";
-              }
-            }}
-          >
-            <div style={{ fontSize: 28, color: "#7C6CFF", marginBottom: 10 }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10z" />
-                <path d="M7 20h10" />
-                <path d="M9 16v4" />
-                <path d="M15 16v4" />
-              </svg>
-            </div>
-            <p style={{ fontSize: 14, fontWeight: 500, color: "#E0E0FF", marginBottom: 4 }}>Share Tab Audio</p>
-            <p style={{ fontSize: 12, color: "#5050A0", lineHeight: 1.5 }}>Supported shared tabs; enable Share audio</p>
-          </button>
-        </div>
+  const recoverForReader = async (sessionId?: string) => {
+    cancelActiveGuidanceRequest();
+    activeGuidanceQuestionRef.current = null;
+    setGuidanceQuestion(""); setGuidancePreview(""); setGuidanceData(null); setGuidanceStatus("idle"); setFirstAnswerMs(null); setGuidanceError("");
+    await transcriptionWorkflow.recoverServerSession(sessionId);
+  };
+  const ownedSessionTools = (
+    <section aria-label="Typed coaching and saved session" style={{ marginBottom: 18, padding: 16, border: "1px solid #49496A", borderRadius: 10, color: "#D8D8F0" }}>
+      <label style={{ display: "block", fontSize: 13 }}>
+        Type a question without recording
+        <textarea aria-label="Typed coaching question" maxLength={500} value={typedQuestion} onChange={event => setTypedQuestion(event.target.value)} style={{ display: "block", width: "100%", marginTop: 8, padding: 10, background: "#16162A", color: "#F0F0FF", border: "1px solid #636386", borderRadius: 8 }} />
+      </label>
+      <p style={{ fontSize: 12, margin: "8px 0" }}>Generating requires a signed-in account, an owned saved session and available server allowance. Typed coaching does not acquire audio.</p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button type="button" disabled={!typedQuestion.trim() || guidanceStatus === "loading" || launchFlowStep === "requesting" || transcriptionWorkflow.isPaused} onClick={() => void handleGetGuidance(typedQuestion)} style={{ padding: "8px 12px", borderRadius: 6, background: "#4F46E5", color: "white" }}>{guidanceStatus === "loading" ? "Generating..." : syntheticMode ? "Generate sample guidance (synthetic)" : "Generate typed guidance"}</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void recoverForReader()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Recover saved session</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId} onClick={() => void transcriptionWorkflow.exportServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Export saved session</button>
+        <button type="button" disabled={!transcriptionWorkflow.serverSessionId || transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"} onClick={() => void transcriptionWorkflow.deleteServerSession()} style={{ padding: "8px 12px", borderRadius: 6, background: "#34344F", color: "white" }}>Delete saved session</button>
+      </div>
+      <SavedSessionPicker appearance="dark" sessions={transcriptionWorkflow.savedServerSessions} loading={transcriptionWorkflow.isFindingServerSessions}
+        disabled={transcriptionWorkflow.isRecording || transcriptionWorkflow.status === "stopping" || guidanceStatus === "loading"}
+        find={transcriptionWorkflow.findServerSessions} recover={recoverForReader} />
+      <p role="status" style={{ marginTop: 8, fontSize: 12 }}>{describeSaveAcknowledgement(transcriptionWorkflow.serverSaveState, transcriptionWorkflow.error, transcriptionWorkflow.feedback)}</p>
+      {guidanceError ? <p role="status" style={{ color: "#FBBF24", fontSize: 12 }}>{guidanceError}</p> : null}
+      {transcriptionWorkflow.savedGuidance.length > 0 ? <div style={{ marginTop: 12 }}>
+        <h3>Saved guidance in this session</h3>
+        <p style={{ fontSize: 12 }}>Review each saved question before reusing its answer.</p>
+        {transcriptionWorkflow.savedGuidance.map(item => <article key={item.operationId} style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #49496A" }}>
+          <p style={{ fontWeight: 600 }}>{item.question}</p><p>{item.speakNow}</p>
+          {item.fullAnswer ? <details><summary>Full saved answer</summary><p>{item.fullAnswer}</p></details> : null}
+        </article>)}
+      </div> : null}
+    </section>
+  );
 
-        {/* Start Session button */}
-        <div style={{ marginTop: 16 }}>
-          <button
-            type="button"
-            onClick={() => void handleStartLiveCopilot()}
-            disabled={launchFlowStep === "requesting" || guidanceStatus === "loading"}
-            style={{
-              background: "#4F46E5",
-              color: "white",
-              borderRadius: 8,
-              padding: "10px 20px",
-              fontSize: 13,
-              fontWeight: 500,
-              border: "none",
-              cursor: launchFlowStep === "requesting" ? "not-allowed" : "pointer",
-              opacity: launchFlowStep === "requesting" ? 0.6 : 1,
-              transition: "opacity 0.2s",
-            }}
-          >
-            {launchFlowStep === "requesting" ? "Requesting Permission..." : "Start Session"}
-          </button>
+  /* ================================================================
+     RENDER — IDLE STATE (two mode cards)
+     ================================================================ */
+  if (launchFlowStep !== "live") {
+    return (
+      <div className={workspaceStyles.workspace}>
+        <div className={workspaceStyles.toolbar}>
+          <div className={workspaceStyles.sourceChoices} aria-label="Audio source">
+            <button type="button" aria-pressed={audioMode === "microphone"} onClick={() => setAudioMode("microphone")}>Use Microphone</button>
+            <button type="button" aria-pressed={audioMode === "tab-audio"} onClick={() => setAudioMode("tab-audio")}>Share Tab Audio</button>
+          </div>
+          <span className={workspaceStyles.connection}>{realtimeStatusLabel}</span>
+          <button className={workspaceStyles.startButton} type="button" disabled={isFreeLimitReached || launchFlowStep === "requesting" || guidanceStatus === "loading"}
+            onClick={() => void handleStartLiveCopilot()}>{launchFlowStep === "requesting" ? "Requesting permission…" : "Start Session"}</button>
         </div>
-
-        {captureState.status === "failed" && (
-          <p style={{ fontSize: 12, color: "#EF4444", marginTop: 8 }}>{captureState.detail}</p>
-        )}
-          </>
-        )}
+        <p className={workspaceStyles.setupHint}>Choose your audio source, then start. Your question stays on the left; your answer appears on the right.</p>
+        {captureState.status === "failed" && <p role="status" className={workspaceStyles.warning}>{captureState.detail}</p>}
+        {isFreeLimitReached && <p role="status" className={workspaceStyles.warning}>This browser has reached its 10-session preview limit. Typed coaching and saved work remain available; this local counter is separate from your account allowance.</p>}
+        {readingPanels}
+        <details className={workspaceStyles.details}><summary>Type a question · Saved sessions</summary>{ownedSessionTools}</details>
+        <details className={workspaceStyles.details}><summary>Personalize with your resume, role, and notes</summary>{sessionContext}</details>
+        <details className={workspaceStyles.details}><summary>Audio permissions and privacy</summary><CaptureDisclosure appearance="dark" /></details>
+        {!onboardingDone && <p className={workspaceStyles.setupHint}>Use a quiet microphone or share a browser tab with audio enabled. <button type="button" onClick={() => { window.localStorage.setItem(ONBOARDING_STORAGE_KEY, "true"); setOnboardingDone(true); }}>Dismiss tip</button></p>}
       </div>
     );
   }
 
   /* ================================================================
-     RENDER — LIVE STATE (transcript + three answer cards + stats)
+     RENDER — LIVE STATE (aligned question and answer reader)
      ================================================================ */
   return (
-    <div>
-      {ownedSessionTools}
+    <div className={workspaceStyles.workspace}>
       {/* Live header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
@@ -1555,244 +1400,17 @@ export function ReadyStateLaunchPanel() {
         </div>
       )}
 
-      {/* Detected question */}
-      {preferredDetectedQuestion && (
-        <div style={{
-          background: "#13131F",
-          border: "0.5px solid rgba(255,255,255,0.08)",
-          borderRadius: 10,
-          padding: "10px 14px",
-          marginBottom: 16,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}>
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "#4A4A6A", marginBottom: 4 }}>
-              Detected Question
-            </p>
-            <p style={{ fontSize: 13, color: "#E0E0FF" }}>{preferredDetectedQuestion}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void handleGetGuidance()}
-            disabled={guidanceStatus === "loading"}
-            style={{
-              background: "rgba(79,70,229,0.12)",
-              color: "#7C6CFF",
-              border: "0.5px solid rgba(124,108,255,0.3)",
-              borderRadius: 6,
-              padding: "5px 12px",
-              fontSize: 11,
-              cursor: guidanceStatus === "loading" ? "not-allowed" : "pointer",
-              opacity: guidanceStatus === "loading" ? 0.6 : 1,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {guidanceStatus === "loading" ? "Generating..." : "Get Guidance"}
-          </button>
-        </div>
-      )}
+      {readingPanels}
 
-      {/* === THREE LAYERED ANSWER CARDS === */}
-      {guidanceData && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {/* Card 1 — SAY THIS NOW (gold) */}
-          {showCard1 && (
-            <div style={{
-              background: "rgba(251,191,36,0.07)",
-              borderLeft: "3px solid #FBBF24",
-              borderRadius: "0 10px 10px 0",
-              padding: "14px 16px",
-              animation: "fadeUp 300ms ease-out",
-            }}>
-              <p style={{
-                fontSize: 10, fontWeight: 500, textTransform: "uppercase",
-                letterSpacing: "0.08em", color: "#FBBF24", marginBottom: 6,
-              }}>
-                Say This Now
-              </p>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: "#D4A820" }}>
-                {guidanceData.speakNow || guidanceData.gist}
-              </p>
-            </div>
-          )}
-
-          {/* Card 2 — HIT THESE POINTS (teal) */}
-          {showCard2 && (guidanceData.keyPoints ?? guidanceData.key_points).length > 0 && (
-            <div style={{
-              background: "rgba(45,212,191,0.07)",
-              borderLeft: "3px solid #2DD4BF",
-              borderRadius: "0 10px 10px 0",
-              padding: "14px 16px",
-              animation: "fadeUp 300ms ease-out",
-            }}>
-              <p style={{
-                fontSize: 10, fontWeight: 500, textTransform: "uppercase",
-                letterSpacing: "0.08em", color: "#2DD4BF", marginBottom: 6,
-              }}>
-                Hit These Points
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {(guidanceData.keyPoints ?? guidanceData.key_points).map((point, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                    <span style={{
-                      width: 5, height: 5, borderRadius: "50%", background: "#2DD4BF",
-                      marginTop: 6, flexShrink: 0,
-                    }} />
-                    <span style={{ fontSize: 13, color: "#5B9E9A" }}>{point}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Card 3 — YOUR FULL ANSWER (violet) */}
-          {showCard3 && (
-            <div style={{
-              background: "rgba(124,108,255,0.07)",
-              borderLeft: "3px solid #7C6CFF",
-              borderRadius: "0 10px 10px 0",
-              padding: "14px 16px",
-              animation: "fadeUp 300ms ease-out",
-            }}>
-              <p style={{
-                fontSize: 10, fontWeight: 500, textTransform: "uppercase",
-                letterSpacing: "0.08em", color: "#7C6CFF", marginBottom: 6,
-              }}>
-                Your Full Answer
-              </p>
-              <p style={{ fontSize: 13, color: "#9090C0", lineHeight: 1.6 }}>
-                {streamedFullAnswer}
-                {streamedFullAnswer.length < (guidanceData.full_answer?.length ?? 0) && (
-                  <span style={{
-                    display: "inline-block",
-                    width: 2,
-                    height: 14,
-                    background: "#7C6CFF",
-                    marginLeft: 2,
-                    verticalAlign: "text-bottom",
-                    animation: "blink 1s step-end infinite",
-                  }} />
-                )}
-              </p>
-              {(guidanceData.caution || guidanceData.followUp) && (
-                <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
-                  {guidanceData.caution && (
-                    <p style={{ color: "#FBBF24", fontSize: 11, lineHeight: 1.5 }}>
-                      Caution: {guidanceData.caution}
-                    </p>
-                  )}
-                  {guidanceData.followUp && (
-                    <p style={{ color: "#2DD4BF", fontSize: 11, lineHeight: 1.5 }}>
-                      Follow-up: {guidanceData.followUp}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {guidanceStatus === "failed" && guidanceData && (
-        <div role="status">
-          <p style={{ color: "#FBBF24", fontSize: 12 }}>
-            {guidanceError || "AI guidance is unavailable."} The suggestion above is a general local tip, not an answer generated from your question.
-          </p>
-        <button
-          type="button"
-          onClick={() => void handleGetGuidance()}
-          style={{
-            marginTop: 10,
-            background: "rgba(251,191,36,0.08)",
-            border: "0.5px solid rgba(251,191,36,0.35)",
-            borderRadius: 6,
-            color: "#FBBF24",
-            cursor: "pointer",
-            fontSize: 11,
-            padding: "5px 10px",
-          }}
-        >
-          Try again
-        </button>
-        </div>
-      )}
-
-      {/* Loading state */}
-      {guidanceStatus === "loading" && !guidanceData && (
-        <div style={{
-          background: "rgba(79,70,229,0.07)",
-          borderLeft: "3px solid #4F46E5",
-          borderRadius: "0 10px 10px 0",
-          padding: "14px 16px",
-          animation: "fadeUp 300ms ease-out",
-        }}>
-          <p style={{ fontSize: 13, color: "#7C6CFF" }}>Generating guidance...</p>
-        </div>
-      )}
-
-      {/* Stats row */}
-      {launchFlowStep === "live" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16 }}>
-          <div style={{
-            background: "#13131F",
-            border: "0.5px solid rgba(255,255,255,0.06)",
-            borderRadius: 8,
-            padding: 12,
-            textAlign: "center",
-          }}>
-            <p style={{ fontSize: 22, fontWeight: 500, color: "#7C6CFF" }}>{questionsCoached}</p>
-            <p style={{ fontSize: 10, color: "#4A4A6A", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
-              Questions coached
-            </p>
-          </div>
-          <div style={{
-            background: "#13131F",
-            border: "0.5px solid rgba(255,255,255,0.06)",
-            borderRadius: 8,
-            padding: 12,
-            textAlign: "center",
-          }}>
-            <p style={{ fontSize: 22, fontWeight: 500, color: "#2DD4BF" }}>{avgResponseTime}</p>
-            <p style={{ fontSize: 10, color: "#4A4A6A", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
-              Avg response
-            </p>
-          </div>
-          <div style={{
-            background: "#13131F",
-            border: "0.5px solid rgba(255,255,255,0.06)",
-            borderRadius: 8,
-            padding: 12,
-            textAlign: "center",
-          }}>
-            <p style={{ fontSize: 22, fontWeight: 500, color: "#FBBF24" }}>{Math.max(0, FREE_SESSION_LIMIT - freeSessionCount)}</p>
-            <p style={{ fontSize: 10, color: "#4A4A6A", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
-              Local preview sessions remaining
-            </p>
-          </div>
-        </div>
-      )}
-
-      {launchFlowStep === "live" && (
-        <div style={{
-          background: "#13131F",
-          border: "0.5px solid rgba(255,255,255,0.06)",
-          borderRadius: 8,
-          color: "#7070A0",
-          display: "flex",
-          flexWrap: "wrap",
-          fontSize: 11,
-          gap: 10,
-          marginTop: 8,
-          padding: "8px 10px",
-        }}>
-          <span>First saved transcript: {latencySnapshot.sttFirstPartialMs === null ? "--" : `${latencySnapshot.sttFirstPartialMs}ms`}</span>
-          <span>First guidance: {latencySnapshot.totalFirstGuidanceMs === null ? "--" : `${latencySnapshot.totalFirstGuidanceMs}ms`}</span>
-        </div>
-      )}
-
+      <div className={workspaceStyles.metrics}>
+        <span>{questionsCoached} questions coached</span>
+        <span>First transcript: {latencySnapshot.sttFirstPartialMs === null ? "—" : `${(latencySnapshot.sttFirstPartialMs / 1000).toFixed(1)}s`}</span>
+        <span>First answer text: {firstAnswerMs === null ? "—" : `${(firstAnswerMs / 1000).toFixed(1)}s`}</span>
+        <span>Average complete answer: {avgResponseTime}</span>
+        <span>{Math.max(0, FREE_SESSION_LIMIT - freeSessionCount)} preview sessions left</span>
+      </div>
+      <details className={workspaceStyles.details}><summary>Type a question · Saved sessions</summary>{ownedSessionTools}</details>
+      <details className={workspaceStyles.details}><summary>Live transcript · Full conversation</summary>
       {/* Transcript panel */}
       <div style={{
         marginTop: 16,
@@ -1821,7 +1439,7 @@ export function ReadyStateLaunchPanel() {
                     borderRadius: 8,
                     fontSize: 12,
                     lineHeight: 1.6,
-                    color: isQuestionSegment ? "#FBBF24" : "#9090C0",
+                    color: isQuestionSegment ? "#FDE68A" : "#D6DEEC",
                     background: isQuestionSegment ? "rgba(251,191,36,0.06)" : "rgba(255,255,255,0.02)",
                     borderLeft: isLatest ? "2px solid #4F46E5" : "2px solid transparent",
                   }}
@@ -1845,7 +1463,7 @@ export function ReadyStateLaunchPanel() {
                 borderRadius: 8,
                 fontSize: 12,
                 lineHeight: 1.6,
-                color: "#5050A0",
+                color: "#A8B6CD",
                 fontStyle: "italic",
                 background: "rgba(255,255,255,0.01)",
               }}>
@@ -1856,9 +1474,10 @@ export function ReadyStateLaunchPanel() {
         ) : transcriptionWorkflow.status === "failed" ? (
           <p style={{ fontSize: 12, color: "#EF4444" }}>Transcription stopped. No retries are running. {transcriptionWorkflow.error} Use typed guidance, or resolve the error and return to Start to explicitly capture again.</p>
         ) : (
-          <p style={{ fontSize: 12, color: "#5050A0" }}>No speech detected yet.</p>
+          <p style={{ fontSize: 12, color: "#A8B6CD" }}>No speech detected yet.</p>
         )}
       </div>
+      </details>
     </div>
   );
 }

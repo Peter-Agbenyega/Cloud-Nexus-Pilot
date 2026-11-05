@@ -1,0 +1,28 @@
+{
+  "scope": "One generated-speech before/after comparison using the same question and configured model. HTTP transport only, not full microphone-to-screen latency.",
+  "question": "What is Kubernetes?",
+  "beforeFirstReadableMs": 3938.3,
+  "afterFirstReadableMs": 871.84,
+  "beforeFinalMs": 3938.29,
+  "afterFinalMs": 2994.97,
+  "captureBufferBeforeMs": 4000,
+  "captureBufferAfterMs": 2000,
+  "additionalTranscriptBufferRemoved": true,
+  "physicalMicrophoneRetestPerformed": false,
+  "browserTypedTest": {
+    "question": "What is Terraform?",
+    "firstReadableDisplayedSeconds": 1.0,
+    "matchingQuestionAndAnswer": true,
+    "savedRecoveryPairing": true,
+    "textSizeToggleVerified": true,
+    "desktopPanelSize": 455.5,
+    "desktopSameTopY": 318.796875,
+    "desktopViewportWidth": 1177,
+    "desktopScrollWidth": 1177,
+    "mobileViewportWidth": 386,
+    "mobileScrollWidth": 386,
+    "mobilePanelsStacked": true,
+    "viewportReset": true
+  },
+  "limits": "Single-run timings vary with provider and network. Capture and transcription still add latency. Two-second windows increase request cadence; concurrency remains bounded at six."
+}

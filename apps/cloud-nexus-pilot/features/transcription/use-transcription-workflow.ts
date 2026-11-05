@@ -1,6 +1,8 @@
 "use client";
 
-import { bindDetectedQuestion, countMeaningfulWords, isIncompleteDetectedQuestion, latestCompleteQuestion, selectDetectedQuestion, type BoundDetectedQuestion } from "./question-selection";
+import { LIVE_CAPTURE_INTERVAL_MS, LIVE_CAPTURE_MIN_FRAMES, LIVE_CAPTURE_SAMPLE_RATE } from "@/lib/audio/live-capture-profile";
+
+import { bindDetectedQuestion, countMeaningfulWords, isIncompleteDetectedQuestion, latestCompleteQuestion, selectDetectedQuestion, questionNormalizationCandidate, type BoundDetectedQuestion } from "./question-selection";
 
 import { ensureOwnedGuidanceSession, savedGuidanceAssociations, type SavedGuidanceAssociation } from "./guidance-session-client";
 import { loadSavedTranscriptSession, deleteSavedTranscriptSession, listOwnedTranscriptSessions, type OwnedTranscriptSessionSummary } from "./saved-session-service";
@@ -146,12 +148,6 @@ export type UseTranscriptionWorkflowOptions = {
   repositoryMode?: "auto" | "local-only";
 };
 
-// 4-second chunks balance live response speed with enough speech context for Whisper quality.
-const DEFAULT_CHUNK_INTERVAL_MS = 4_000;
-const PCM_CHUNK_FLUSH_INTERVAL_MS = DEFAULT_CHUNK_INTERVAL_MS;
-const PCM_MIN_FRAMES_PER_CHUNK = 64_000;
-const MIN_LIVE_SEGMENT_WORDS = 5;
-const MAX_LIVE_SEGMENT_BUFFER_MS = 4_000;
 const MAX_IN_FLIGHT_LIVE_CHUNKS = 6;
 const LIVE_SEGMENT_MERGE_WINDOW_MS = 10_000;
 const SHORT_LIVE_FRAGMENT_WORDS = 8;
@@ -287,13 +283,11 @@ export function useTranscriptionWorkflow(
   const isCreatingTranscriptRef = useRef(false);
   const transcriptCreationPromiseRef = useRef<Promise<TranscriptRecord> | null>(null);
   const aiQuestionInFlightRef = useRef(false);
+  const acceptedQuestionCorrectionKeyRef = useRef<string | null>(null);
   const pendingAiQuestionDetectionRef = useRef(false);
   const aiQuestionAbortRef = useRef<AbortController | null>(null);
   const incompleteQuestionTimerRef = useRef<number | null>(null);
   const pendingIncompleteQuestionRef = useRef("");
-  const pendingLiveSegmentRef = useRef("");
-  const pendingLiveSegmentAgeRef = useRef<number | null>(null);
-  const pendingLiveSegmentSpeakerRef = useRef<number | null>(null);
   const consecutiveChunkUploadFailuresRef = useRef(0);
   const seedChunkRef = useRef<Blob | null>(null);
   const pendingChunkPartsRef = useRef<Blob[]>([]);
@@ -738,38 +732,19 @@ export function useTranscriptionWorkflow(
     []
   );
 
-  const flushPendingLiveSegment = useCallback(
-    (chunkIndex: number, nextSource: LiveTranscriptionSource) => {
-      const bufferedText = cleanTranscriptText(pendingLiveSegmentRef.current);
-      const bufferedSpeakerId = pendingLiveSegmentSpeakerRef.current;
-      pendingLiveSegmentRef.current = "";
-      pendingLiveSegmentAgeRef.current = null;
-      pendingLiveSegmentSpeakerRef.current = null;
-      setDraftSegment("");
-
-      if (!bufferedText) return null;
-      return appendSegment(chunkIndex, bufferedText, nextSource, bufferedSpeakerId);
-    },
-    [appendSegment]
-  );
-
   const triggerAiQuestionDetection = useCallback(function runQuestionDetection(
     segments: TranscriptSegment[]
   ) {
+    // Complete local questions can start guidance immediately. Correct only
+    // the newest unresolved candidate; unrelated narration needs no API call.
+    const candidate = questionNormalizationCandidate(segments, acceptedQuestionCorrectionKeyRef.current);
+    if (!candidate) return;
     if (aiQuestionInFlightRef.current) {
       pendingAiQuestionDetectionRef.current = true;
       return;
     }
 
-    const recentSegments = segments
-      .slice(-3)
-      .map((segment) => segment.text.trim())
-      .filter(Boolean)
-      .slice(-3);
-
-    if (recentSegments.length === 0) {
-      return;
-    }
+    const recentSegments = [candidate.question];
 
     aiQuestionAbortRef.current?.abort();
     const abortController = new AbortController();
@@ -813,7 +788,10 @@ export function useTranscriptionWorkflow(
           incompleteQuestionTimerRef.current = null;
         }
         const correction = bindDetectedQuestion(nextQuestion, segments, segmentsRef.current);
-        if (correction) setAiQuestionCorrection(correction);
+        if (correction) {
+          acceptedQuestionCorrectionKeyRef.current = correction.sourceKey;
+          setAiQuestionCorrection(correction);
+        }
       })
       .catch(() => {
         // Missing/failed detection does not invalidate an already completed question.
@@ -856,12 +834,12 @@ export function useTranscriptionWorkflow(
     audioPipelineRef.current = null;
     if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
     recorderRef.current = null;
-    flushPendingLiveSegment(chunkIndexRef.current, sourceRef.current);
     aiQuestionAbortRef.current?.abort();
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
     pendingAiQuestionDetectionRef.current = false;
     consecutiveChunkUploadFailuresRef.current = 0;
+    acceptedQuestionCorrectionKeyRef.current = null;
     setAiQuestionCorrection(null);
     clearIncompleteQuestionWait();
     void streamingClientRef.current?.stop();
@@ -886,11 +864,8 @@ export function useTranscriptionWorkflow(
     seedChunkRef.current = null;
     pendingChunkPartsRef.current = [];
     pendingChunkBytesRef.current = 0;
-    pendingLiveSegmentRef.current = "";
-    pendingLiveSegmentAgeRef.current = null;
-    pendingLiveSegmentSpeakerRef.current = null;
     setDraftSegment("");
-  }, [clearIncompleteQuestionWait, flushPendingLiveSegment]);
+  }, [clearIncompleteQuestionWait]);
 
   const processAudioChunk = useCallback(
     async (audioBlob: Blob, chunkIndex: number, nextSource: LiveTranscriptionSource, overrideContentType?: string, attempt = 0) => {
@@ -979,46 +954,11 @@ export function useTranscriptionWorkflow(
           return;
         }
 
-        startTransition(() => {
-          setLatestSegment(cleanedChunkText);
-        });
-
-        const now = Date.now();
-        if (typeof result.speakerId === "number" && Number.isFinite(result.speakerId)) {
-          pendingLiveSegmentSpeakerRef.current = result.speakerId;
-        }
-
-        if (!pendingLiveSegmentRef.current) {
-          pendingLiveSegmentRef.current = cleanedChunkText;
-          pendingLiveSegmentAgeRef.current = now;
-        } else {
-          pendingLiveSegmentRef.current = cleanTranscriptText(
-            `${pendingLiveSegmentRef.current} ${cleanedChunkText}`
-          );
-        }
-
-        startTransition(() => {
-          setDraftSegment(pendingLiveSegmentRef.current);
-        });
-
-        const bufferedText = pendingLiveSegmentRef.current;
-        const bufferedWordCount = bufferedText.split(/\s+/).filter(Boolean).length;
-        const bufferedAgeMs =
-          pendingLiveSegmentAgeRef.current == null ? 0 : now - pendingLiveSegmentAgeRef.current;
-        const endsWithSentence = /[.?!]["']?\s*$/.test(bufferedText);
-        const shouldFlushBufferedSegment =
-          endsWithSentence ||
-          bufferedAgeMs >= MAX_LIVE_SEGMENT_BUFFER_MS ||
-          (bufferedWordCount >= 20 && bufferedAgeMs >= 2_000);
-
-        if (!shouldFlushBufferedSegment) {
-          setStatus("receiving-transcript");
-          setFeedback("Receiving transcript from the configured transcription provider.");
-          setError("");
-          return;
-        }
-
-        const appended = flushPendingLiveSegment(result.chunkIndex, result.source);
+        // Each result is already provider-final and server-acknowledged. Show
+        // it now; completeness/fragment merging decides when guidance can start.
+        // A second text buffer could otherwise strand a question through silence.
+        setDraftSegment("");
+        const appended = appendSegment(result.chunkIndex, cleanedChunkText, result.source, result.speakerId);
         if (!appended) {
           return;
         }
@@ -1107,7 +1047,7 @@ export function useTranscriptionWorkflow(
     },
     [
       ensureStreamingClient,
-      flushPendingLiveSegment,
+      appendSegment,
       logStreamingSeam,
       persistCurrentTranscript,
       resetStreamingClient,
@@ -1152,11 +1092,9 @@ export function useTranscriptionWorkflow(
       aiQuestionInFlightRef.current = false;
       pendingAiQuestionDetectionRef.current = false;
       consecutiveChunkUploadFailuresRef.current = 0;
+      acceptedQuestionCorrectionKeyRef.current = null;
       setAiQuestionCorrection(null);
       clearIncompleteQuestionWait();
-      pendingLiveSegmentRef.current = "";
-      pendingLiveSegmentAgeRef.current = null;
-      pendingLiveSegmentSpeakerRef.current = null;
       stoppingRef.current = false;
       setIsPaused(false);
       const nextSource = options?.source ?? sourceRef.current;
@@ -1216,8 +1154,9 @@ export function useTranscriptionWorkflow(
         const pipeline = await createLiveAudioPipeline({
           stream,
           signal: startupController.signal,
-          flushIntervalMs: PCM_CHUNK_FLUSH_INTERVAL_MS,
-          minFramesPerChunk: PCM_MIN_FRAMES_PER_CHUNK,
+          targetSampleRate: LIVE_CAPTURE_SAMPLE_RATE,
+          flushIntervalMs: LIVE_CAPTURE_INTERVAL_MS,
+          minFramesPerChunk: LIVE_CAPTURE_MIN_FRAMES,
           onLevel: (value) => {
             const now = Date.now();
             if (value === 0 || now - lastMeterUpdateRef.current >= 150) {
@@ -1441,10 +1380,8 @@ export function useTranscriptionWorkflow(
     aiQuestionAbortRef.current?.abort();
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
+    acceptedQuestionCorrectionKeyRef.current = null;
     setAiQuestionCorrection(null);
-    pendingLiveSegmentRef.current = "";
-    pendingLiveSegmentAgeRef.current = null;
-    pendingLiveSegmentSpeakerRef.current = null;
     transcriptRef.current = "";
     segmentsRef.current = [];
   }, [stopInternal]);

@@ -23,7 +23,12 @@ test("natural speaking policy rejects routine AI-style openings", () => {
 test("technical prompt keeps speak-now concise while preserving deeper detail", () => {
   const prompt = buildInterviewSystemPrompt({ mode: "devops", category: "devops" });
 
-  assert.match(prompt, /speakNow: 2-4 short sentences/i);
+  // The direct answer comes first for streaming; deeper reasoning remains separate.
+  assert.match(prompt, /JSON shape, in this order: \{speakNow, headline/i);
+  assert.match(prompt, /speakNow: 2-3 short sentences, at most 60 words/i);
+  assert.match(prompt, /useful direct opening sentence/i);
+  assert.match(prompt, /full_answer: natural expanded answer/i);
+  assert.match(prompt, /Maintain strong depth/i);
   assert.match(prompt, /technicalDetail: deeper reasoning/i);
   assert.match(buildTechnicalPrompt(), /15-30 second practical response/i);
   assert.match(buildTechnicalPrompt(), /For AWS specifically/i);

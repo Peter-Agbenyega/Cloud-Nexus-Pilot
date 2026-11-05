@@ -67,6 +67,14 @@ function scanQuestionCandidates(segments: QuestionSegments) {
   return { latest, complete };
 }
 
+// Normalization is a fallback, not a prerequisite for answering a complete
+// question. Tiny unfinished openings wait for words instead of paying for a guess.
+export function questionNormalizationCandidate(segments: QuestionSegments, acceptedSourceKey: string | null = null): QuestionCandidate | null {
+  const { latest, complete } = scanQuestionCandidates(segments);
+  if (!latest || latest.key === complete?.key || latest.key === acceptedSourceKey || !getDetectedQuestion(latest.question)) return null;
+  return latest;
+}
+
 export function latestCompleteQuestion(segments: QuestionSegments): string {
   return scanQuestionCandidates(segments).complete?.question ?? "";
 }

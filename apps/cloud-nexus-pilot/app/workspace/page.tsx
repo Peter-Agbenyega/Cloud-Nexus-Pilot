@@ -13,10 +13,10 @@ export default async function WorkspacePage({
   if (isDemoMode) {
     return (
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 500, color: "#F0F0FF", marginBottom: 4 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 650, color: "#F0F0FF", marginBottom: 4 }}>
           Mock Interview
         </h1>
-        <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
+        <p style={{ fontSize: 14, color: "#A8B6CD", marginBottom: 18 }}>
           Practice one question at a time with role-specific follow-ups
         </p>
         <ErrorBoundary>
@@ -28,11 +28,11 @@ export default async function WorkspacePage({
 
   return (
     <div>
-      <h1 style={{ fontSize: 20, fontWeight: 500, color: "#F0F0FF", marginBottom: 4 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 650, color: "#F0F0FF", marginBottom: 4 }}>
         Interview Copilot
       </h1>
-      <p style={{ fontSize: 13, color: "#6060A0", marginBottom: 24 }}>
-        Real-time transcription and AI-powered answer guidance
+      <p style={{ fontSize: 14, color: "#A8B6CD", marginBottom: 18 }}>
+        Stay with the conversation. Read your question and answer side by side.
       </p>
       <ErrorBoundary>
         <ReadyStateLaunchPanel />

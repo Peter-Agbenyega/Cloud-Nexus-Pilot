@@ -1,3 +1,4 @@
+import { extractGuidancePreview } from "@/lib/interview-intelligence/guidance-preview";
 import { ProviderLimitError, providerLimitErrors } from "@/lib/provider-limits";
 import { createHash } from "node:crypto";
 import { processingRepository, type Principal, type Reservation } from "@/lib/server/processing-repository";
@@ -293,7 +294,7 @@ export async function POST(request: Request) {
         ]
           .filter(Boolean)
           .join("\n\n");
-        let modelContent = "";
+        let modelContent = "", lastPreview = "", previewBytes = 0;
 
         try {
           providerStarted = true;
@@ -338,7 +339,16 @@ export async function POST(request: Request) {
             const token = item.value;
             modelContent += token;
             if (modelContent.length > 32_768) { scope.abort(); throw new Error("Output limit exceeded"); }
-            // Publish only the validated final guidance payload.
+            // Provisional words can appear immediately; only final JSON is saved.
+            const preview = extractGuidancePreview(modelContent);
+            if (preview && preview !== lastPreview) {
+              const chunk = toSseChunk({ type: "preview", speakNow: preview, draft: true });
+              // Cumulative previews must leave space for the bounded final payload.
+              if (previewBytes + chunk.byteLength <= 65_536) {
+                previewBytes += chunk.byteLength; lastPreview = preview;
+                controller.enqueue(chunk);
+              }
+            }
           }
         } catch (error) {
           if (error instanceof ProviderLimitError && Object.hasOwn(providerLimitErrors, error.code)) {
@@ -379,6 +389,7 @@ export async function POST(request: Request) {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
     },
   });
 }

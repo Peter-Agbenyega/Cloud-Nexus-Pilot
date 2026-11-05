@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bindDetectedQuestion, detectedQuestionKey, latestCompleteQuestion, selectDetectedQuestion, shouldReplaceDetectedQuestion } from "../../features/transcription/question-selection";
+import { bindDetectedQuestion, detectedQuestionKey, latestCompleteQuestion, selectDetectedQuestion, shouldReplaceDetectedQuestion, questionNormalizationCandidate } from "../../features/transcription/question-selection";
 
 const question = "What is Kubernetes?";
 const noise = "Cloud Nexus Pilot is an AI interview copilot. Common phrases include microphone transcription, tab audio, resume studio, culture scanner.";
@@ -105,4 +105,22 @@ test("nonquestion additions do not invalidate an in-flight detector correction",
   assert.ok(bound);
   assert.equal(selectDetectedQuestion(current, bound), "How do Docker containers communicate?");
   assert.equal(bindDetectedQuestion("How do Docker containers communicate?", requested, [...requested, ...segments("What is")]), null);
+});
+
+
+test("complete local questions bypass normalization while newest unresolved prompts keep the correction fallback", () => {
+  assert.equal(questionNormalizationCandidate(segments(question)), null);
+  assert.equal(questionNormalizationCandidate(segments(question, noise)), null);
+  assert.equal(questionNormalizationCandidate(segments(question, "What is")), null);
+  assert.equal(questionNormalizationCandidate(segments("What is", "Kubernetes?")), null);
+  const current = segments(question, "How do Docker containers communicate");
+  const candidate = questionNormalizationCandidate(current);
+  assert.ok(candidate);
+  assert.equal(candidate.question, "How do Docker containers communicate");
+  const corrected = bindDetectedQuestion("How do Docker containers communicate?", current, current);
+  assert.ok(corrected);
+  assert.equal(questionNormalizationCandidate(current, corrected.sourceKey), null);
+  assert.equal(questionNormalizationCandidate([...current, ...segments("Thank you.")], corrected.sourceKey), null);
+  assert.equal(questionNormalizationCandidate([...current, ...segments("What is Terraform?")], corrected.sourceKey), null);
+  assert.equal(questionNormalizationCandidate([...current, ...segments("How does Kubernetes schedule workloads")], corrected.sourceKey)?.question, "How does Kubernetes schedule workloads");
 });

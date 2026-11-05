@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createPcm16Resampler, downsampleFloat32ToPcm16, encodePcm16ToWavBlob, mergeInt16Chunks } from "../../lib/audio/pcm-encoder";
 import { createLiveAudioPipeline, type LiveAudioPipelineChunk } from "../../lib/audio/live-audio-pipeline";
+import { LIVE_CAPTURE_INTERVAL_MS, LIVE_CAPTURE_MIN_FRAMES, LIVE_CAPTURE_SAMPLE_RATE } from "../../lib/audio/live-capture-profile";
 import { cleanTranscriptText } from "../../features/transcription/transcript-bridge";
 import { captureFailureMessage, createCaptureStream, requireActiveAudioTracks } from "../../features/transcription/audio-capture";
 
@@ -131,18 +132,22 @@ test("cancelling suspended audio startup closes its context rather than hanging 
   assert.equal(FakeAudioContext.current.closed, 1);
 });
 
-test("periodic flush waits for full chunks while Pause and Stop preserve audible tails", async (t) => {
+test("live capture delivers a full two-second window without residual timer fragments and preserves Pause/Stop tails", async (t) => {
   fakeWindow(t);
   let tick: (() => void) | undefined;
   Object.defineProperty(window, "setInterval", { value: (callback: TimerHandler) => { tick = callback as () => void; return 1; } });
   window.clearInterval = () => {};
   const chunks: LiveAudioPipelineChunk[] = [];
-  const handle = await createLiveAudioPipeline({ stream: audioStream(), onChunk: chunk => chunks.push(chunk), minFramesPerChunk: 64_000, flushIntervalMs: 4_000 });
+  const handle = await createLiveAudioPipeline({ stream: audioStream(), onChunk: chunk => chunks.push(chunk), targetSampleRate: LIVE_CAPTURE_SAMPLE_RATE, minFramesPerChunk: LIVE_CAPTURE_MIN_FRAMES, flushIntervalMs: LIVE_CAPTURE_INTERVAL_MS });
   t.after(() => handle.stop());
   const context = FakeAudioContext.current;
-  context.feed(new Float32Array(192_000).fill(0.25));
+  context.feed(new Float32Array(48_000).fill(0.25));
+  tick!();
+  assert.equal(chunks.length, 0, "one second is not a complete live window");
+  context.feed(new Float32Array(48_000).fill(0.25));
   assert.equal(chunks.length, 1);
-  assert.equal(chunks[0]!.frameCount, 64_000);
+  assert.equal(chunks[0]!.frameCount, 32_000);
+  assert.equal(chunks[0]!.durationMs, 2_000);
   context.feed(new Float32Array(480)); // A 10ms silent remainder after the threshold flush.
   tick!(); tick!();
   assert.equal(chunks.length, 1, "timer must not upload the tiny remainder");

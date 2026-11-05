@@ -87,11 +87,13 @@ export function savedGuidanceAssociations(session: Pick<SavedTranscriptSession, 
   });
 }
 
-/** Consume only a bounded, completed final payload; abandoned streams always release their reader. */
-export async function readFinalGuidance(response: Response, signal: AbortSignal): Promise<string> {
+/** Previews are provisional. Only the acknowledged final+done pair returns a completed answer. */
+export async function readFinalGuidance(response: Response, signal: AbortSignal, options: {
+  onPreview?: (speakNow: string) => void;
+} = {}): Promise<string> {
   if (!response.ok || !response.body) throw new Error("Guidance is unavailable right now.");
   const reader = response.body.getReader(); const decoder = new TextDecoder("utf-8", { fatal: true });
-  let buffer = "", final = "", bytes = 0, receivedDone = false;
+  let buffer = "", final = "", bytes = 0, receivedDone = false, previewPublished = false;
   const abort = () => { void reader.cancel().catch(() => {}); };
   signal.addEventListener("abort", abort, { once: true });
   try {
@@ -109,6 +111,14 @@ export async function readFinalGuidance(response: Response, signal: AbortSignal)
         if (text) {
           const payload = JSON.parse(text) as Record<string, unknown>;
           if (payload.type === "error") throw new Error(typeof payload.message === "string" ? payload.message.slice(0, 500) : "Guidance failed.");
+          if (payload.type === "preview") {
+            if (payload.draft !== true || typeof payload.speakNow !== "string" || payload.speakNow.length > 2400) {
+              throw new Error("Guidance preview is invalid.");
+            }
+            signal.throwIfAborted();
+            previewPublished = true;
+            options.onPreview?.(payload.speakNow);
+          }
           if (payload.type === "final" && typeof payload.content === "string") {
             if (payload.content.length > 32_768) throw new Error("Guidance response exceeded its limit.");
             final = payload.content;
@@ -122,6 +132,9 @@ export async function readFinalGuidance(response: Response, signal: AbortSignal)
     }
     if (!final.trim()) throw new Error("Guidance returned no completed answer.");
     return final;
+  } catch (error) {
+    if (previewPublished) options.onPreview?.("");
+    throw error;
   } finally { signal.removeEventListener("abort", abort); void reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 

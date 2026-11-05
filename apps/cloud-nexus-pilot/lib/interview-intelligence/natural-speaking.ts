@@ -32,10 +32,12 @@ const TRUTHFULNESS_POLICY = [
 
 const FORMAT_POLICY = [
   "Return ONLY valid JSON with no markdown fence or preamble.",
-  "JSON shape: {headline, speakNow, keyPoints, example, technicalDetail, caution, followUp, gist, key_points, full_answer}",
+  "JSON shape, in this order: {speakNow, headline, keyPoints, example, technicalDetail, caution, followUp, full_answer}",
+  "Write speakNow first so the user can begin reading while the remaining detail is generated.",
+  "Do not repeat fields under legacy aliases such as gist or key_points; the application supplies those.",
   "headline: maximum 8 words.",
-  "speakNow: 2-4 short sentences, optimized for immediate spoken delivery.",
-  "keyPoints and key_points: 3-5 concise memory prompts, each under 10 words.",
+  "speakNow: 2-3 short sentences, at most 60 words, with a useful direct opening sentence.",
+  "keyPoints: 3 concise memory prompts, each under 10 words.",
   "technicalDetail: deeper reasoning for an expandable card, not the live answer.",
   "full_answer: natural expanded answer; keep live-style answers concise unless behavioral context needs 45-90 seconds.",
 ].join("\n");

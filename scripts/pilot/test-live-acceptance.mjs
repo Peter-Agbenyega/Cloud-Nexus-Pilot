@@ -1,4 +1,4 @@
-// Explicit bounded live test: one generated speech upload and one answer.
+// Explicit bounded live test: one generated speech upload, digital silence, and one answer.
 // No physical microphone. Never logs provider/authentication credentials.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,open} from 'node:fs/promises';
@@ -35,7 +35,7 @@ try {
  };
  const before=await counter(), usageBefore=await usage();
  const wav=await readFile(resolve(p,'investigation-kubernetes/kubernetes-spoken.wav'));
- assert.ok(usageBefore.granted_units-usageBefore.consumed_units-usageBefore.reserved_units>=wav.length+1000,'Insufficient local test allowance');
+ assert.ok(usageBefore.granted_units-usageBefore.consumed_units-usageBefore.reserved_units>=wav.length+Math.max(wav.length,1000),'Insufficient local test allowance');
  assert.ok(wav.length>1000&&wav.toString('ascii',0,4)==='RIFF','Speech WAV missing');
  // Durable one-shot marker prevents accidental paid reruns.
  const marker=await open(resolve(p,'live-acceptance-'+attemptId+'.attempt'),'wx',0o600);
@@ -55,6 +55,30 @@ try {
  const transcript=chunk.response?.text;
  report.transcript=transcript;
  assert.match(transcript,/kubernetes/i,'Transcript does not match generated speech');
+ // Silence is acknowledged and replayable without provider usage or transcript rows.
+ const silent=Buffer.from(wav);
+ let offset=12, zeroed=false;
+ while(offset+8<=silent.length){
+  const size=silent.readUInt32LE(offset+4), start=offset+8;
+  assert.ok(start+size<=silent.length,'Invalid test WAV');
+  if(silent.toString('ascii',offset,offset+4)==='data'){silent.fill(0,start,start+size);zeroed=true;}
+  offset=start+size+(size%2);
+ }
+ assert.ok(zeroed,'No PCM data found');
+ const silenceBefore=await usage();
+ report.silentChunkRequests=0;
+ for(const index of [1,2,2]){
+  const response=await request(sessionBase+'/chunk',{method:'POST',body:silent,headers:{'content-type':'audio/wav','x-chunk-index':String(index),'x-transcript-source':'microphone'}});
+  const body=await response.json();report.silentChunkRequests++;
+  assert.equal(response.status,report.silentChunkRequests===3?200:202);assert.equal(body.saved,true);assert.equal(body.response?.text,'');
+  if(report.silentChunkRequests===3)assert.equal(body.replay,true);
+ }
+ const silenceAfter=await usage();
+ assert.equal(silenceAfter.consumed_units,silenceBefore.consumed_units,'Silence must not consume provider units');
+ assert.equal(silenceAfter.reserved_units,0);
+ const afterSilence=await request(sessionBase);assert.equal(afterSilence.status,200);
+ const preserved=await afterSilence.json();assert.equal(preserved.events.length,1);
+ report.silenceUsageDelta=0;report.silencePreservedTranscript=true;report.silenceReplayVerified=true;
  const questionId=randomUUID(),transcriptRevision='live-acceptance-1';
  report.guidanceRequests++;
  const answerResponse=await request('/api/generate-guidance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId:report.sessionId,question:transcript,questionId,transcriptRevision,interviewMode:'kubernetes'})});

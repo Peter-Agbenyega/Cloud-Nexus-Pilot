@@ -10,7 +10,7 @@ import { createQuestionDedupeKey, detectStreamingQuestions } from "@/lib/intervi
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const OPENAI_MODEL = "gpt-4.1-mini";
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 
 export async function POST(request: Request) {
   try {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       text: fullText,
       seenQuestionKeys,
     });
-    const firstDetectedQuestion = detectedQuestions[0] ?? null;
+    const firstDetectedQuestion = detectedQuestions.at(-1) ?? null;
 
     if (!firstDetectedQuestion) {
       return NextResponse.json({ question: null, detectedQuestion: null, questions: [] }, { status: 200 });
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${openAiApiKey}`,
         },
         body: JSON.stringify({
-          model: OPENAI_MODEL,
+          model: process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL,
           temperature: 0,
           max_completion_tokens: 160,
           messages: [
@@ -89,7 +89,8 @@ export async function POST(request: Request) {
       });
 
       if (!openAiResponse.ok) {
-        return NextResponse.json({ question: fullText }, { status: 200 });
+        // Fall back to the extracted question, never the entire transcript window.
+        throw new Error("Question normalization unavailable");
       }
 
       const reply = await readBoundedBytes(new Request("http://localhost/provider-result", { method: "POST", body: openAiResponse.body, signal: scope.signal, duplex: "half" } as RequestInit), 16_384);

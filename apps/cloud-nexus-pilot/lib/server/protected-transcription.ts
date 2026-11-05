@@ -37,7 +37,7 @@ export function createProtectedTranscriptionHandler(dependencies: {
       if (!["microphone", "system-audio"].includes(source)) throw new RequestBoundaryError(400, "invalid_audio_source", "Choose a supported audio source.");
       const bytes = await readBoundedBytes(request, MAX_AUDIO_BYTES);
       if (bytes.byteLength === 0) throw new RequestBoundaryError(400, "empty_payload", "Audio chunk is empty.");
-      validateAudio(bytes, contentType);
+      const pcm = validateAudio(bytes, contentType);
       const hash = createHash("sha256").update(contentType).update(source).update(new Uint8Array(bytes)).digest("hex");
       const suppliedId = request.headers.get("x-request-id");
       if (suppliedId && !/^[A-Za-z0-9:_-]{1,128}$/.test(suppliedId)) throw new RequestBoundaryError(400, "invalid_operation_id", "Invalid operation identifier.");
@@ -50,18 +50,26 @@ export function createProtectedTranscriptionHandler(dependencies: {
       }
       reservation = { operationId, requestHash: hash, units: bytes.byteLength };
       scope.signal.throwIfAborted();
-      providerStarted = true;
-      if (sessionId) {
-        const watch = async () => {
-          try {
-            const current = await dependencies.repository.read(auth, sessionId, 0, scope.signal);
-            if (current.status !== "active") scope.abort();
-            else if (!scope.signal.aborted) watchTimer = setTimeout(() => void watch(), 2_000);
-          } catch { scope.abort(); }
-        };
-        watchTimer = setTimeout(() => void watch(), 2_000);
+      let result: TranscriptionResponse;
+      if (pcm.isDigitalSilence) {
+        // Keep the normal reservation/replay path, but never send digital
+        // silence to a model or charge provider units for a skipped request.
+        result = { text: "", source: source as TranscriptionResponse["source"], chunkIndex: Number(chunkHeader),
+          contentType, durationMs: pcm.durationMs, speakerId: null };
+      } else {
+        providerStarted = true;
+        if (sessionId) {
+          const watch = async () => {
+            try {
+              const current = await dependencies.repository.read(auth, sessionId, 0, scope.signal);
+              if (current.status !== "active") scope.abort();
+              else if (!scope.signal.aborted) watchTimer = setTimeout(() => void watch(), 2_000);
+            } catch { scope.abort(); }
+          };
+          watchTimer = setTimeout(() => void watch(), 2_000);
+        }
+        result = await withAbort(dependencies.transcribe({ arrayBuffer: bytes, requestContentType: contentType, chunkIndexHeader: chunkHeader, sourceHeader: source, signal: scope.signal }), scope.signal);
       }
-      const result = await withAbort(dependencies.transcribe({ arrayBuffer: bytes, requestContentType: contentType, chunkIndexHeader: chunkHeader, sourceHeader: source, signal: scope.signal }), scope.signal);
       scope.signal.throwIfAborted();
       if (typeof result.text !== "string" || result.text.length > 100_000 || result.chunkIndex !== Number(chunkHeader) || result.source !== source) {
         throw new RequestBoundaryError(502, "invalid_provider_result", "The transcription service returned an invalid result.");
@@ -69,7 +77,10 @@ export function createProtectedTranscriptionHandler(dependencies: {
       const finalResult: TranscriptionResponse = { text: result.text, source: result.source, chunkIndex: result.chunkIndex,
         contentType, durationMs: typeof result.durationMs === "number" && Number.isFinite(result.durationMs) && result.durationMs >= 0 ? result.durationMs : null,
         speakerId: null };
-      const committed = await dependencies.repository.complete(auth, { ...reservation, usedUnits: bytes.byteLength, outcome: "succeeded", result: finalResult, text: finalResult.text, source });
+      // Omit transcript text for silence and provider no-speech responses.
+      // SQL treats even an empty string as a transcript event when non-null.
+      const committed = await dependencies.repository.complete(auth, { ...reservation, usedUnits: providerStarted ? bytes.byteLength : 0,
+        outcome: "succeeded", result: finalResult, ...(finalResult.text.trim() ? { text: finalResult.text } : {}), source });
       const settled = committed as { state?: string };
       if (settled.state && settled.state !== "succeeded") throw new RequestBoundaryError(409, "processing_outcome_unknown", "This operation could not be finalized. Reload saved work.");
       return Response.json(sessionId ? { ok: true, response: finalResult, saved: true } : finalResult, { status: sessionId ? 202 : 200 });

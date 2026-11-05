@@ -131,6 +131,7 @@ test("transcription hides unexpected provider details", async () => {
   for (const [offset, text] of [[0,"RIFF"],[8,"WAVE"],[12,"fmt "],[36,"data"]]) bytes.set(new TextEncoder().encode(text), offset);
   view.setUint32(4,40,true); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true);
   view.setUint32(24,16000,true); view.setUint32(28,32000,true); view.setUint16(32,2,true); view.setUint16(34,16,true); view.setUint32(40,4,true);
+  view.setInt16(44, 1024, true); // Non-silent fixture must exercise the provider failure path.
   const response = await POST(new Request("https://example.invalid/api/transcribe", { method: "POST", headers: { "content-type": "audio/wav" }, body: bytes }));
   assert.equal(response.status, 500);
   assert.doesNotMatch(await response.text(), /private provider details/);
@@ -170,5 +171,64 @@ for (const [providerCode, expectedCode] of [
     assert.equal(result[1].code, expectedCode);
     assert.equal(requests, 1);
     assert.doesNotMatch(JSON.stringify(result), /PRIVATE_BILLING_SENTINEL|SYNTHETIC_KEY_SENTINEL/);
+  });
+}
+
+
+test("transcription sends audio without prose prompt and preserves legitimate product-name speech", async () => {
+  let dispatches = 0;
+  const { transcribeWithOpenAi } = sourceLoader({}, {
+    process: { env: { NODE_ENV: "production", OPENAI_API_KEY: "synthetic-provider-key", OPENAI_TRANSCRIPTION_MODEL: "test-transcribe" } },
+    fetch: async (url, options) => {
+      dispatches++;
+      assert.equal(url, "https://api.openai.com/v1/audio/transcriptions");
+      assert.equal(options.body.has("prompt"), false, "internal product prose must never be sent as a speech hint");
+      assert.equal(options.body.get("model"), "test-transcribe");
+      assert.equal(options.body.get("language"), "en");
+      assert.ok(options.body.get("file") instanceof File);
+      return Response.json({ text: "What is Cloud Nexus Pilot?" });
+    },
+  })("@/lib/transcription/openai-transcribe");
+  const result = await transcribeWithOpenAi({
+    arrayBuffer: new Uint8Array([1, 2, 3]).buffer,
+    requestContentType: "audio/wav", chunkIndexHeader: "7", sourceHeader: "microphone",
+  });
+  assert.equal(dispatches, 1);
+  assert.equal(result.text, "What is Cloud Nexus Pilot?");
+  assert.equal(result.chunkIndex, 7);
+});
+
+for (const status of [403, 429, 500]) {
+  test(`question correction HTTP ${status} retains only the newest extracted question`, async () => {
+    let dispatches = 0;
+    const completions = [];
+    const { POST } = routeLoader({
+      "@/lib/server/provider-auth": { requireProviderUser: async () => ({ userId: "synthetic-owner" }) },
+      "@/lib/server/processing-repository": { processingRepository: {
+        reserve: async () => ({ acquired: true }),
+        complete: async (_principal, completion) => { completions.push(completion); return { state: "unknown" }; },
+      } },
+    }, {
+      process: { env: { OPENAI_API_KEY: "synthetic-provider-key", OPENAI_MODEL: "configured-guidance-model" } },
+      fetch: async (_url, options) => {
+        dispatches++;
+        const payload = JSON.parse(options.body);
+        assert.equal(payload.model, "configured-guidance-model");
+        assert.equal(payload.messages[1].content, "How does Kubernetes manage containers?");
+        return Response.json({ error: { message: "provider-private-message" } }, { status });
+      },
+    })("detect-question");
+    const response = await POST(request({ segments: [
+      "Why do teams use Terraform?",
+      "How does Kubernetes manage containers?",
+      "Cloud Nexus Pilot is an AI interview copilot.",
+    ] }));
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.question, "How does Kubernetes manage containers?");
+    assert.doesNotMatch(result.question, /Cloud Nexus|Terraform|provider-private/);
+    assert.equal(dispatches, 1);
+    assert.equal(completions.length, 1);
+    assert.equal(completions[0].outcome, "unknown");
   });
 }

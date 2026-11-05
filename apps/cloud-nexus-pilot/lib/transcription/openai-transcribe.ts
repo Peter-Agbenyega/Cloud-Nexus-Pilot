@@ -6,8 +6,6 @@ import type { TranscriptSource, TranscriptionResponse } from "@/lib/contracts/tr
 import { toPublicTranscriptionError } from "./public-error";
 
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
-const TRANSCRIPTION_CONTEXT_PROMPT =
-  "Cloud Nexus Pilot is an AI interview copilot. Common phrases include Cloud Nexus Pilot, interview copilot, microphone transcription, tab audio, share tab audio, longer audio chunks, recruiter screen, mock interview, resume studio, culture scanner, AI-powered answer guidance.";
 const shouldDebugLogs = process.env.NODE_ENV !== "production";
 
 type OpenAiTranscriptionResponse = {
@@ -97,7 +95,8 @@ export async function transcribeWithOpenAi(params: {
   formData.set("file", audioFile);
   formData.set("response_format", "json");
   formData.set("language", "en");
-  formData.set("prompt", TRANSCRIPTION_CONTEXT_PROMPT);
+  // Prose hints can be hallucinated as speech during quiet audio.
+  // Send only the audio and transcription settings.
 
   if (shouldDebugLogs) {
     console.info("[transcription][openai] request", {

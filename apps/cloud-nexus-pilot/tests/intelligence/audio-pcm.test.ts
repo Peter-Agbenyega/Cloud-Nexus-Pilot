@@ -130,3 +130,41 @@ test("cancelling suspended audio startup closes its context rather than hanging 
   await assert.rejects(pending, { name: "AbortError" });
   assert.equal(FakeAudioContext.current.closed, 1);
 });
+
+test("periodic flush waits for full chunks while Pause and Stop preserve audible tails", async (t) => {
+  fakeWindow(t);
+  let tick: (() => void) | undefined;
+  Object.defineProperty(window, "setInterval", { value: (callback: TimerHandler) => { tick = callback as () => void; return 1; } });
+  window.clearInterval = () => {};
+  const chunks: LiveAudioPipelineChunk[] = [];
+  const handle = await createLiveAudioPipeline({ stream: audioStream(), onChunk: chunk => chunks.push(chunk), minFramesPerChunk: 64_000, flushIntervalMs: 4_000 });
+  t.after(() => handle.stop());
+  const context = FakeAudioContext.current;
+  context.feed(new Float32Array(192_000).fill(0.25));
+  assert.equal(chunks.length, 1);
+  assert.equal(chunks[0]!.frameCount, 64_000);
+  context.feed(new Float32Array(480)); // A 10ms silent remainder after the threshold flush.
+  tick!(); tick!();
+  assert.equal(chunks.length, 1, "timer must not upload the tiny remainder");
+  context.feed(new Float32Array(9_600).fill(0.5));
+  tick!();
+  assert.equal(chunks.length, 1, "an audible subminimum tail also waits until Pause/Stop");
+  handle.pause();
+  assert.equal(chunks.length, 2);
+  assert.equal(chunks[1]!.frameCount, 3_360);
+  context.feed(new Float32Array(48_000).fill(0.8)); tick!();
+  assert.equal(chunks.length, 2, "paused callbacks cannot produce new audio");
+  handle.resume();
+  context.feed(new Float32Array(4_800).fill(0.25)); tick!();
+  assert.equal(chunks.length, 2);
+  handle.stop(); handle.stop(); tick!();
+  assert.equal(chunks.length, 3);
+  assert.equal(chunks[2]!.frameCount, 1_600);
+  for (const chunk of chunks.slice(1)) {
+    const data = new DataView(await chunk.blob.arrayBuffer());
+    assert.equal(data.getUint32(40, true), chunk.frameCount * 2);
+    assert.ok(Array.from({ length: chunk.frameCount }, (_, i) => data.getInt16(44 + i * 2, true)).some(value => value !== 0), "audible tail remains in the final WAV");
+  }
+  assert.equal(context.closed, 1);
+  assert.equal(context.processor.onaudioprocess, null);
+});

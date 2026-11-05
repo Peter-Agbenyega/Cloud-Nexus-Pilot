@@ -1,5 +1,7 @@
 "use client";
 
+import { bindDetectedQuestion, countMeaningfulWords, isIncompleteDetectedQuestion, latestCompleteQuestion, selectDetectedQuestion, type BoundDetectedQuestion } from "./question-selection";
+
 import { ensureOwnedGuidanceSession, savedGuidanceAssociations, type SavedGuidanceAssociation } from "./guidance-session-client";
 import { loadSavedTranscriptSession, deleteSavedTranscriptSession, listOwnedTranscriptSessions, type OwnedTranscriptSessionSummary } from "./saved-session-service";
 import { CaptureRetryQueue, shouldRetryChunk, stoppedCaptureFeedback } from "./capture-recovery";
@@ -122,6 +124,7 @@ export type UseTranscriptionWorkflowResult = {
   questionBoundaryDetected: boolean;
   latestDetectedQuestion: string;
   aiDetectedQuestion: string;
+  preferredDetectedQuestion: string;
   transcriptRecords: TranscriptRecord[];
   activeTranscriptId: TranscriptId | null;
   activeTranscriptRecord: TranscriptRecord | null;
@@ -163,32 +166,6 @@ const QUESTION_CUE_PATTERNS = [
   /\bcould you\b/i,
 ] as const;
 
-const WEAK_TRAILING_QUESTION_PATTERNS = [
-  /\babout the time you\s*$/i,
-  /\babout a time you\s*$/i,
-  /\btell me about\s*$/i,
-  /\bcan you tell me\s*$/i,
-  /\bcould you tell me\s*$/i,
-  /\bhow would you\s*$/i,
-  /\bwhat would you\s*$/i,
-] as const;
-
-function normalizeTranscriptForFiltering(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[\[\](){}]/g, " ")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function countMeaningfulWords(text: string): number {
-  return normalizeTranscriptForFiltering(text)
-    .split(/\s+/)
-    .filter((word) => word.length > 1)
-    .length;
-}
-
 function containsQuestionCue(text: string): boolean {
   return text.includes("?") || QUESTION_CUE_PATTERNS.some((pattern) => pattern.test(text));
 }
@@ -224,15 +201,6 @@ function shouldMergeLiveSegment(params: {
   );
 }
 
-function isIncompleteDetectedQuestion(text: string): boolean {
-  const cleaned = cleanTranscriptText(text);
-  if (!cleaned) return true;
-  if (/[?]["']?\s*$/.test(cleaned)) return false;
-  if (WEAK_TRAILING_QUESTION_PATTERNS.some((pattern) => pattern.test(cleaned))) return true;
-
-  return countMeaningfulWords(cleaned) < 8;
-}
-
 export function useTranscriptionWorkflow(
   options?: UseTranscriptionWorkflowOptions
 ): UseTranscriptionWorkflowResult {
@@ -246,7 +214,7 @@ export function useTranscriptionWorkflow(
   const [selectedFileName, setSelectedFileName] = useState("");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [aiDetectedQuestion, setAiDetectedQuestion] = useState("");
+  const [aiQuestionCorrection, setAiQuestionCorrection] = useState<BoundDetectedQuestion | null>(null);
   const [transportStatus, setTransportStatus] =
     useState<TranscriptionTransportStatus>("idle");
   const [transportFallbackReason, setTransportFallbackReason] = useState("");
@@ -826,7 +794,6 @@ export function useTranscriptionWorkflow(
         const nextQuestion = payload.question?.trim() || "";
         if (nextQuestion && isIncompleteDetectedQuestion(nextQuestion)) {
           // Avoid generating answers from partial live questions; wait briefly for the next chunk.
-          setAiDetectedQuestion("");
           if (pendingIncompleteQuestionRef.current !== nextQuestion) {
             pendingIncompleteQuestionRef.current = nextQuestion;
             if (incompleteQuestionTimerRef.current) {
@@ -845,12 +812,11 @@ export function useTranscriptionWorkflow(
           window.clearTimeout(incompleteQuestionTimerRef.current);
           incompleteQuestionTimerRef.current = null;
         }
-        setAiDetectedQuestion(nextQuestion);
+        const correction = bindDetectedQuestion(nextQuestion, segments, segmentsRef.current);
+        if (correction) setAiQuestionCorrection(correction);
       })
       .catch(() => {
-        if (!abortController.signal.aborted) {
-          setAiDetectedQuestion("");
-        }
+        // Missing/failed detection does not invalidate an already completed question.
       })
       .finally(() => {
         if (aiQuestionAbortRef.current === abortController) {
@@ -896,7 +862,7 @@ export function useTranscriptionWorkflow(
     aiQuestionInFlightRef.current = false;
     pendingAiQuestionDetectionRef.current = false;
     consecutiveChunkUploadFailuresRef.current = 0;
-    setAiDetectedQuestion("");
+    setAiQuestionCorrection(null);
     clearIncompleteQuestionWait();
     void streamingClientRef.current?.stop();
     streamingClientRef.current = null;
@@ -1186,7 +1152,7 @@ export function useTranscriptionWorkflow(
       aiQuestionInFlightRef.current = false;
       pendingAiQuestionDetectionRef.current = false;
       consecutiveChunkUploadFailuresRef.current = 0;
-      setAiDetectedQuestion("");
+      setAiQuestionCorrection(null);
       clearIncompleteQuestionWait();
       pendingLiveSegmentRef.current = "";
       pendingLiveSegmentAgeRef.current = null;
@@ -1475,7 +1441,7 @@ export function useTranscriptionWorkflow(
     aiQuestionAbortRef.current?.abort();
     aiQuestionAbortRef.current = null;
     aiQuestionInFlightRef.current = false;
-    setAiDetectedQuestion("");
+    setAiQuestionCorrection(null);
     pendingLiveSegmentRef.current = "";
     pendingLiveSegmentAgeRef.current = null;
     pendingLiveSegmentSpeakerRef.current = null;
@@ -1708,10 +1674,9 @@ export function useTranscriptionWorkflow(
     },
     [latestSegment]
   );
-  const latestDetectedQuestion = useMemo(() => {
-    const detectedQuestion = getDetectedQuestion(latestSegment) ?? "";
-    return detectedQuestion && !isIncompleteDetectedQuestion(detectedQuestion) ? detectedQuestion : "";
-  }, [latestSegment]);
+  const latestDetectedQuestion = useMemo(() => latestCompleteQuestion(segments), [segments]);
+  const preferredDetectedQuestion = useMemo(() => selectDetectedQuestion(segments, aiQuestionCorrection), [segments, aiQuestionCorrection]);
+  const aiDetectedQuestion = aiQuestionCorrection?.question ?? "";
   const activeTranscriptRecord = useMemo(
     () => transcriptRecords.find((item) => item.id === activeTranscriptId) ?? null,
     [activeTranscriptId, transcriptRecords]
@@ -1753,6 +1718,7 @@ export function useTranscriptionWorkflow(
     questionBoundaryDetected,
     latestDetectedQuestion,
     aiDetectedQuestion,
+    preferredDetectedQuestion,
     transcriptRecords,
     activeTranscriptId,
     activeTranscriptRecord,

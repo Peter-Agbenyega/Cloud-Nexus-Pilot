@@ -6,14 +6,25 @@ const originalFetch = globalThis.fetch;
 globalThis.fetch = async () => { assert.fail("Real network/provider access forbidden in security regressions"); };
 after(() => { globalThis.fetch = originalFetch; });
 const url = "https://pilot.test/api/transcribe";
-function wav() {
-  const buffer = new ArrayBuffer(48); const b = new Uint8Array(buffer); const v = new DataView(buffer);
-  for (const [offset,text] of [[0,"RIFF"],[8,"WAVE"],[12,"fmt "],[36,"data"]]) b.set(new TextEncoder().encode(text),offset);
-  v.setUint32(4,40,true);v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);v.setUint32(40,4,true);return b;
+function wav({ samples = [100, -100], channels = 1, metadata = false } = {}) {
+  const prefixBytes = metadata ? 12 : 0, suffixBytes = metadata ? 10 : 0;
+  const b = new Uint8Array(44 + prefixBytes + samples.length * 2 + suffixBytes), v = new DataView(b.buffer);
+  const write = (offset, text) => b.set(new TextEncoder().encode(text), offset);
+  write(0, "RIFF"); v.setUint32(4, b.length - 8, true); write(8, "WAVE");
+  if (metadata) { write(12, "JUNK"); v.setUint32(16, 3, true); b.set([9, 8, 7], 20); }
+  const fmt = 12 + prefixBytes;
+  write(fmt, "fmt "); v.setUint32(fmt + 4, 16, true); v.setUint16(fmt + 8, 1, true); v.setUint16(fmt + 10, channels, true);
+  v.setUint32(fmt + 12, 16000, true); v.setUint32(fmt + 16, 32000 * channels, true);
+  v.setUint16(fmt + 20, channels * 2, true); v.setUint16(fmt + 22, 16, true);
+  const data = fmt + 24;
+  write(data, "data"); v.setUint32(data + 4, samples.length * 2, true);
+  samples.forEach((sample, index) => v.setInt16(data + 8 + index * 2, sample, true));
+  if (metadata) { const tail = data + 8 + samples.length * 2; write(tail, "LIST"); v.setUint32(tail + 4, 2, true); b.set([5, 4], tail + 8); }
+  return b;
 }
 function audio(body=wav(),headers={},signal) { return new Request(url,{method:"POST",body,duplex:"half",signal,headers:{"content-type":"audio/wav",...headers}}); }
 function harness({owner="a",quota=1_000_000,provider}={}) {
-  const state={providerCalls:0,reads:0,commits:0,operations:new Map(),sessionOwner:"a",stopped:false,quota};
+  const state={providerCalls:0,reads:0,commits:0,operations:new Map(),settlements:[],events:[],sessionOwner:"a",stopped:false,quota};
   let boundary;
   const repo={
     async create(auth){return {sessionId:"s",status:"active",createdAt:1,events:[],owner:auth.userId};},
@@ -24,9 +35,17 @@ function harness({owner="a",quota=1_000_000,provider}={}) {
       const key=auth.userId+":"+input.operationId;const previous=state.operations.get(key);
       if(previous){if(previous.hash!==input.requestHash)throw new boundary.RequestBoundaryError(409,"operation_conflict","Conflict");return {acquired:false,state:previous.state,result:previous.result};}
       if(state.quota<input.maxUnits)return {acquired:false,state:"quota_exhausted"};
-      state.quota-=input.maxUnits;state.operations.set(key,{state:"reserved",hash:input.requestHash});return {acquired:true,state:"reserved"};
+      state.quota-=input.maxUnits;state.operations.set(key,{state:"reserved",hash:input.requestHash,reservedUnits:input.maxUnits,sessionId:input.sessionId});return {acquired:true,state:"reserved"};
     },
-    async complete(auth,input){const op=state.operations.get(auth.userId+":"+input.operationId);if(op.state==="reserved"){state.commits++;op.state=input.outcome;op.result=input.result;}return {state:op.state,result:op.result};},
+    async complete(auth,input){
+      const op=state.operations.get(auth.userId+":"+input.operationId);
+      if(op.state==="reserved"){
+        state.commits++;op.state=input.outcome;op.result=input.result;state.settlements.push(input);
+        state.quota+=op.reservedUnits-(input.outcome==="unknown"?op.reservedUnits:input.usedUnits);
+        if(input.outcome==="succeeded"&&op.sessionId&&input.text!=null)state.events.push({text:input.text,result:input.result});
+      }
+      return {state:op.state,result:op.result};
+    },
   };
   const load=sourceLoader({
     "@/lib/server/provider-auth":{requireProviderUser:async()=>owner?{userId:owner}:{response:Response.json({error:{code:"authentication_required"}},{status:401})}},
@@ -167,4 +186,76 @@ test("expired settlement credential rejects before reservation or provider dispa
  const check=load('@/lib/server/processing-repository').assertSettlementCredential;
  assert.doesNotThrow(()=>check(token(Math.floor(Date.now()/1000)+3600)));
  for(const value of ['', 'not-a-jwt',token(1)])assert.throws(()=>check(value),{status:503});
+});
+
+
+test("digital silence is acknowledged and replayed without provider use, charge or transcript events", async () => {
+  for (const channels of [1, 2]) for (const metadata of [false, true]) {
+    const h = harness(), body = wav({ samples: [0, 0, 0, 0], channels, metadata });
+    const route = h.route("transcribe/stream/session/[sessionId]/chunk");
+    const first = await route.POST(audio(body), context);
+    assert.equal(first.status, 202);
+    const saved = await first.json();
+    assert.equal(saved.saved, true); assert.equal(saved.response.text, "");
+    assert.equal(saved.response.durationMs, 4 / channels / 16000 * 1000);
+    const retry = await route.POST(audio(body), context);
+    assert.equal(retry.status, 200); assert.equal((await retry.json()).replay, true);
+    assert.equal(h.state.providerCalls, 0); assert.equal(h.state.commits, 1);
+    assert.equal(h.state.quota, 1_000_000); assert.equal(h.state.events.length, 0);
+    assert.equal(h.state.settlements[0].usedUnits, 0);
+    assert.equal(Object.hasOwn(h.state.settlements[0], "text"), false);
+    const changed = wav({ samples: [1, 0, 0, 0], channels, metadata });
+    assert.equal((await route.POST(audio(changed), context)).status, 409);
+    assert.equal(h.state.providerCalls, 0);
+  }
+});
+
+test("quiet PCM, one nonzero sample and antiphase stereo are never discarded as silence", async () => {
+  for (const body of [wav({ samples: [0, 1] }), wav({ samples: [-1, 0], metadata: true }), wav({ samples: [1, -1, 100, -100], channels: 2 })]) {
+    const h = harness(); assert.equal((await h.route().POST(audio(body))).status, 200);
+    assert.equal(h.state.providerCalls, 1); assert.equal(h.state.settlements[0].usedUnits, body.byteLength);
+  }
+});
+
+test("silent PCM still requires the complete validated WAV container", async () => {
+  const wrongDataLength = wav({ samples: [0, 0] }); new DataView(wrongDataLength.buffer).setUint32(40, 999, true);
+  const invalidTrailingChunk = wav({ samples: [0, 0], metadata: true }); new DataView(invalidTrailingChunk.buffer).setUint32(invalidTrailingChunk.length - 6, 99, true);
+  const duplicateData = new Uint8Array(60); duplicateData.set(wav({ samples: [0, 0] }));
+  duplicateData.set(new TextEncoder().encode("data"), 48); new DataView(duplicateData.buffer).setUint32(52, 4, true); new DataView(duplicateData.buffer).setUint32(4, 52, true);
+  for (const body of [wrongDataLength, invalidTrailingChunk, duplicateData]) {
+    const h = harness(); assert.equal((await h.route().POST(audio(body))).status, 415);
+    assert.equal(h.state.providerCalls, 0); assert.equal(h.state.operations.size, 0);
+  }
+});
+
+test("silent requests preserve authentication, ownership, quota and stopped-session boundaries", async () => {
+  for (const [options, stopped, expected] of [[{owner:null},false,401],[{owner:"b"},false,404],[{},true,409],[{quota:0},false,429]]) {
+    const h = harness(options); h.state.stopped = stopped;
+    assert.equal((await h.route("transcribe/stream/session/[sessionId]/chunk").POST(audio(wav({samples:[0,0]})), context)).status, expected);
+    assert.equal(h.state.providerCalls, 0); assert.equal(h.state.commits, 0);
+  }
+});
+
+test("a real question followed by silence creates only the original transcript event", async () => {
+  const h = harness({ provider: async input => ({text:"What is Kubernetes?",source:"microphone",chunkIndex:Number(input.chunkIndexHeader),durationMs:1}) });
+  const route = h.route("transcribe/stream/session/[sessionId]/chunk");
+  assert.equal((await route.POST(audio(), context)).status, 202);
+  for (let index = 1; index <= 3; index++) {
+    const response = await route.POST(audio(wav({samples:[0,0]}), {"x-chunk-index":String(index)}), context);
+    assert.equal(response.status, 202); assert.equal((await response.json()).response.text, "");
+  }
+  assert.equal(h.state.providerCalls, 1); assert.equal(h.state.events.length, 1);
+  assert.equal(h.state.events[0].text, "What is Kubernetes?");
+  assert.equal(h.state.quota, 1_000_000 - wav().byteLength);
+});
+
+test("provider empty responses consume provider units but do not insert blank transcript events", async () => {
+  for (const text of ["", " \n\t"]) {
+    const h = harness({provider:async()=>({text,source:"microphone",chunkIndex:0,durationMs:1})});
+    const response = await h.route("transcribe/stream/session/[sessionId]/chunk").POST(audio(), context);
+    assert.equal(response.status, 202); assert.equal((await response.json()).saved, true);
+    assert.equal(h.state.providerCalls, 1); assert.equal(h.state.events.length, 0);
+    assert.equal(h.state.settlements[0].usedUnits, wav().byteLength);
+    assert.equal(Object.hasOwn(h.state.settlements[0], "text"), false);
+  }
 });

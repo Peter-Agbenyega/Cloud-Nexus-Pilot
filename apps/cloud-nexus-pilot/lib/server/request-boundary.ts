@@ -107,13 +107,18 @@ export async function readBoundedJson(request: Request, maxBytes = 64 * 1024): P
   }
 }
 
-export function validateAudio(bytes: ArrayBuffer, contentType: string): void {
+export interface ValidatedPcmAudio {
+  durationMs: number;
+  isDigitalSilence: boolean;
+}
+
+export function validateAudio(bytes: ArrayBuffer, contentType: string): ValidatedPcmAudio {
   const fail = () => { throw new RequestBoundaryError(415, "invalid_audio", "This path supports complete PCM16 WAV audio only. Use PCM live capture or upload a finalized PCM16 WAV file."); };
   if (contentType.split(";")[0]?.trim().toLowerCase() !== "audio/wav" || bytes.byteLength < 46) fail();
   const data = new DataView(bytes);
   const text = (offset: number, size: number) => new TextDecoder().decode(new Uint8Array(bytes, offset, size));
   if (text(0, 4) !== "RIFF" || text(8, 4) !== "WAVE" || data.getUint32(4, true) + 8 !== bytes.byteLength) fail();
-  let offset = 12, format = false, frames = false, blockAlign = 0;
+  let offset = 12, format = false, frames = false, blockAlign = 0, sampleRate = 0, dataOffset = 0, dataBytes = 0;
   while (offset + 8 <= bytes.byteLength) {
     const name = text(offset, 4), size = data.getUint32(offset + 4, true), start = offset + 8;
     if (size > bytes.byteLength - start) fail();
@@ -123,14 +128,25 @@ export function validateAudio(bytes: ArrayBuffer, contentType: string): void {
       const rate = data.getUint32(start + 4, true), byteRate = data.getUint32(start + 8, true);
       blockAlign = data.getUint16(start + 12, true);
       if (encoding !== 1 || ![1, 2].includes(channels) || rate < 8000 || rate > 96000 || data.getUint16(start + 14, true) !== 16 || blockAlign !== channels * 2 || byteRate !== rate * blockAlign) fail();
+      sampleRate = rate;
       format = true;
     } else if (name === "data") {
       if (!format || frames || size === 0 || size % blockAlign !== 0) fail();
+      dataOffset = start;
+      dataBytes = size;
       frames = true;
     }
     offset = start + size + (size % 2);
   }
   if (!format || !frames || offset !== bytes.byteLength) fail();
+  // Only classify silence after the entire container passes validation. Inspect
+  // each PCM sample: channel mixing could mistake antiphase stereo for silence,
+  // and an energy threshold could discard quiet speech or short answers.
+  let isDigitalSilence = true;
+  for (let index = dataOffset; index < dataOffset + dataBytes; index += 2) {
+    if (data.getInt16(index, true) !== 0) { isDigitalSilence = false; break; }
+  }
+  return { durationMs: dataBytes / blockAlign / sampleRate * 1000, isDigitalSilence };
 }
 
 export async function withAbort<T>(work: Promise<T>, signal: AbortSignal): Promise<T> {

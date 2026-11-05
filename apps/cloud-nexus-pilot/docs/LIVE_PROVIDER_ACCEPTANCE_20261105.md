@@ -1,6 +1,6 @@
 # Live provider acceptance — 2026-11-05
 
-Status: generated-speech transcription, guidance, persistence and export PASSED in the isolated local live app. Physical microphone acceptance remains pending.
+Status: generated-speech transcription, guidance, persistence and export PASSED in the isolated local live app. The subsequent physical microphone test exposed prompt echo and guidance cancellation; fixes and the speech-plus-silence retest are documented in [LIVE_CAPTURE_REPAIR_20261105.md](LIVE_CAPTURE_REPAIR_20261105.md). Repaired physical microphone acceptance remains pending.
 
 ## Result
 

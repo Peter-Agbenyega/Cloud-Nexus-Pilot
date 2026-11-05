@@ -137,7 +137,9 @@ export async function createLiveAudioPipeline(options: LiveAudioPipelineOptions)
     processor.connect(muteNode);
     muteNode.connect(context.destination);
     timer = window.setInterval(() => {
-      if (stopped || paused) return;
+      // The frame threshold may have just flushed a full chunk. Do not send
+      // its tiny remainder on an independent timer tick; Pause/Stop still flush it.
+      if (stopped || paused || bufferedFrames < minFramesPerChunk) return;
       try { flush(); } catch (error) { fail(error); }
     }, flushIntervalMs);
     return {

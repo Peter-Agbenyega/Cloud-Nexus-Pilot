@@ -11,6 +11,7 @@ import { captureFailureMessage } from "@/features/transcription/audio-capture";
 
 import { requestOwnedGuidance, readFinalGuidance } from "@/features/transcription/guidance-session-client";
 import { useTranscriptionWorkflow } from "@/features/transcription/use-transcription-workflow";
+import { detectedQuestionKey, shouldReplaceDetectedQuestion } from "@/features/transcription/question-selection";
 import type { InterviewIntent } from "@/lib/contracts/interview";
 import {
   createCreateOrResumeSessionRequestInit,
@@ -654,10 +655,11 @@ export function ReadyStateLaunchPanel() {
     setLaunchFlowStep("ready");
   }
 
+  const preferredDetectedQuestion = transcriptionWorkflow.preferredDetectedQuestion;
+
   const handleGetGuidance = useCallback(async function handleGetGuidance(typedOverride?: string) {
     const detectedQuestion = (typedOverride?.trim() ||
-      transcriptionWorkflow.aiDetectedQuestion.trim() ||
-      transcriptionWorkflow.latestDetectedQuestion.trim()).slice(0, 500);
+      preferredDetectedQuestion.trim()).slice(0, 500);
     if (!detectedQuestion || (!typedOverride && detectedQuestion.length < 10)) return;
 
     cancelActiveGuidanceRequest();
@@ -796,8 +798,7 @@ export function ReadyStateLaunchPanel() {
     }
   }, [
     showFallbackGuidance,
-    transcriptionWorkflow.aiDetectedQuestion,
-    transcriptionWorkflow.latestDetectedQuestion,
+    preferredDetectedQuestion,
     transcriptionWorkflow.segments,
     transcriptionWorkflow.ensureServerSession,
     transcriptionWorkflow.refreshServerGuidance,
@@ -808,12 +809,10 @@ export function ReadyStateLaunchPanel() {
     realtimeConnection,
   ]);
 
-  const preferredDetectedQuestion =
-    transcriptionWorkflow.aiDetectedQuestion || transcriptionWorkflow.latestDetectedQuestion;
   useEffect(() => {
     const active = activeGuidanceQuestionRef.current;
     if (guidanceStatus === "loading" && active?.source === "detected" &&
-        preferredDetectedQuestion.trim().slice(0, 500) !== active.question) {
+        shouldReplaceDetectedQuestion(active.question, preferredDetectedQuestion)) {
       cancelActiveGuidanceRequest();
       setGuidanceData(null); setGuidanceText(""); setStreamedFullAnswer("");
       setGuidanceStatus("idle");
@@ -922,9 +921,9 @@ export function ReadyStateLaunchPanel() {
       transcriptionWorkflow.isPaused ||
       !detectedQuestion ||
       guidanceStatus === "loading" ||
-      detectedQuestion === lastAutoGuidanceQuestionRef.current
+      detectedQuestionKey(detectedQuestion) === lastAutoGuidanceQuestionRef.current
     ) return;
-    lastAutoGuidanceQuestionRef.current = detectedQuestion;
+    lastAutoGuidanceQuestionRef.current = detectedQuestionKey(detectedQuestion);
     const questionId = createStableId("question");
     realtimeConnection.sendRuntimeEvent({
       type: "question.detected",

@@ -28,7 +28,7 @@ function fixture(provider, result, owner = "owner-a") {
     },
     async complete(_principal, input) {
       const operation = operations.get(input.operationId);
-      if (input.outcome === "succeeded" && operation?.sessionId) {
+      if (input.outcome === "succeeded" && operation?.sessionId && input.text != null) {
         const session = sessions.get(operation.sessionId);
         session.events.push({ sequence: session.events.length + 1, provider_result: input.result });
       }
@@ -54,7 +54,7 @@ function fixture(provider, result, owner = "owner-a") {
   };
 }
 
-function audio(size = 1, contentType = "audio/wav") {
+function audio(size = 1, contentType = "audio/wav", silent = false) {
   const bytes = new Uint8Array(size ? 364 : 0);
   if (size) {
     const view = new DataView(bytes.buffer);
@@ -63,6 +63,7 @@ function audio(size = 1, contentType = "audio/wav") {
     view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
     view.setUint32(24, 16000, true); view.setUint32(28, 32000, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
     write(36, "data"); view.setUint32(40, bytes.length - 44, true);
+    if (!silent) view.setInt16(44, 1, true);
   }
   return new Request("https://example.invalid/api/transcribe", {
     method: "POST", body: bytes,
@@ -297,3 +298,22 @@ test("malformed, oversized and mismatched-status quota errors keep the safe gene
     assert.doesNotMatch(JSON.stringify(safe) + f.logs.join("\n"), new RegExp(sentinel));
   }
 });
+
+
+test("silent valid audio bypasses the provider and emits no stored transcript event", async () => {
+  const f = fixture("openai", null), session = f.create("owner-a");
+  const response = await f.route("transcribe/stream/session/[sessionId]/chunk").POST(audio(1, "audio/wav", true), context(session.sessionId));
+  const body = await response.json();
+  assert.equal(response.status, 202); assert.equal(body.saved, true); assert.equal(body.response.text, "");
+  assert.equal(f.requests(), 0); assert.equal(session.events.length, 0);
+});
+
+for (const provider of ["deepgram", "openai"]) {
+  test(`${provider} no-speech result is acknowledged without a blank durable event`, async () => {
+    const body = provider === "deepgram" ? {results:{channels:[{alternatives:[{transcript:""}]}]}} : {text:""};
+    const f = fixture(provider, {status:200, body}), session = f.create("owner-a");
+    const response = await f.route("transcribe/stream/session/[sessionId]/chunk").POST(audio(), context(session.sessionId));
+    assert.equal(response.status, 202); assert.equal((await response.json()).response.text, "");
+    assert.equal(f.requests(), 1); assert.equal(session.events.length, 0);
+  });
+}

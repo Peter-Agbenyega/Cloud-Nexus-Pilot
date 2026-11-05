@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-05T06:31:54.788Z",
+  "sessionId": "4c3812c1-8b6a-454b-888f-ac36921e807c",
+  "reloadedRebuiltApp": true,
+  "recoveredThroughSavedSessionPicker": true,
+  "visibleQuestion": "What is Kubernetes?",
+  "visibleAnswerMentionsContainerizedApplications": true,
+  "serverAcknowledgement": "saved",
+  "microphoneStartedByAgent": false,
+  "browserEvidence": "saved-answer.png"
+}

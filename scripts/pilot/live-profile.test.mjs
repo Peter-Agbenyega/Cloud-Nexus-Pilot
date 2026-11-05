@@ -7,7 +7,7 @@ const valid = {
  PILOT_LIVE_ACCEPTANCE:"1", NEXT_PUBLIC_PILOT_LIVE_ACCEPTANCE:"1", NEXT_PUBLIC_PILOT_TEST_FIXTURE:"0",
  NEXT_PUBLIC_PILOT_ALLOW_LOOPBACK:"1", PILOT_RECOVERY_STACK:"1",
  NEXT_PUBLIC_SUPABASE_URL:"http://127.0.0.1:59090", SUPABASE_URL:"http://127.0.0.1:59090", PILOT_DATA_API_URL:"http://127.0.0.1:59090",
- OPENAI_BASE_URL:"https://api.openai.com/v1", OPENAI_MODEL:"gpt-4o-mini", OPENAI_TRANSCRIPTION_MODEL:"gpt-4o-mini-transcribe",
+ OPENAI_BASE_URL:"https://api.openai.com/v1", OPENAI_MODEL:"gpt-4o-mini", OPENAI_TRANSCRIPTION_MODEL:"gpt-4o-mini-transcribe-2025-12-15",
  PILOT_LOCAL_FRONTEND_PORT:"43102", PILOT_LOCAL_REALTIME_PORT:"43311",
  NEXT_PUBLIC_SITE_URL:"http://127.0.0.1:43102", PILOT_PUBLIC_ORIGIN:"http://127.0.0.1:43102",
  NEXT_PUBLIC_PILOT_REALTIME_WS_URL:"ws://127.0.0.1:43311/ws/session",
@@ -28,6 +28,10 @@ test("credentials cannot be redirected to a fixture, arbitrary host, or deceptiv
 test("live profile refuses original data, mixed modes, and altered ports/origin/models",()=>{
  for(const [key,value] of Object.entries({PILOT_DATA_API_URL:"http://127.0.0.1:58090",NEXT_PUBLIC_SUPABASE_URL:"https://hosted.example",NEXT_PUBLIC_PILOT_TEST_FIXTURE:"1",PILOT_LOCAL_FRONTEND_PORT:"43101",PILOT_PUBLIC_ORIGIN:"https://old.example",OPENAI_MODEL:"synthetic-guidance",DEEPGRAM_API_KEY:"another-provider",PILOT_PROCESSING_SERVICE_KEY:""}))
   assert.throws(()=>validateLiveProfile({...valid,[key]:value},"start"));
+});
+test("live profile rejects the unavailable transcription alias and unapproved models",()=>{
+ for(const model of ["gpt-4o-mini-transcribe","whisper-1","gpt-4o-transcribe"])
+  assert.throws(()=>validateLiveProfile({...valid,OPENAI_TRANSCRIPTION_MODEL:model},"start"),/Unexpected acceptance models/);
 });
 test("default launcher rejects mixed live flags before reading build or spawning children",()=>{
  const result=spawnSync(process.execPath,[new URL("./local.mjs",import.meta.url).pathname,"start"],{encoding:"utf8",env:{...process.env,PILOT_LIVE_ACCEPTANCE:"0",NEXT_PUBLIC_PILOT_LIVE_ACCEPTANCE:"1"}});

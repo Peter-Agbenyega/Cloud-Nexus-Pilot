@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-05T05:29:21.599Z",
+  "liveLoginStatus": 302,
+  "liveLoginTarget": "http://127.0.0.1:43102/workspace",
+  "workspaceStatus": 200,
+  "liveDisclosure": true,
+  "recoveryCookieOnly": true,
+  "arbitraryRedirectRejected": true,
+  "freshLoginPersistenceVerified": true,
+  "sessions": [
+    {
+      "sessionId": "3c3e5ef8-98de-4c8b-a4dd-276aea38a763",
+      "status": "ended",
+      "transcripts": 1,
+      "guidance": 1
+    },
+    {
+      "sessionId": "7af3edb7-7e35-4d15-a0a0-d26c8125aa0d",
+      "status": "ended",
+      "transcripts": 0,
+      "guidance": 0
+    }
+  ],
+  "providerRequests": 0
+}

@@ -1,0 +1,12 @@
+{
+  "renewed": true,
+  "ttl_seconds": 86400,
+  "expires_at": "2026-11-06T05:23:25+00:00",
+  "signer_preserved": true,
+  "accounts_and_public_rows_preserved": true,
+  "original_stack_state_unchanged": true,
+  "synthetic_app_stopped": false,
+  "live_app_stopped": true,
+  "rebuild_required": true,
+  "live_gateway_cors_verified": true
+}

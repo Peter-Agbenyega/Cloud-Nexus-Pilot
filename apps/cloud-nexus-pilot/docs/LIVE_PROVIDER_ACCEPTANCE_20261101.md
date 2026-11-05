@@ -1,6 +1,6 @@
 # Live provider acceptance — 2026-11-01
 
-Status: key provisioned and authenticated; live application running locally; semantic acceptance BLOCKED by confirmed OpenAI credit_balance_exhausted.
+Current status: generated-speech live acceptance PASSED on 2026-11-05 after correcting the provider organization and transcription model. See LIVE_PROVIDER_ACCEPTANCE_20261105.md. The remaining content below records the earlier investigation.
 
 ## Current result
 - User approved creation and the private local destination. The OpenAI Developers encrypted setup created Cloud-Nexus-Pilot in Personal / Cloudnexususa.

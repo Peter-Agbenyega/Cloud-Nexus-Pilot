@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-05T05:25:36.945Z",
+  "organization": "Peter Dev Lab",
+  "project": "final-round-ai",
+  "operation": "read model access",
+  "checks": [
+    {
+      "model": "gpt-4o-mini-transcribe",
+      "status": 404,
+      "modelId": null,
+      "errorCode": null,
+      "errorType": "invalid_request_error",
+      "message": "That model does not exist"
+    },
+    {
+      "model": "gpt-4o-mini",
+      "status": 200,
+      "modelId": "gpt-4o-mini",
+      "errorCode": null,
+      "errorType": null,
+      "message": null
+    }
+  ]
+}

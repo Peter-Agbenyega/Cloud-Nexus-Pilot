@@ -9,7 +9,7 @@ export function validateLiveProfile(env, mode) {
     if (env[key] !== "http://127.0.0.1:59090") fail("Live acceptance requires the existing recovery identity and data endpoint.");
   if (env.OPENAI_BASE_URL !== "https://api.openai.com/v1") fail("Live acceptance permits only the official OpenAI endpoint.");
   if (env.DEEPGRAM_API_KEY) fail("This acceptance profile uses OpenAI only.");
-  if (env.OPENAI_MODEL !== "gpt-4o-mini" || env.OPENAI_TRANSCRIPTION_MODEL !== "gpt-4o-mini-transcribe") fail("Unexpected acceptance models.");
+  if (env.OPENAI_MODEL !== "gpt-4o-mini" || env.OPENAI_TRANSCRIPTION_MODEL !== "gpt-4o-mini-transcribe-2025-12-15") fail("Unexpected acceptance models.");
   if (env.PILOT_LOCAL_FRONTEND_PORT !== "43102" || env.PILOT_LOCAL_REALTIME_PORT !== "43311" ||
       env.NEXT_PUBLIC_SITE_URL !== "http://127.0.0.1:43102" || env.PILOT_PUBLIC_ORIGIN !== "http://127.0.0.1:43102" ||
       env.NEXT_PUBLIC_PILOT_REALTIME_WS_URL !== "ws://127.0.0.1:43311/ws/session")

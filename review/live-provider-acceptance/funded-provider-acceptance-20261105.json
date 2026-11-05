@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-05T05:28:36.907Z",
+  "liveProvider": true,
+  "physicalMicrophone": false,
+  "audioSource": "macOS generated Kubernetes speech",
+  "transcriptionRequests": 1,
+  "guidanceRequests": 1,
+  "passed": true,
+  "sessionId": "3c3e5ef8-98de-4c8b-a4dd-276aea38a763",
+  "transcriptionStatus": 202,
+  "transcript": "What is Kubernetes?",
+  "guidanceStatus": 200,
+  "answer": {
+    "headline": "Understanding Kubernetes Basics",
+    "speakNow": "Kubernetes is an open-source platform for managing containerized applications. It automates deployment, scaling, and operations of application containers across clusters of hosts.",
+    "keyPoints": [
+      "Open-source container orchestration",
+      "Automates deployment and scaling",
+      "Manages clusters of hosts"
+    ],
+    "example": "Think of it like a conductor for an orchestra, ensuring all parts work together smoothly.",
+    "technicalDetail": "Kubernetes abstracts the underlying infrastructure, allowing developers to focus on applications. It uses a declarative model to manage resources, meaning you define the desired state, and Kubernetes works to maintain that state. Key components include Pods, Services, Deployments, and Nodes. For example, a Pod is the smallest deployable unit that can contain one or more containers.",
+    "caution": "Be aware of the learning curve with Kubernetes concepts.",
+    "followUp": "What specific aspects of Kubernetes are you interested in?",
+    "gist": "Kubernetes is a powerful tool for container management.",
+    "key_points": [
+      "Open-source container orchestration",
+      "Automates deployment and scaling",
+      "Manages clusters of hosts"
+    ],
+    "full_answer": "Kubernetes is an open-source platform designed to manage containerized applications efficiently. It automates various tasks like deployment, scaling, and operations across clusters of hosts, making it easier to maintain applications in a cloud-native environment. It abstracts the underlying infrastructure, allowing developers to focus on their applications rather than the complexities of the environment. Key components include Pods, which are the smallest deployable units that can hold one or more containers, Services for networking, and Deployments for managing application updates. Overall, Kubernetes provides a robust framework for orchestrating containers at scale."
+  },
+  "savedTranscriptAndGuidance": true,
+  "exportVerified": true,
+  "syntheticDispatchDelta": 0,
+  "usageDelta": 34636,
+  "reservedUnits": 0,
+  "organization": "Peter Dev Lab",
+  "project": "final-round-ai",
+  "transcriptionModel": "gpt-4o-mini-transcribe-2025-12-15",
+  "guidanceModel": "gpt-4o-mini",
+  "audioDurationSeconds": 0.923125,
+  "profileTestsPassed": 9,
+  "fixtureGuardChecksPassed": 4,
+  "liveBuildPassed": true,
+  "independentReviewPassed": true
+}

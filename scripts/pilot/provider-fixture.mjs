@@ -8,6 +8,10 @@ import { createRequire } from "node:module";
 import { inspectFixtureWav } from "./audio-diagnostics.mjs";
 const port = Number(process.env.PILOT_FIXTURE_PORT ?? 58093);
 if (![58093, 59093].includes(port)) throw new Error("Unapproved local fixture port");
+const liveAcceptance = process.env.PILOT_LIVE_ACCEPTANCE === "1";
+if (liveAcceptance && (port !== 59093 || process.env.PILOT_RECOVERY_STACK !== "1"))
+  throw new Error("Live fixture sign-in requires the recovery fixture port and stack.");
+const loginTarget = liveAcceptance ? "http://127.0.0.1:43102/workspace" : "http://127.0.0.1:43101/workspace";
 let transcriptionCalls = 0, guidanceCalls = 0;
 const audio = { wavChunks: 0, nonSilentChunks: 0, wavBytes: 0, peak: 0, lastChunk: null };
 const server = createServer(async (request, response) => {
@@ -24,7 +28,7 @@ const server = createServer(async (request, response) => {
       if (error || !data.user || !data.session) throw new Error("Synthetic sign-in failed");
       response.setHeader("Set-Cookie", cookies.map(({name,value,options}) => `${name}=${value}; Path=/; SameSite=Lax; Max-Age=${options.maxAge ?? 3600}`));
       response.setHeader("cache-control", "no-store");
-      response.writeHead(302, { location: "http://127.0.0.1:43101/workspace" }).end();
+      response.writeHead(302, { location: loginTarget }).end();
     } catch { response.writeHead(503).end("Synthetic account sign-in unavailable"); }
     return;
   }
